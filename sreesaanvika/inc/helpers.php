@@ -8,20 +8,22 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Read a theme mod with a default.
+ * Read a theme option, falling back to the registered default.
  *
- * @param string $key     Setting key (without the ss_ prefix).
- * @param mixed  $default Fallback value.
+ * The default always comes from ss_defaults() when the key is known there.
+ * `get_theme_mod()` has no idea what default a Customizer setting was
+ * registered with, so passing anything else here is how a section ends up
+ * visible in the Customizer preview and blank on the live site.
+ *
+ * A value the shop owner has actually saved always wins — including an empty
+ * string, which is how you clear a hero slide or hide a banner.
+ *
+ * @param string $key      Setting key (without the ss_ prefix).
+ * @param mixed  $fallback Used only for keys with no registered default.
  * @return mixed
  */
-function ss_option( $key, $default = '' ) {
-	$value = get_theme_mod( 'ss_' . $key, $default );
-
-	if ( '' === $value && '' !== $default ) {
-		return $default;
-	}
-
-	return $value;
+function ss_option( $key, $fallback = '' ) {
+	return get_theme_mod( 'ss_' . $key, ss_default( $key, $fallback ) );
 }
 
 /**

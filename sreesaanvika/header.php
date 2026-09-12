@@ -26,7 +26,16 @@ defined( 'ABSPATH' ) || exit;
 
 	<a class="skip-link screen-reader-text ss-skip-link" href="#ss-content"><?php esc_html_e( 'Skip to content', 'sreesaanvika' ); ?></a>
 
-	<?php if ( ss_option( 'topbar_on', true ) ) : ?>
+	<?php
+	/*
+	 * Elementor Pro's Theme Builder can supply its own header. When it does,
+	 * elementor_theme_do_location() prints it and the theme's header — along
+	 * with the drawer, search overlay and cart panel it drives — is skipped.
+	 */
+	if ( ! ss_elementor_location( 'header' ) ) :
+		?>
+
+	<?php if ( ss_option( 'topbar_on' ) ) : ?>
 		<?php
 		$messages = ss_list( ss_option( 'topbar_items', '' ) );
 		$phone    = ss_option( 'topbar_phone', '' );
@@ -148,5 +157,7 @@ defined( 'ABSPATH' ) || exit;
 	<?php endif; ?>
 
 	<div class="ss-scrim" aria-hidden="true"></div>
+
+	<?php endif; // Elementor header. ?>
 
 	<main class="ss-main" id="ss-content">

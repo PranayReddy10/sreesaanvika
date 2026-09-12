@@ -42,16 +42,19 @@ function ss_customize_register( $wp_customize ) {
 	/**
 	 * Helper to add a setting + control in one call.
 	 *
-	 * @param string $id      Setting id (without ss_).
-	 * @param array  $args    Control args.
-	 * @param mixed  $default Default value.
+	 * The default is never passed in — it always comes from ss_defaults(), the
+	 * same registry ss_option() reads on the front end, so the Customizer
+	 * preview and the live site can never disagree.
+	 *
+	 * @param string $id       Setting id (without ss_).
+	 * @param array  $args     Control args.
 	 * @param string $sanitize Sanitize callback.
 	 */
-	$add = function ( $id, $args, $default = '', $sanitize = 'sanitize_text_field' ) use ( $wp_customize ) {
+	$add = function ( $id, $args, $sanitize = 'sanitize_text_field' ) use ( $wp_customize ) {
 		$wp_customize->add_setting(
 			'ss_' . $id,
 			array(
-				'default'           => $default,
+				'default'           => ss_default( $id ),
 				'sanitize_callback' => $sanitize,
 				'transport'         => 'refresh',
 			)
@@ -85,24 +88,23 @@ function ss_customize_register( $wp_customize ) {
 	);
 
 	$colors = array(
-		'color_bg'       => array( __( 'Page background', 'sreesaanvika' ), '#140a12' ),
-		'color_surface'  => array( __( 'Card surface', 'sreesaanvika' ), '#21121d' ),
-		'color_gold'     => array( __( 'Primary accent (gold)', 'sreesaanvika' ), '#d9a441' ),
-		'color_gold_light' => array( __( 'Accent highlight', 'sreesaanvika' ), '#f0d08a' ),
-		'color_maroon'   => array( __( 'Secondary accent (maroon)', 'sreesaanvika' ), '#7b1e3b' ),
-		'color_marigold' => array( __( 'Tertiary accent (marigold)', 'sreesaanvika' ), '#e8952f' ),
-		'color_text'     => array( __( 'Body text', 'sreesaanvika' ), '#f4eaee' ),
+		'color_bg'         => __( 'Page background', 'sreesaanvika' ),
+		'color_surface'    => __( 'Card surface', 'sreesaanvika' ),
+		'color_gold'       => __( 'Primary accent (gold)', 'sreesaanvika' ),
+		'color_gold_light' => __( 'Accent highlight', 'sreesaanvika' ),
+		'color_maroon'     => __( 'Secondary accent (maroon)', 'sreesaanvika' ),
+		'color_marigold'   => __( 'Tertiary accent (marigold)', 'sreesaanvika' ),
+		'color_text'       => __( 'Body text', 'sreesaanvika' ),
 	);
 
-	foreach ( $colors as $id => $data ) {
+	foreach ( $colors as $id => $label ) {
 		$add(
 			$id,
 			array(
-				'label'   => $data[0],
+				'label'   => $label,
 				'section' => 'ss_colors',
 				'type'    => 'color',
 			),
-			$data[1],
 			'sanitize_hex_color'
 		);
 	}
@@ -122,7 +124,6 @@ function ss_customize_register( $wp_customize ) {
 				'ink'      => __( 'Temple Ink & Emerald', 'sreesaanvika' ),
 			),
 		),
-		'aubergine',
 		'ss_sanitize_choice'
 	);
 
@@ -137,8 +138,8 @@ function ss_customize_register( $wp_customize ) {
 		)
 	);
 
-	$add( 'brand_tagline', array( 'label' => __( 'Brand tagline (under the logo)', 'sreesaanvika' ), 'section' => 'ss_header' ), __( 'Heritage Weaves', 'sreesaanvika' ) );
-	$add( 'topbar_on', array( 'label' => __( 'Show the announcement bar', 'sreesaanvika' ), 'section' => 'ss_header', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
+	$add( 'brand_tagline', array( 'label' => __( 'Brand tagline (under the logo)', 'sreesaanvika' ), 'section' => 'ss_header' ) );
+	$add( 'topbar_on', array( 'label' => __( 'Show the announcement bar', 'sreesaanvika' ), 'section' => 'ss_header', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
 	$add(
 		'topbar_items',
 		array(
@@ -147,11 +148,10 @@ function ss_customize_register( $wp_customize ) {
 			'section'     => 'ss_header',
 			'type'        => 'textarea',
 		),
-		__( "Free shipping across India on orders above ₹2,999\nHandloom certified — direct from the weavers of Kanchipuram & Banaras\nEasy 7-day returns · 100% secure payments", 'sreesaanvika' ),
 		'sanitize_textarea_field'
 	);
-	$add( 'topbar_phone', array( 'label' => __( 'Top bar phone number', 'sreesaanvika' ), 'section' => 'ss_header' ), '+91 98765 43210' );
-	$add( 'sticky_header', array( 'label' => __( 'Sticky header on scroll', 'sreesaanvika' ), 'section' => 'ss_header', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
+	$add( 'topbar_phone', array( 'label' => __( 'Top bar phone number', 'sreesaanvika' ), 'section' => 'ss_header' ) );
+	$add( 'sticky_header', array( 'label' => __( 'Sticky header on scroll', 'sreesaanvika' ), 'section' => 'ss_header', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
 
 	/* -----------------------------------------------------------------
 	 * Homepage — hero
@@ -165,34 +165,13 @@ function ss_customize_register( $wp_customize ) {
 		)
 	);
 
-	$hero_defaults = array(
-		1 => array(
-			__( 'The Bridal Edit', 'sreesaanvika' ),
-			__( 'Kanchipuram Silk, <em>Woven in Gold</em>', 'sreesaanvika' ),
-			__( 'Pure zari, temple borders and the kind of lustre that only a six-month loom can give.', 'sreesaanvika' ),
-			__( 'Shop Sarees', 'sreesaanvika' ),
-		),
-		2 => array(
-			__( 'Temple Jewellery', 'sreesaanvika' ),
-			__( 'Heirloom <em>Antique Finish</em>', 'sreesaanvika' ),
-			__( 'Nakshi haarams, jhumkas and vanki — crafted the way the temple artisans of Thanjavur still do.', 'sreesaanvika' ),
-			__( 'Explore Jewellery', 'sreesaanvika' ),
-		),
-		3 => array(
-			__( 'Festive 2025', 'sreesaanvika' ),
-			__( 'Anarkalis & <em>Lehengas</em>', 'sreesaanvika' ),
-			__( 'Chikankari, mirror work and hand-dyed bandhani, cut for movement.', 'sreesaanvika' ),
-			__( 'Shop Dresses', 'sreesaanvika' ),
-		),
-	);
-
-	foreach ( $hero_defaults as $i => $d ) {
-		$add( "hero{$i}_eyebrow", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — eyebrow', 'sreesaanvika' ), $i ), 'section' => 'ss_hero' ), $d[0] );
-		$add( "hero{$i}_title", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — title (use <em> for the gold words)', 'sreesaanvika' ), $i ), 'section' => 'ss_hero', 'type' => 'textarea' ), $d[1], 'ss_sanitize_html' );
-		$add( "hero{$i}_text", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — description', 'sreesaanvika' ), $i ), 'section' => 'ss_hero', 'type' => 'textarea' ), $d[2], 'sanitize_textarea_field' );
-		$add( "hero{$i}_btn", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — button label', 'sreesaanvika' ), $i ), 'section' => 'ss_hero' ), $d[3] );
-		$add( "hero{$i}_url", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — button link', 'sreesaanvika' ), $i ), 'section' => 'ss_hero', 'type' => 'url' ), '', 'esc_url_raw' );
-		$add( "hero{$i}_img", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — background image', 'sreesaanvika' ), $i ), 'section' => 'ss_hero', 'type' => 'image' ), '', 'esc_url_raw' );
+	foreach ( array( 1, 2, 3 ) as $i ) {
+		$add( "hero{$i}_eyebrow", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — eyebrow', 'sreesaanvika' ), $i ), 'section' => 'ss_hero' ) );
+		$add( "hero{$i}_title", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — title (use <em> for the gold words)', 'sreesaanvika' ), $i ), 'section' => 'ss_hero', 'type' => 'textarea' ), 'ss_sanitize_html' );
+		$add( "hero{$i}_text", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — description', 'sreesaanvika' ), $i ), 'section' => 'ss_hero', 'type' => 'textarea' ), 'sanitize_textarea_field' );
+		$add( "hero{$i}_btn", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — button label', 'sreesaanvika' ), $i ), 'section' => 'ss_hero' ) );
+		$add( "hero{$i}_url", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — button link', 'sreesaanvika' ), $i ), 'section' => 'ss_hero', 'type' => 'url' ), 'esc_url_raw' );
+		$add( "hero{$i}_img", array( 'label' => sprintf( /* translators: %d: slide number */ __( 'Slide %d — background image', 'sreesaanvika' ), $i ), 'section' => 'ss_hero', 'type' => 'image' ), 'esc_url_raw' );
 		$add(
 			"hero{$i}_align",
 			array(
@@ -205,13 +184,12 @@ function ss_customize_register( $wp_customize ) {
 					'right'  => __( 'Right', 'sreesaanvika' ),
 				),
 			),
-			'left',
 			'ss_sanitize_choice'
 		);
 	}
 
-	$add( 'hero_autoplay', array( 'label' => __( 'Auto-advance slides', 'sreesaanvika' ), 'section' => 'ss_hero', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
-	$add( 'hero_speed', array( 'label' => __( 'Seconds per slide', 'sreesaanvika' ), 'section' => 'ss_hero', 'type' => 'number', 'input_attrs' => array( 'min' => 3, 'max' => 20 ) ), 6, 'absint' );
+	$add( 'hero_autoplay', array( 'label' => __( 'Auto-advance slides', 'sreesaanvika' ), 'section' => 'ss_hero', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'hero_speed', array( 'label' => __( 'Seconds per slide', 'sreesaanvika' ), 'section' => 'ss_hero', 'type' => 'number', 'input_attrs' => array( 'min' => 3, 'max' => 20 ) ), 'absint' );
 
 	/* -----------------------------------------------------------------
 	 * Homepage — sections
@@ -225,37 +203,36 @@ function ss_customize_register( $wp_customize ) {
 	);
 
 	$toggles = array(
-		'sec_usp'         => array( __( 'Trust / USP strip', 'sreesaanvika' ), true ),
-		'sec_catrail'     => array( __( 'Round category rail', 'sreesaanvika' ), true ),
-		'sec_cats'        => array( __( 'Category mosaic', 'sreesaanvika' ), true ),
-		'sec_new'         => array( __( 'New arrivals', 'sreesaanvika' ), true ),
-		'sec_promo'       => array( __( 'Offer banners', 'sreesaanvika' ), true ),
-		'sec_bestsellers' => array( __( 'Best sellers', 'sreesaanvika' ), true ),
-		'sec_deal'        => array( __( 'Deal of the day (countdown)', 'sreesaanvika' ), true ),
-		'sec_sarees'      => array( __( 'Saree spotlight', 'sreesaanvika' ), true ),
-		'sec_jewel'       => array( __( 'Jewellery spotlight', 'sreesaanvika' ), true ),
-		'sec_lookbook'    => array( __( 'Lookbook strip', 'sreesaanvika' ), true ),
-		'sec_band'        => array( __( 'Story band', 'sreesaanvika' ), true ),
-		'sec_reviews'     => array( __( 'Customer reviews', 'sreesaanvika' ), true ),
-		'sec_blog'        => array( __( 'Journal / blog posts', 'sreesaanvika' ), true ),
-		'sec_gram'        => array( __( 'Instagram grid', 'sreesaanvika' ), true ),
-		'sec_newsletter'  => array( __( 'Newsletter', 'sreesaanvika' ), true ),
+		'sec_usp'         => __( 'Trust / USP strip', 'sreesaanvika' ),
+		'sec_catrail'     => __( 'Round category rail', 'sreesaanvika' ),
+		'sec_cats'        => __( 'Category mosaic', 'sreesaanvika' ),
+		'sec_new'         => __( 'New arrivals', 'sreesaanvika' ),
+		'sec_promo'       => __( 'Offer banners', 'sreesaanvika' ),
+		'sec_bestsellers' => __( 'Best sellers', 'sreesaanvika' ),
+		'sec_deal'        => __( 'Deal of the day (countdown)', 'sreesaanvika' ),
+		'sec_sarees'      => __( 'Saree spotlight', 'sreesaanvika' ),
+		'sec_jewel'       => __( 'Jewellery spotlight', 'sreesaanvika' ),
+		'sec_lookbook'    => __( 'Lookbook strip', 'sreesaanvika' ),
+		'sec_band'        => __( 'Story band', 'sreesaanvika' ),
+		'sec_reviews'     => __( 'Customer reviews', 'sreesaanvika' ),
+		'sec_blog'        => __( 'Journal / blog posts', 'sreesaanvika' ),
+		'sec_gram'        => __( 'Instagram grid', 'sreesaanvika' ),
+		'sec_newsletter'  => __( 'Newsletter', 'sreesaanvika' ),
 	);
 
-	foreach ( $toggles as $id => $data ) {
+	foreach ( $toggles as $id => $label ) {
 		$add(
 			$id,
 			array(
-				'label'   => $data[0],
+				'label'   => $label,
 				'section' => 'ss_home',
 				'type'    => 'checkbox',
 			),
-			$data[1],
 			'ss_sanitize_bool'
 		);
 	}
 
-	$add( 'products_per_section', array( 'label' => __( 'Products shown per section', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 12 ) ), 8, 'absint' );
+	$add( 'products_per_section', array( 'label' => __( 'Products shown per section', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 12 ) ), 'absint' );
 
 	/* -----------------------------------------------------------------
 	 * Promo banners
@@ -268,22 +245,22 @@ function ss_customize_register( $wp_customize ) {
 		)
 	);
 
-	$add( 'promo1_off', array( 'label' => __( 'Banner 1 — big text', 'sreesaanvika' ), 'section' => 'ss_promo' ), __( '40% OFF', 'sreesaanvika' ) );
-	$add( 'promo1_title', array( 'label' => __( 'Banner 1 — heading', 'sreesaanvika' ), 'section' => 'ss_promo' ), __( 'Banarasi Silk Festival', 'sreesaanvika' ) );
-	$add( 'promo1_text', array( 'label' => __( 'Banner 1 — text', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'textarea' ), __( 'Hand-woven katan silk with real zari butis. Limited looms, limited pieces.', 'sreesaanvika' ), 'sanitize_textarea_field' );
-	$add( 'promo1_url', array( 'label' => __( 'Banner 1 — link', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'url' ), '', 'esc_url_raw' );
-	$add( 'promo1_img', array( 'label' => __( 'Banner 1 — image', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'image' ), '', 'esc_url_raw' );
+	$add( 'promo1_off', array( 'label' => __( 'Banner 1 — big text', 'sreesaanvika' ), 'section' => 'ss_promo' ) );
+	$add( 'promo1_title', array( 'label' => __( 'Banner 1 — heading', 'sreesaanvika' ), 'section' => 'ss_promo' ) );
+	$add( 'promo1_text', array( 'label' => __( 'Banner 1 — text', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'textarea' ), 'sanitize_textarea_field' );
+	$add( 'promo1_url', array( 'label' => __( 'Banner 1 — link', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'url' ), 'esc_url_raw' );
+	$add( 'promo1_img', array( 'label' => __( 'Banner 1 — image', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'image' ), 'esc_url_raw' );
 
-	$add( 'promo2_off', array( 'label' => __( 'Banner 2 — big text', 'sreesaanvika' ), 'section' => 'ss_promo' ), __( 'NEW IN', 'sreesaanvika' ) );
-	$add( 'promo2_title', array( 'label' => __( 'Banner 2 — heading', 'sreesaanvika' ), 'section' => 'ss_promo' ), __( 'Temple Jewellery', 'sreesaanvika' ) );
-	$add( 'promo2_text', array( 'label' => __( 'Banner 2 — text', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'textarea' ), __( 'Antique-finish haarams and jhumkas, hallmarked and nazariya-safe.', 'sreesaanvika' ), 'sanitize_textarea_field' );
-	$add( 'promo2_url', array( 'label' => __( 'Banner 2 — link', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'url' ), '', 'esc_url_raw' );
-	$add( 'promo2_img', array( 'label' => __( 'Banner 2 — image', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'image' ), '', 'esc_url_raw' );
+	$add( 'promo2_off', array( 'label' => __( 'Banner 2 — big text', 'sreesaanvika' ), 'section' => 'ss_promo' ) );
+	$add( 'promo2_title', array( 'label' => __( 'Banner 2 — heading', 'sreesaanvika' ), 'section' => 'ss_promo' ) );
+	$add( 'promo2_text', array( 'label' => __( 'Banner 2 — text', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'textarea' ), 'sanitize_textarea_field' );
+	$add( 'promo2_url', array( 'label' => __( 'Banner 2 — link', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'url' ), 'esc_url_raw' );
+	$add( 'promo2_img', array( 'label' => __( 'Banner 2 — image', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'image' ), 'esc_url_raw' );
 
-	$add( 'deal_end', array( 'label' => __( 'Deal of the day — end date/time', 'sreesaanvika' ), 'description' => __( 'Format: YYYY-MM-DD HH:MM', 'sreesaanvika' ), 'section' => 'ss_promo' ), '' );
-	$add( 'band_img', array( 'label' => __( 'Story band — background image', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'image' ), '', 'esc_url_raw' );
-	$add( 'band_title', array( 'label' => __( 'Story band — heading', 'sreesaanvika' ), 'section' => 'ss_promo' ), __( 'Woven by hands that have known the loom for six generations', 'sreesaanvika' ) );
-	$add( 'band_text', array( 'label' => __( 'Story band — text', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'textarea' ), __( 'Every Sree Saanvika saree is sourced straight from weaver families in Kanchipuram, Banaras, Pochampally and Bhagalpur — no middlemen, fair wages, and a name tag on every drape.', 'sreesaanvika' ), 'sanitize_textarea_field' );
+	$add( 'deal_end', array( 'label' => __( 'Deal of the day — end date/time', 'sreesaanvika' ), 'description' => __( 'Format: YYYY-MM-DD HH:MM', 'sreesaanvika' ), 'section' => 'ss_promo' ) );
+	$add( 'band_img', array( 'label' => __( 'Story band — background image', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'image' ), 'esc_url_raw' );
+	$add( 'band_title', array( 'label' => __( 'Story band — heading', 'sreesaanvika' ), 'section' => 'ss_promo' ) );
+	$add( 'band_text', array( 'label' => __( 'Story band — text', 'sreesaanvika' ), 'section' => 'ss_promo', 'type' => 'textarea' ), 'sanitize_textarea_field' );
 
 	/* -----------------------------------------------------------------
 	 * Shop
@@ -296,20 +273,20 @@ function ss_customize_register( $wp_customize ) {
 		)
 	);
 
-	$add( 'shop_columns', array( 'label' => __( 'Products per row', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 6 ) ), 4, 'absint' );
-	$add( 'shop_per_page', array( 'label' => __( 'Products per page', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number', 'input_attrs' => array( 'min' => 4, 'max' => 60 ) ), 12, 'absint' );
-	$add( 'shop_sidebar', array( 'label' => __( 'Show the filter sidebar', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
-	$add( 'card_hover_img', array( 'label' => __( 'Swap to the second image on hover', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
-	$add( 'card_swatches', array( 'label' => __( 'Show colour swatches on product cards', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
-	$add( 'quickview', array( 'label' => __( 'Enable quick view', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
-	$add( 'wishlist_on', array( 'label' => __( 'Enable wishlist', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
-	$add( 'compare_on', array( 'label' => __( 'Enable compare', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
-	$add( 'compare_max', array( 'label' => __( 'Maximum products to compare', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 6 ) ), 4, 'absint' );
-	$add( 'use_woo_gallery', array( 'label' => __( 'Use the default WooCommerce gallery instead of the theme gallery', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), false, 'ss_sanitize_bool' );
-	$add( 'sticky_buy', array( 'label' => __( 'Sticky add-to-cart bar on mobile', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
-	$add( 'pincode_check', array( 'label' => __( 'Show the delivery PIN code checker', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), true, 'ss_sanitize_bool' );
-	$add( 'free_ship_threshold', array( 'label' => __( 'Free shipping threshold (₹)', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number' ), 2999, 'absint' );
-	$add( 'stock_alert_qty', array( 'label' => __( 'Show "only N left" below this stock level', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number' ), 8, 'absint' );
+	$add( 'shop_columns', array( 'label' => __( 'Products per row', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 6 ) ), 'absint' );
+	$add( 'shop_per_page', array( 'label' => __( 'Products per page', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number', 'input_attrs' => array( 'min' => 4, 'max' => 60 ) ), 'absint' );
+	$add( 'shop_sidebar', array( 'label' => __( 'Show the filter sidebar', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'card_hover_img', array( 'label' => __( 'Swap to the second image on hover', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'card_swatches', array( 'label' => __( 'Show colour swatches on product cards', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'quickview', array( 'label' => __( 'Enable quick view', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'wishlist_on', array( 'label' => __( 'Enable wishlist', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'compare_on', array( 'label' => __( 'Enable compare', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'compare_max', array( 'label' => __( 'Maximum products to compare', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 6 ) ), 'absint' );
+	$add( 'use_woo_gallery', array( 'label' => __( 'Use the default WooCommerce gallery instead of the theme gallery', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'sticky_buy', array( 'label' => __( 'Sticky add-to-cart bar on mobile', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'pincode_check', array( 'label' => __( 'Show the delivery PIN code checker', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'free_ship_threshold', array( 'label' => __( 'Free shipping threshold (₹)', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number' ), 'absint' );
+	$add( 'stock_alert_qty', array( 'label' => __( 'Show "only N left" below this stock level', 'sreesaanvika' ), 'section' => 'ss_shop', 'type' => 'number' ), 'absint' );
 	$add(
 		'offers_text',
 		array(
@@ -318,7 +295,6 @@ function ss_customize_register( $wp_customize ) {
 			'section'     => 'ss_shop',
 			'type'        => 'textarea',
 		),
-		__( "Extra 10% off on prepaid orders — code `SAANVIKA10`\nFlat ₹500 off on your first order above ₹4,999\nFree fall & pico stitching on all silk sarees\nBank offer: 5% cashback on HDFC credit cards", 'sreesaanvika' ),
 		'sanitize_textarea_field'
 	);
 
@@ -333,12 +309,12 @@ function ss_customize_register( $wp_customize ) {
 		)
 	);
 
-	$add( 'footer_about', array( 'label' => __( 'About text', 'sreesaanvika' ), 'section' => 'ss_footer', 'type' => 'textarea' ), __( 'Sree Saanvika brings you handloom sarees, temple jewellery and festive dresses sourced directly from Indian weavers and artisans — honest pricing, heirloom quality.', 'sreesaanvika' ), 'sanitize_textarea_field' );
-	$add( 'footer_address', array( 'label' => __( 'Address', 'sreesaanvika' ), 'section' => 'ss_footer', 'type' => 'textarea' ), __( "Plot 42, Jubilee Hills Road No. 36,\nHyderabad, Telangana 500033", 'sreesaanvika' ), 'sanitize_textarea_field' );
-	$add( 'footer_phone', array( 'label' => __( 'Phone', 'sreesaanvika' ), 'section' => 'ss_footer' ), '+91 98765 43210' );
-	$add( 'footer_email', array( 'label' => __( 'Email', 'sreesaanvika' ), 'section' => 'ss_footer' ), 'care@sreesaanvika.in', 'sanitize_email' );
-	$add( 'footer_hours', array( 'label' => __( 'Support hours', 'sreesaanvika' ), 'section' => 'ss_footer' ), __( 'Mon–Sat, 10 am – 7 pm IST', 'sreesaanvika' ) );
-	$add( 'footer_copy', array( 'label' => __( 'Copyright line', 'sreesaanvika' ), 'section' => 'ss_footer' ), '' );
+	$add( 'footer_about', array( 'label' => __( 'About text', 'sreesaanvika' ), 'section' => 'ss_footer', 'type' => 'textarea' ), 'sanitize_textarea_field' );
+	$add( 'footer_address', array( 'label' => __( 'Address', 'sreesaanvika' ), 'section' => 'ss_footer', 'type' => 'textarea' ), 'sanitize_textarea_field' );
+	$add( 'footer_phone', array( 'label' => __( 'Phone', 'sreesaanvika' ), 'section' => 'ss_footer' ) );
+	$add( 'footer_email', array( 'label' => __( 'Email', 'sreesaanvika' ), 'section' => 'ss_footer' ), 'sanitize_email' );
+	$add( 'footer_hours', array( 'label' => __( 'Support hours', 'sreesaanvika' ), 'section' => 'ss_footer' ) );
+	$add( 'footer_copy', array( 'label' => __( 'Copyright line', 'sreesaanvika' ), 'section' => 'ss_footer' ) );
 
 	foreach ( array( 'instagram', 'facebook', 'youtube', 'whatsapp', 'pinterest' ) as $net ) {
 		$add(
@@ -349,12 +325,11 @@ function ss_customize_register( $wp_customize ) {
 				'section' => 'ss_footer',
 				'type'    => 'url',
 			),
-			'',
 			'esc_url_raw'
 		);
 	}
 
-	$add( 'gram_handle', array( 'label' => __( 'Instagram handle (without @)', 'sreesaanvika' ), 'section' => 'ss_footer' ), 'sreesaanvika' );
+	$add( 'gram_handle', array( 'label' => __( 'Instagram handle (without @)', 'sreesaanvika' ), 'section' => 'ss_footer' ) );
 
 	/* -----------------------------------------------------------------
 	 * Typography
@@ -379,13 +354,12 @@ function ss_customize_register( $wp_customize ) {
 				'"Jost", sans-serif'                    => 'Jost',
 			),
 		),
-		'"Playfair Display", Georgia, serif',
 		'ss_sanitize_choice_open'
 	);
 
-	$add( 'font_scale', array( 'label' => __( 'Base font size (px)', 'sreesaanvika' ), 'section' => 'ss_type', 'type' => 'number', 'input_attrs' => array( 'min' => 14, 'max' => 19 ) ), 16, 'absint' );
-	$add( 'radius', array( 'label' => __( 'Corner rounding (px)', 'sreesaanvika' ), 'section' => 'ss_type', 'type' => 'number', 'input_attrs' => array( 'min' => 0, 'max' => 24 ) ), 10, 'absint' );
-	$add( 'container', array( 'label' => __( 'Max content width (px)', 'sreesaanvika' ), 'section' => 'ss_type', 'type' => 'number', 'input_attrs' => array( 'min' => 1100, 'max' => 1700 ) ), 1320, 'absint' );
+	$add( 'font_scale', array( 'label' => __( 'Base font size (px)', 'sreesaanvika' ), 'section' => 'ss_type', 'type' => 'number', 'input_attrs' => array( 'min' => 14, 'max' => 19 ) ), 'absint' );
+	$add( 'radius', array( 'label' => __( 'Corner rounding (px)', 'sreesaanvika' ), 'section' => 'ss_type', 'type' => 'number', 'input_attrs' => array( 'min' => 0, 'max' => 24 ) ), 'absint' );
+	$add( 'container', array( 'label' => __( 'Max content width (px)', 'sreesaanvika' ), 'section' => 'ss_type', 'type' => 'number', 'input_attrs' => array( 'min' => 1100, 'max' => 1700 ) ), 'absint' );
 }
 add_action( 'customize_register', 'ss_customize_register' );
 

@@ -23,6 +23,8 @@ $ss_copy    = ss_option( 'footer_copy', '' );
 		</div>
 	<?php endif; ?>
 
+	<?php if ( ! ss_elementor_location( 'footer' ) ) : ?>
+
 	<footer class="ss-footer">
 		<div class="ss-container">
 
@@ -172,6 +174,8 @@ $ss_copy    = ss_option( 'footer_copy', '' );
 
 		</div>
 	</footer>
+
+	<?php endif; // Elementor footer. ?>
 
 	<button type="button" class="ss-icon-btn ss-to-top" aria-label="<?php esc_attr_e( 'Back to top', 'sreesaanvika' ); ?>">
 		<?php ss_the_icon( 'arrow-up', 19 ); ?>

@@ -2,8 +2,10 @@
 /**
  * Single page.
  *
- * WooCommerce's cart, checkout and account pages render through the page
- * loop, so they get a wide, card-less wrapper instead of the article shell.
+ * Three shapes:
+ *  - built with Elementor → the builder owns the whole content area
+ *  - a WooCommerce cart / checkout / account page → wide, card-less wrapper
+ *  - anything else → the standard article card
  *
  * @package SreeSaanvika
  */
@@ -13,51 +15,67 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 
 $ss_is_shop_page = class_exists( 'WooCommerce' ) && ( is_cart() || is_checkout() || is_account_page() );
+$ss_is_builder   = ss_elementor_owns_page();
 
 while ( have_posts() ) :
 	the_post();
 
-	ss_page_header( get_the_title() );
-	?>
+	if ( $ss_is_builder ) :
+		/*
+		 * No container and no card — Elementor sections manage their own
+		 * width. the_content() runs unconditionally so the editor preview
+		 * always finds a content wrapper to load into.
+		 */
+		?>
+		<div <?php post_class( 'ss-elementor-content' ); ?>>
+			<?php the_content(); ?>
+		</div>
+		<?php
+	else :
 
-	<div class="ss-container<?php echo $ss_is_shop_page ? ' ss-container--wide' : ''; ?> ss-section">
-		<?php if ( $ss_is_shop_page ) : ?>
+		ss_page_header( get_the_title() );
+		?>
 
-			<div <?php post_class( 'ss-woo-page' ); ?>>
-				<?php the_content(); ?>
-			</div>
+		<div class="ss-container<?php echo $ss_is_shop_page ? ' ss-container--wide' : ''; ?> ss-section">
+			<?php if ( $ss_is_shop_page ) : ?>
 
-		<?php else : ?>
+				<div <?php post_class( 'ss-woo-page' ); ?>>
+					<?php the_content(); ?>
+				</div>
 
-			<div class="ss-layout ss-layout--full">
-				<article <?php post_class( 'ss-entry' ); ?>>
+			<?php else : ?>
+
+				<div class="ss-layout ss-layout--full">
+					<article <?php post_class( 'ss-entry' ); ?>>
+						<?php
+						if ( has_post_thumbnail() ) {
+							the_post_thumbnail( 'ss-hero', array( 'style' => 'margin-bottom:28px' ) );
+						}
+
+						the_content();
+
+						wp_link_pages(
+							array(
+								'before' => '<nav class="ss-pagination">',
+								'after'  => '</nav>',
+							)
+						);
+						?>
+					</article>
+
 					<?php
-					if ( has_post_thumbnail() ) {
-						the_post_thumbnail( 'ss-hero', array( 'style' => 'margin-bottom:28px' ) );
+					if ( comments_open() || get_comments_number() ) {
+						comments_template();
 					}
-
-					the_content();
-
-					wp_link_pages(
-						array(
-							'before' => '<nav class="ss-pagination">',
-							'after'  => '</nav>',
-						)
-					);
 					?>
-				</article>
+				</div>
 
-				<?php
-				if ( comments_open() || get_comments_number() ) {
-					comments_template();
-				}
-				?>
-			</div>
+			<?php endif; ?>
+		</div>
 
-		<?php endif; ?>
-	</div>
+		<?php
+	endif;
 
-	<?php
 endwhile;
 
 get_footer();

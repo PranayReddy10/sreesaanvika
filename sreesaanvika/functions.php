@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.0.0' );
+define( 'SS_VERSION', '1.0.1' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -332,6 +332,7 @@ add_filter( 'nav_menu_css_class', 'ss_menu_classes', 10, 2 );
 /* -------------------------------------------------------------------------
  * Includes
  * ---------------------------------------------------------------------- */
+require_once SS_DIR . '/inc/defaults.php';
 require_once SS_DIR . '/inc/helpers.php';
 require_once SS_DIR . '/inc/icons.php';
 require_once SS_DIR . '/inc/nav-walker.php';
@@ -342,6 +343,7 @@ require_once SS_DIR . '/inc/ajax.php';
 require_once SS_DIR . '/inc/compare-wishlist.php';
 require_once SS_DIR . '/inc/demo-content.php';
 require_once SS_DIR . '/inc/tgm-notice.php';
+require_once SS_DIR . '/inc/elementor.php';
 
 if ( class_exists( 'WooCommerce' ) ) {
 	require_once SS_DIR . '/inc/woocommerce.php';

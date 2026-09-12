@@ -193,6 +193,63 @@ sreesaanvika/
 
 ---
 
+## Troubleshooting
+
+### The homepage sections show in the Customizer but not on the live site
+
+Fixed in 1.0.1. `get_theme_mod()` does not know about the default registered on
+a Customizer setting — it only returns the default handed to it. Inside the
+Customizer preview WordPress filters `theme_mod_*` and returns the registered
+default, so the hero, banners and footer details appeared there and rendered
+empty everywhere else. All defaults now live in `inc/defaults.php`, which both
+`ss_option()` and the Customizer read from.
+
+If a section is still missing after updating:
+
+- **It has no data yet.** Sections return early rather than render an empty
+  block: the category mosaic and rail need product categories, "Deal of the
+  day" needs at least one on-sale product, the Instagram grid needs six images
+  in the media library, and the lookbook strip needs three products with
+  featured images.
+- **It is switched off.** Customizer → Sree Saanvika Options → Homepage —
+  Sections.
+- **A cache is serving the old page.** Purge your page cache and CDN. The
+  Customizer preview always bypasses both, which is why it can look right while
+  the live page does not.
+- **The front page is built with Elementor.** Then Elementor owns the page and
+  the theme sections step aside by design — see below.
+
+### Elementor
+
+The theme yields to Elementor wherever the builder is in charge:
+
+- A page, post or front page laid out in Elementor renders through
+  `the_content()` alone — no theme container, no article card, no storefront
+  sections. `the_content()` runs unconditionally on those templates, which is
+  what the editor's preview iframe needs in order to load.
+- With Elementor Pro, `header` and `footer` are registered as Theme Builder
+  locations. Build one and it replaces the theme's own. The theme keeps
+  ownership of single, archive and every WooCommerce template.
+- Inside the editor preview the sticky header and the fixed panels are pinned
+  back into the normal flow so they stop covering the widgets you are editing.
+
+**If you still get "Can't Edit? Enable Safe Mode":** that panel means the editor
+preview did not finish loading, and the cause is usually the server rather than
+the theme. Work through these in order:
+
+1. Enable **Safe Mode** from that panel. If the editor then loads, the problem
+   is a plugin or a server limit, not the theme — Elementor will say which.
+2. Raise PHP limits: `memory_limit` 256M or more, `max_execution_time` 300,
+   `max_input_vars` 3000. Elementor → System Info lists the current values.
+3. Confirm the WordPress REST API is reachable — Tools → Site Health flags it
+   when a security plugin, ModSecurity or a firewall rule is blocking
+   `/wp-json/`.
+4. Elementor → Tools → **Regenerate CSS & Data**, then hard-reload.
+5. If your host serves the site through a proxy or CDN, bypass it for
+   `/wp-admin/` and for URLs carrying `elementor-preview`.
+
+---
+
 ## Licence
 
 GNU General Public License v2 or later.
