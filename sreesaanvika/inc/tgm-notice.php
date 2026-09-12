@@ -93,6 +93,47 @@ function ss_welcome_screen() {
 			<?php esc_html_e( 'A dark-luxe WooCommerce theme for Indian women\'s fashion — handloom sarees, temple jewellery and festive dresses. Follow the three steps below and your storefront is live.', 'sreesaanvika' ); ?>
 		</p>
 
+		<?php
+		$el = get_transient( 'ss_el_result' );
+
+		if ( $el ) {
+			delete_transient( 'ss_el_result' );
+		}
+		?>
+
+		<?php if ( $el && ! empty( $el['error'] ) ) : ?>
+			<div class="notice notice-error"><p><?php echo esc_html( $el['error'] ); ?></p></div>
+		<?php elseif ( $el && ! empty( $el['page_id'] ) ) : ?>
+			<div class="notice notice-success">
+				<p>
+					<?php
+					printf(
+						/* translators: %d: number of sections */
+						esc_html__( 'Built an Elementor copy of the homepage with %d sections.', 'sreesaanvika' ),
+						absint( $el['sections'] )
+					);
+
+					if ( ! empty( $el['made_home'] ) ) {
+						echo ' ' . esc_html__( 'It is now your site homepage.', 'sreesaanvika' );
+					}
+					?>
+				</p>
+				<p>
+					<a class="button button-primary" href="<?php echo esc_url( admin_url( 'post.php?post=' . absint( $el['page_id'] ) . '&action=elementor' ) ); ?>">
+						<?php esc_html_e( 'Edit it with Elementor', 'sreesaanvika' ); ?>
+					</a>
+					<a class="button" href="<?php echo esc_url( get_permalink( $el['page_id'] ) ); ?>" target="_blank" rel="noopener">
+						<?php esc_html_e( 'View the page', 'sreesaanvika' ); ?>
+					</a>
+					<?php if ( empty( $el['made_home'] ) ) : ?>
+						<a class="button" href="<?php echo esc_url( admin_url( 'options-reading.php' ) ); ?>">
+							<?php esc_html_e( 'Set it as the homepage', 'sreesaanvika' ); ?>
+						</a>
+					<?php endif; ?>
+				</p>
+			</div>
+		<?php endif; ?>
+
 		<?php if ( $done ) : ?>
 			<div class="notice notice-success">
 				<p>
@@ -151,6 +192,52 @@ function ss_welcome_screen() {
 			<a class="button" href="<?php echo esc_url( admin_url( 'widgets.php' ) ); ?>">
 				<?php esc_html_e( 'Edit widgets', 'sreesaanvika' ); ?>
 			</a>
+		</div>
+
+		<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">
+			<h2><?php esc_html_e( 'Editing the homepage', 'sreesaanvika' ); ?></h2>
+
+			<p>
+				<strong><?php esc_html_e( 'Option A — keep the theme homepage.', 'sreesaanvika' ); ?></strong>
+				<?php esc_html_e( 'Everything on it is edited in the Customizer: hero slides, offer banners, the story band, which sections show and in what order. Nothing to install, and it stays fast.', 'sreesaanvika' ); ?>
+			</p>
+
+			<p>
+				<a class="button" href="<?php echo esc_url( admin_url( 'customize.php?autofocus[panel]=ss_panel' ) ); ?>">
+					<?php esc_html_e( 'Edit the homepage in the Customizer', 'sreesaanvika' ); ?>
+				</a>
+			</p>
+
+			<p>
+				<strong><?php esc_html_e( 'Option B — rebuild it in Elementor.', 'sreesaanvika' ); ?></strong>
+				<?php esc_html_e( 'This creates a real Elementor page holding the same sections, seeded with your current settings, so you can drag, drop and restyle them visually. Every section is available as a widget under the "Sree Saanvika" category.', 'sreesaanvika' ); ?>
+			</p>
+
+			<?php if ( ! ss_has_elementor() ) : ?>
+				<p><em><?php esc_html_e( 'Install and activate Elementor to use this.', 'sreesaanvika' ); ?></em></p>
+			<?php else : ?>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="ss_build_elementor_home" />
+					<?php wp_nonce_field( 'ss_elementor_home' ); ?>
+
+					<p>
+						<label>
+							<input type="checkbox" name="ss_set_home" value="1" checked />
+							<?php esc_html_e( 'Also set the new page as the site homepage', 'sreesaanvika' ); ?>
+						</label>
+					</p>
+
+					<p style="color:#666;font-size:12px;margin-top:-6px">
+						<?php esc_html_e( 'A new page is always created — your current homepage is never overwritten. Untick the box to review it first, or revert any time under Settings → Reading.', 'sreesaanvika' ); ?>
+					</p>
+
+					<p>
+						<button type="submit" class="button button-primary">
+							<?php esc_html_e( 'Build an Elementor copy of the homepage', 'sreesaanvika' ); ?>
+						</button>
+					</p>
+				</form>
+			<?php endif; ?>
 		</div>
 
 		<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">

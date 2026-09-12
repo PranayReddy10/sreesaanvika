@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.0.0' );
+define( 'SS_VERSION', '1.0.2' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -155,7 +155,13 @@ function ss_assets() {
 	wp_enqueue_style( 'ss-fonts', $fonts, array(), null );
 	wp_enqueue_style( 'ss-main', SS_URI . '/assets/css/main.css', array(), SS_VERSION );
 
-	if ( ss_is_woo() ) {
+	/*
+	 * Shop styles load wherever WooCommerce is active, not just on shop
+	 * screens. Product cards also appear on the homepage sections, in
+	 * Elementor widgets, in the mini-cart and anywhere a shortcode drops a
+	 * grid, and scoping this to is_woocommerce() left all of those unstyled.
+	 */
+	if ( class_exists( 'WooCommerce' ) ) {
 		wp_enqueue_style( 'ss-shop', SS_URI . '/assets/css/shop.css', array( 'ss-main' ), SS_VERSION );
 	}
 
@@ -166,7 +172,7 @@ function ss_assets() {
 
 	wp_enqueue_script( 'ss-main', SS_URI . '/assets/js/theme.js', array(), SS_VERSION, true );
 
-	if ( ss_is_woo() ) {
+	if ( class_exists( 'WooCommerce' ) ) {
 		wp_enqueue_script( 'ss-shop', SS_URI . '/assets/js/shop.js', array( 'ss-main' ), SS_VERSION, true );
 	}
 
@@ -332,6 +338,7 @@ add_filter( 'nav_menu_css_class', 'ss_menu_classes', 10, 2 );
 /* -------------------------------------------------------------------------
  * Includes
  * ---------------------------------------------------------------------- */
+require_once SS_DIR . '/inc/defaults.php';
 require_once SS_DIR . '/inc/helpers.php';
 require_once SS_DIR . '/inc/icons.php';
 require_once SS_DIR . '/inc/nav-walker.php';
@@ -342,6 +349,8 @@ require_once SS_DIR . '/inc/ajax.php';
 require_once SS_DIR . '/inc/compare-wishlist.php';
 require_once SS_DIR . '/inc/demo-content.php';
 require_once SS_DIR . '/inc/tgm-notice.php';
+require_once SS_DIR . '/inc/elementor.php';
+require_once SS_DIR . '/inc/elementor-import.php';
 
 if ( class_exists( 'WooCommerce' ) ) {
 	require_once SS_DIR . '/inc/woocommerce.php';

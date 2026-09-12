@@ -12,6 +12,16 @@ get_header();
 while ( have_posts() ) :
 	the_post();
 
+	// A post laid out in Elementor gets the full canvas, no article card.
+	if ( ss_elementor_owns_page() ) {
+		?>
+		<article <?php post_class( 'ss-elementor-content' ); ?>>
+			<?php the_content(); ?>
+		</article>
+		<?php
+		continue;
+	}
+
 	ss_page_header( get_the_title() );
 	?>
 

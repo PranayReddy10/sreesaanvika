@@ -1330,6 +1330,14 @@ select:-webkit-autofill {
 	position: absolute;
 	inset: 0;
 	z-index: -2;
+	/* Fallback for a slide with no image yet — the inline style the
+	   Customizer writes overrides this the moment one is set. */
+	background-color: var(--ss-bg-alt);
+	background-image:
+		radial-gradient(760px 520px at 78% 22%, rgba(123, 30, 59, 0.72), transparent 66%),
+		radial-gradient(620px 460px at 22% 78%, rgba(23, 86, 95, 0.55), transparent 62%),
+		repeating-linear-gradient(115deg, rgba(217, 164, 65, 0.07) 0 2px, transparent 2px 9px),
+		repeating-linear-gradient(-115deg, rgba(217, 164, 65, 0.05) 0 2px, transparent 2px 11px);
 	background-size: cover;
 	background-position: center;
 	transform: scale(1.06);
@@ -2546,6 +2554,21 @@ select:-webkit-autofill {
 	border-top-color: var(--ss-gold);
 	border-radius: 50%;
 	animation: ss-spin 0.8s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   29b. Page-builder content
+   -------------------------------------------------------------------------- */
+
+/* Elementor manages its own section widths, so the theme adds no container
+   and no card here — only a floor for the dark palette. */
+.ss-elementor-content {
+	width: 100%;
+	background-color: var(--ss-bg);
+}
+
+.ss-elementor-content > .elementor {
+	color: var(--ss-text);
 }
 
 /* --------------------------------------------------------------------------
