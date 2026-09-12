@@ -128,3 +128,79 @@ function ss_elementor_preview_css() {
 	wp_add_inline_style( 'ss-main', $css );
 }
 add_action( 'wp_enqueue_scripts', 'ss_elementor_preview_css', 30 );
+
+/**
+ * Register the widget category.
+ *
+ * @param object $manager Elements manager.
+ */
+function ss_elementor_category( $manager ) {
+	$manager->add_category(
+		'sreesaanvika',
+		array(
+			'title' => esc_html__( 'Sree Saanvika', 'sreesaanvika' ),
+			'icon'  => 'eicon-woocommerce',
+		)
+	);
+}
+add_action( 'elementor/elements/categories_registered', 'ss_elementor_category' );
+
+/**
+ * Every widget class the theme ships, in the order they appear on the
+ * homepage. Also drives the one-click homepage converter.
+ *
+ * @return array
+ */
+function ss_elementor_widget_classes() {
+	return array(
+		'SS_Widget_Hero',
+		'SS_Widget_USP',
+		'SS_Widget_Category_Rail',
+		'SS_Widget_Category_Mosaic',
+		'SS_Widget_Products',
+		'SS_Widget_Promo',
+		'SS_Widget_Lookbook',
+		'SS_Widget_Band',
+		'SS_Widget_Testimonials',
+		'SS_Widget_Instagram',
+		'SS_Widget_Newsletter',
+		'SS_Widget_Heading',
+	);
+}
+
+/**
+ * Register the widgets with Elementor.
+ *
+ * @param object $widgets_manager Widgets manager.
+ */
+function ss_elementor_register_widgets( $widgets_manager ) {
+	// Elementor still fires the deprecated hook alongside the modern one on
+	// some versions; registering twice throws a duplicate-widget error.
+	static $done = false;
+
+	if ( $done ) {
+		return;
+	}
+
+	$done = true;
+
+	require_once SS_DIR . '/inc/elementor/class-ss-widget.php';
+	require_once SS_DIR . '/inc/elementor/widgets-content.php';
+	require_once SS_DIR . '/inc/elementor/widgets-catalog.php';
+	require_once SS_DIR . '/inc/elementor/widgets-social.php';
+
+	foreach ( ss_elementor_widget_classes() as $class ) {
+		if ( ! class_exists( $class ) ) {
+			continue;
+		}
+
+		// register() is Elementor 3.5+; register_widget_type() is the old name.
+		if ( method_exists( $widgets_manager, 'register' ) ) {
+			$widgets_manager->register( new $class() );
+		} else {
+			$widgets_manager->register_widget_type( new $class() );
+		}
+	}
+}
+add_action( 'elementor/widgets/register', 'ss_elementor_register_widgets' );
+add_action( 'elementor/widgets/widgets_registered', 'ss_elementor_register_widgets' );

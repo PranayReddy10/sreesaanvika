@@ -87,6 +87,66 @@ Sixteen sections, each of which can be switched off individually in
 
 ---
 
+## Editing the homepage
+
+There are two ways, and you pick one.
+
+### A — keep the theme homepage (fastest)
+
+The storefront homepage is assembled in PHP from Customizer options. Edit it at
+**Appearance → Customize → Sree Saanvika Options**:
+
+| What you want to change | Where |
+| --- | --- |
+| Hero slides — text, buttons, images, alignment | Homepage — Hero Slider |
+| Which sections show, and how many products each | Homepage — Sections |
+| The two offer banners, countdown, story band | Homepage — Offer Banners |
+| Colours, fonts, corner rounding, page width | Colours & Palette, Typography |
+| Announcement bar, brand tagline | Header & Top Bar |
+| Address, phone, socials, Instagram handle | Footer |
+
+Section order is fixed in this mode. Nothing extra loads, so it stays fast.
+
+### B — rebuild it in Elementor (drag and drop)
+
+**Appearance → Sree Saanvika → Build an Elementor copy of the homepage.**
+
+That creates a real Elementor page holding the same sections in the same
+order, seeded with your current Customizer values, so it looks identical the
+moment you open it — then you can drag, drop, restyle and reorder freely.
+
+A new page is always created; your current homepage is never overwritten. Tick
+the box on that screen to make it the homepage straight away, or leave it
+unticked, review the page, and switch later under **Settings → Reading**. To go
+back to the theme homepage, set Settings → Reading back to your old page.
+
+Every section is also available on its own, under the **Sree Saanvika**
+category in the Elementor widget panel:
+
+| Widget | What it is |
+| --- | --- |
+| Hero Slider | Full-bleed slides with eyebrow, gilded title, two buttons |
+| Product Grid | Newest / best sellers / on sale / featured / top rated / random, optionally filtered to one category |
+| Category Rail | Round gold-ringed category circles |
+| Category Mosaic | The asymmetric tile grid |
+| Offer Banner | One promo panel, with an optional countdown |
+| Lookbook Strip | Editorial image grid, from a gallery or your products |
+| Story Band | Full-bleed band with a centred message |
+| Trust Strip | Shipping / returns / support icons |
+| Testimonials | Written by hand, or pulled from WooCommerce reviews |
+| Instagram Grid | From a gallery or your newest media |
+| Newsletter | The AJAX sign-up form |
+| Section Heading | The eyebrow + gilded title + lotus ornament block |
+
+Two notes on using them:
+
+- Put the **Hero Slider** and the **Story Band** in a section set to
+  *Full Width* with *no gap* — both are designed to bleed edge to edge.
+- Widgets output the bare component with no width wrapper of their own, so
+  Elementor's section controls own the width and vertical spacing.
+
+---
+
 ## Customizer reference
 
 Everything lives under **Sree Saanvika Options**:
@@ -218,6 +278,23 @@ If a section is still missing after updating:
   the live page does not.
 - **The front page is built with Elementor.** Then Elementor owns the page and
   the theme sections step aside by design — see below.
+
+### The product page columns look squeezed or off to one side
+
+Fixed in 1.0.2. WooCommerce's `woocommerce-layout.css` floats the product
+columns and pins them to `width: 48%` each. Against this theme's grid that
+collapsed the gallery to roughly 300px and left a large empty gap beside it.
+The theme now dequeues Woo's two layout stylesheets — it lays all of those
+screens out itself — and keeps a defensive reset in case a plugin or a
+combined-CSS cache reintroduces them. To keep Woo's layout instead:
+
+```php
+add_filter( 'ss_dequeue_woo_layout', '__return_false' );
+```
+
+Also fixed in 1.0.2: the shop stylesheet only loaded on shop screens, which
+left the homepage product grids, the mini-cart and any Elementor product
+widget unstyled. It now loads wherever WooCommerce is active.
 
 ### Elementor
 

@@ -816,3 +816,31 @@ function ss_reviews_summary( $product ) {
 	</div>
 	<?php
 }
+
+/**
+ * Drop WooCommerce's float-based layout stylesheets.
+ *
+ * `woocommerce-layout.css` positions the single-product columns, the cart
+ * table, checkout and My Account with floats and percentage widths — for
+ * example `div.product div.summary { float: right; width: 48% }`. This theme
+ * lays all of those out with grid and flex, and the leftover 48% width is what
+ * throws the product page out of alignment.
+ *
+ * `woocommerce-smallscreen.css` is the responsive half of the same file and is
+ * replaced by the theme's own media queries.
+ *
+ * `woocommerce-general.css` stays: it carries the star-rating and notice icon
+ * fonts the theme styles on top of.
+ *
+ * Sites that would rather keep Woo's layout can opt out:
+ *   add_filter( 'ss_dequeue_woo_layout', '__return_false' );
+ */
+function ss_dequeue_woo_layout() {
+	if ( ! apply_filters( 'ss_dequeue_woo_layout', true ) ) {
+		return;
+	}
+
+	wp_dequeue_style( 'woocommerce-layout' );
+	wp_dequeue_style( 'woocommerce-smallscreen' );
+}
+add_action( 'wp_enqueue_scripts', 'ss_dequeue_woo_layout', 99 );
