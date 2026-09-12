@@ -119,7 +119,7 @@ $ss_copy    = ss_option( 'footer_copy', '' );
 							<li><a href="<?php echo esc_url( ss_page_url( 'about' ) ); ?>"><?php esc_html_e( 'Our story', 'sreesaanvika' ); ?></a></li>
 							<li><a href="<?php echo esc_url( ss_page_url( 'lookbook' ) ); ?>"><?php esc_html_e( 'Lookbook', 'sreesaanvika' ); ?></a></li>
 							<li><a href="<?php echo esc_url( home_url( '/blog/' ) ); ?>"><?php esc_html_e( 'Journal', 'sreesaanvika' ); ?></a></li>
-							<li><a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>"><?php esc_html_e( 'Privacy policy', 'sreesaanvika' ); ?></a></li>
+							<li><a href="<?php echo esc_url( ss_page_url( 'privacy-policy' ) ); ?>"><?php esc_html_e( 'Privacy policy', 'sreesaanvika' ); ?></a></li>
 						</ul>
 						<?php
 					}
@@ -148,6 +148,14 @@ $ss_copy    = ss_option( 'footer_copy', '' );
 				</div>
 
 			</div>
+
+			<nav class="ss-footer__legal" aria-label="<?php esc_attr_e( 'Policies', 'sreesaanvika' ); ?>">
+				<?php foreach ( ss_legal_pages() as $ss_slug => $ss_legal ) : ?>
+					<a href="<?php echo esc_url( ss_page_url( $ss_slug ) ); ?>"><?php echo esc_html( $ss_legal['title'] ); ?></a>
+				<?php endforeach; ?>
+				<a href="<?php echo esc_url( ss_page_url( 'track' ) ); ?>"><?php esc_html_e( 'Track Order', 'sreesaanvika' ); ?></a>
+				<a href="<?php echo esc_url( ss_page_url( 'contact' ) ); ?>"><?php esc_html_e( 'Contact', 'sreesaanvika' ); ?></a>
+			</nav>
 
 			<div class="ss-footer__bottom">
 				<p style="margin:0">

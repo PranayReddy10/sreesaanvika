@@ -2864,3 +2864,172 @@ input[type="reset"] {
 	background-color: transparent;
 	color: inherit;
 }
+
+/* --------------------------------------------------------------------------
+   33. Policy / legal documents
+   -------------------------------------------------------------------------- */
+.ss-legal-highlights {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+	gap: 14px;
+	margin-bottom: clamp(26px, 4vw, 42px);
+}
+
+.ss-legal-highlight {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	padding: 20px 22px;
+	background: var(--ss-surface);
+	border: 1px solid var(--ss-line-soft);
+	border-radius: var(--ss-radius-lg);
+	min-width: 0;
+}
+
+.ss-legal-highlight svg { color: var(--ss-gold); flex: none; margin-top: 2px; }
+.ss-legal-highlight strong { display: block; font-size: 0.98rem; color: var(--ss-text); margin-bottom: 2px; }
+.ss-legal-highlight span { font-size: 0.85rem; color: var(--ss-muted); line-height: 1.5; }
+
+.ss-legal {
+	background: var(--ss-surface);
+	border: 1px solid var(--ss-line-soft);
+	border-radius: var(--ss-radius-lg);
+	padding: clamp(24px, 4vw, 52px);
+}
+
+.ss-legal__updated {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 15px;
+	border-radius: var(--ss-radius-pill);
+	background: var(--ss-surface-2);
+	border: 1px solid var(--ss-line);
+	font-size: 0.78rem;
+	letter-spacing: 0.06em;
+	color: var(--ss-muted);
+	margin-bottom: 28px;
+}
+
+.ss-legal__updated svg { color: var(--ss-gold); }
+
+/* Long-form reading measure and rhythm. */
+.ss-legal__body {
+	color: var(--ss-text-soft);
+	font-size: 1.005rem;
+	line-height: 1.8;
+	max-width: 72ch;
+}
+
+.ss-legal__body > p:first-child {
+	font-size: 1.09rem;
+	color: var(--ss-text);
+	padding-bottom: 22px;
+	border-bottom: 1px solid var(--ss-line-soft);
+}
+
+.ss-legal__body h2 {
+	font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+	margin: 2.1em 0 0.7em;
+	padding-top: 0.4em;
+	color: var(--ss-text);
+	scroll-margin-top: calc(var(--ss-header-h) + 24px);
+	position: relative;
+}
+
+.ss-legal__body h2::before {
+	content: "";
+	position: absolute;
+	left: -18px;
+	top: 1.15em;
+	width: 8px;
+	height: 1px;
+	background: var(--ss-gold);
+}
+
+.ss-legal__body h3 { font-size: 1.1rem; margin: 1.6em 0 0.5em; }
+
+.ss-legal__body ul,
+.ss-legal__body ol { padding-left: 1.3em; margin-bottom: 1.3em; }
+.ss-legal__body li { margin-bottom: 0.55em; }
+.ss-legal__body li::marker { color: var(--ss-gold); }
+.ss-legal__body strong { color: var(--ss-text); }
+.ss-legal__body a { border-bottom: 1px solid rgba(217, 164, 65, 0.4); }
+.ss-legal__body a:hover { border-bottom-color: var(--ss-gold); }
+
+.ss-legal__foot {
+	margin-top: clamp(32px, 5vw, 52px);
+	padding-top: 28px;
+	border-top: 1px solid var(--ss-line);
+}
+
+.ss-legal__foot h3 { font-size: 1.2rem; margin-bottom: 8px; }
+.ss-legal__foot p { color: var(--ss-muted); max-width: 60ch; }
+
+.ss-legal__foot-actions {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-top: 18px;
+}
+
+/* Contents rail */
+.ss-legal-toc ol {
+	list-style: none;
+	counter-reset: ss-toc;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 2px;
+}
+
+.ss-legal-toc li { counter-increment: ss-toc; }
+
+.ss-legal-toc a {
+	display: flex;
+	gap: 10px;
+	padding: 8px 10px;
+	border-radius: var(--ss-radius);
+	color: var(--ss-text-soft);
+	font-size: 0.88rem;
+	line-height: 1.45;
+	border-left: 2px solid transparent;
+	transition: background var(--ss-fast), color var(--ss-fast), border-color var(--ss-fast);
+}
+
+.ss-legal-toc a::before {
+	content: counter(ss-toc);
+	color: var(--ss-faint);
+	font-size: 0.76rem;
+	flex: none;
+	padding-top: 2px;
+	font-variant-numeric: tabular-nums;
+}
+
+.ss-legal-toc a:hover,
+.ss-legal-toc a.is-current {
+	background: var(--ss-surface-2);
+	color: var(--ss-gold);
+	border-left-color: var(--ss-gold);
+}
+
+.ss-legal-toc a.is-current::before { color: var(--ss-gold); }
+
+/* Footer policy row */
+.ss-footer__legal {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 22px;
+	padding-block: 18px;
+	border-top: 1px solid var(--ss-line-soft);
+	font-size: 0.84rem;
+}
+
+.ss-footer__legal a { color: var(--ss-muted); }
+.ss-footer__legal a:hover { color: var(--ss-gold); }
+
+@media (max-width: 600px) {
+	.ss-legal__body h2::before { display: none; }
+	.ss-legal__foot-actions .ss-btn { width: 100%; }
+	.ss-footer__legal { justify-content: center; text-align: center; }
+}

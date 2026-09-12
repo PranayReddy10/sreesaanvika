@@ -148,6 +148,74 @@ Two notes on using them:
 
 ---
 
+## SEO
+
+The theme handles metadata itself, and gets out of the way the moment a
+dedicated plugin appears. It checks for Yoast, Rank Math, SEOPress, All in One
+SEO and The SEO Framework; if any is active it stops emitting meta, Open Graph
+and schema so nothing is ever duplicated.
+
+What it outputs on its own:
+
+- Meta description, drawn from the product short description, the excerpt, the
+  term description or the homepage default, trimmed on a word boundary to 155
+  characters.
+- Canonical URL, skipped on paged archives.
+- Open Graph and X/Twitter cards, including `product:price:amount` and
+  `product:availability` on product pages. The card upgrades to
+  `summary_large_image` once a share image exists.
+- JSON-LD: your organisation (with contact point, address and social profiles),
+  the site with a `SearchAction`, a `BreadcrumbList`, and `BlogPosting` on
+  articles. Products are deliberately left to WooCommerce, which already emits
+  them — the theme enriches that output instead through
+  `woocommerce_structured_data_product`, adding brand, material,
+  `hasMerchantReturnPolicy` and `shippingDetails` built from your policy
+  settings. Those two are what Google's shopping surfaces look for.
+
+What it does **regardless** of any SEO plugin, because a plugin cannot know
+which of the theme's templates are transactional:
+
+- `noindex, follow` on cart, checkout, account, compare, wishlist, sign-in,
+  search results and 404.
+- The same pages excluded from the core WordPress sitemap.
+- Your search-console verification codes.
+
+Settings live in **Customizer → SEO & Social Sharing**. Useful filters:
+`ss_seo_description`, `ss_seo_image`, `ss_seo_noindex`, `ss_seo_schema_graph`,
+`ss_seo_plugin_active`.
+
+---
+
+## Policy pages
+
+Privacy Policy, Terms & Conditions, Shipping Policy and Return & Refund Policy
+are created by the one-click setup with a full draft written for an Indian
+direct-to-consumer store — GST-inclusive pricing, COD, DPDP Act 2023 rights, a
+named grievance officer, and Consumer Protection (E-Commerce) Rules 2020
+redressal timelines.
+
+> **These are drafts, not legal advice.** They have not been reviewed by a
+> lawyer and cannot know the specifics of your business. Have someone qualified
+> read them before you take real orders.
+
+They share one template that gives you a highlights strip, a contents rail
+built automatically from the `<h2>` headings (with a scroll-spy), a
+last-updated stamp and cross-links to the other policies. Add or remove
+headings in the editor and the contents rail follows.
+
+The numbers in the text come from **Customizer → Policies & Legal** — return
+window, free-shipping threshold, flat rate, COD limit, business name, GSTIN,
+jurisdiction and grievance officer. Change a figure there and it updates in the
+copy *and* in the product structured data Google reads. Placeholders available
+to the default copy: `{business}`, `{site}`, `{domain}`, `{email}`, `{phone}`,
+`{address}`, `{hours}`, `{days}`, `{threshold}`, `{flat}`, `{cod}`,
+`{jurisdiction}`, `{officer}`, `{gstin}`.
+
+Once created the pages are ordinary WordPress pages — edit the text however you
+like, and the template keeps working.
+
+---
+
 ## Customizer reference
 
 Everything lives under **Sree Saanvika Options**:

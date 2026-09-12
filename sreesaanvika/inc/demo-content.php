@@ -61,6 +61,28 @@ function ss_setup_pages() {
 }
 
 /**
+ * The policy pages, added to the setup list with their default copy.
+ *
+ * They are kept separate because they all share one template and their bodies
+ * come from inc/legal-content.php.
+ *
+ * @return array
+ */
+function ss_setup_legal_pages() {
+	$pages = array();
+
+	foreach ( ss_legal_pages() as $slug => $page ) {
+		$pages[ $slug ] = array(
+			'title'    => $page['title'],
+			'template' => 'page-templates/template-legal.php',
+			'content'  => ss_legal_body( $slug ),
+		);
+	}
+
+	return $pages;
+}
+
+/**
  * Create any missing theme page.
  *
  * @return array Created page titles.
@@ -68,7 +90,9 @@ function ss_setup_pages() {
 function ss_create_pages() {
 	$created = array();
 
-	foreach ( ss_setup_pages() as $slug => $page ) {
+	$pages = array_merge( ss_setup_pages(), ss_setup_legal_pages() );
+
+	foreach ( $pages as $slug => $page ) {
 		// Skip if a page already uses this template.
 		$existing = get_posts(
 			array(

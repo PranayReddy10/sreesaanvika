@@ -202,7 +202,7 @@ function ss_welcome_screen() {
 
 			<h2><?php esc_html_e( 'Step 2 — Create the theme pages and menu', 'sreesaanvika' ); ?></h2>
 			<p>
-				<?php esc_html_e( 'This creates Compare, Wishlist, Sign In, Lookbook, Our Story, Contact, FAQs and Track Your Order, then builds a primary menu from your product categories. It never overwrites a page or menu you already have.', 'sreesaanvika' ); ?>
+				<?php esc_html_e( 'This creates Compare, Wishlist, Sign In, Lookbook, Our Story, Contact, FAQs, Track Your Order, and the four policy pages — Privacy, Terms, Shipping and Returns — with a full draft of each written in. It never overwrites a page or menu you already have.', 'sreesaanvika' ); ?>
 			</p>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -324,6 +324,28 @@ function ss_welcome_screen() {
 		</div>
 
 		<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">
+			<h2><?php esc_html_e( 'Policy pages — read before you launch', 'sreesaanvika' ); ?></h2>
+
+			<p>
+				<?php esc_html_e( 'Privacy, Terms, Shipping and Returns each ship with a full draft written for an Indian direct-to-consumer store. The return window, shipping threshold, COD limit, business name, GSTIN, jurisdiction and grievance officer are pulled from Customizer → Policies & Legal, so changing a figure there is enough — you do not have to hunt through the text.', 'sreesaanvika' ); ?>
+			</p>
+
+			<p style="padding:12px 16px;background:#fff8e5;border-left:4px solid #dba617">
+				<strong><?php esc_html_e( 'These are drafts, not legal advice.', 'sreesaanvika' ); ?></strong>
+				<?php esc_html_e( 'They are a solid starting point, but they have not been reviewed by a lawyer and they cannot know the specifics of your business. Have someone qualified read them before you take real orders — particularly the liability, jurisdiction and grievance sections.', 'sreesaanvika' ); ?>
+			</p>
+
+			<p>
+				<a class="button" href="<?php echo esc_url( admin_url( 'customize.php?autofocus[section]=ss_policy' ) ); ?>">
+					<?php esc_html_e( 'Set the policy figures', 'sreesaanvika' ); ?>
+				</a>
+				<a class="button" href="<?php echo esc_url( admin_url( 'customize.php?autofocus[section]=ss_seo' ) ); ?>">
+					<?php esc_html_e( 'SEO & social settings', 'sreesaanvika' ); ?>
+				</a>
+			</p>
+		</div>
+
+		<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">
 			<h2><?php esc_html_e( 'Good to know', 'sreesaanvika' ); ?></h2>
 			<ul style="list-style:disc;padding-left:20px">
 				<li><?php esc_html_e( 'Add "mega" as a CSS class on a top-level menu item to turn its dropdown into a four-column mega menu. "hot" and "new" add a small flag.', 'sreesaanvika' ); ?></li>
@@ -331,6 +353,8 @@ function ss_welcome_screen() {
 				<li><?php esc_html_e( 'Product images look best as portrait 3:4 — 1200 × 1600 pixels or larger, so the zoom stays sharp.', 'sreesaanvika' ); ?></li>
 				<li><?php esc_html_e( 'Set a product category image under Products → Categories to fill the homepage mosaic and the round category rail.', 'sreesaanvika' ); ?></li>
 				<li><?php esc_html_e( 'Homepage sections can each be switched off in the Customizer under Homepage — Sections.', 'sreesaanvika' ); ?></li>
+				<li><?php esc_html_e( 'The theme writes its own meta tags, Open Graph and schema.org data — and steps aside automatically if you install Yoast or Rank Math, so nothing is ever duplicated.', 'sreesaanvika' ); ?></li>
+				<li><?php esc_html_e( 'Cart, checkout, account, compare, wishlist and sign-in are set to noindex and kept out of the sitemap. That happens with or without an SEO plugin.', 'sreesaanvika' ); ?></li>
 			</ul>
 		</div>
 	</div>
