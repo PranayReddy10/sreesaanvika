@@ -654,8 +654,20 @@ function ss_buy_now_button() {
 		return;
 	}
 
+	/*
+	 * The button has to carry name="add-to-cart" itself. A browser submits
+	 * only the clicked submit button's name/value pair, so a button named
+	 * ss_buy_now sent the flag but never told WooCommerce what to add, and
+	 * the click did nothing at all on a simple product.
+	 *
+	 * The flag moves to a hidden field that shop.js flips on click. Without
+	 * JS the button still adds the product to the bag — it just does not skip
+	 * ahead to checkout.
+	 */
 	printf(
-		'<button type="submit" name="ss_buy_now" value="1" class="ss-btn ss-btn--ghost ss-buynow">%s</button>',
+		'<input type="hidden" name="ss_buy_now" value="0" class="ss-buy-now-flag" />'
+		. '<button type="submit" name="add-to-cart" value="%1$d" class="ss-btn ss-btn--ghost ss-buynow" data-buy-now>%2$s</button>',
+		absint( $product->get_id() ),
 		esc_html__( 'Buy it now', 'sreesaanvika' )
 	);
 }
@@ -667,7 +679,10 @@ function ss_buy_now_button() {
  * @return string
  */
 function ss_buy_now_redirect( $url ) {
-	if ( isset( $_REQUEST['ss_buy_now'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	// The hidden field is always submitted, so test the value, not its presence.
+	$flag = isset( $_REQUEST['ss_buy_now'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['ss_buy_now'] ) ) : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+	if ( $flag && '0' !== $flag ) {
 		return wc_get_checkout_url();
 	}
 

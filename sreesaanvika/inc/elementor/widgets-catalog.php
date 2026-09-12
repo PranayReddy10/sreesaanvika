@@ -23,7 +23,7 @@ class SS_Widget_Products extends SS_Widget {
 
 		$this->add_heading_controls(
 			esc_html__( 'Fresh off the loom', 'sreesaanvika' ),
-			esc_html__( 'New <em>Arrivals</em>', 'sreesaanvika' ),
+			__( 'New <em>Arrivals</em>', 'sreesaanvika' ),
 			esc_html__( 'The newest weaves, added this week.', 'sreesaanvika' )
 		);
 
@@ -206,7 +206,7 @@ class SS_Widget_Category_Rail extends SS_Widget {
 
 		$this->add_heading_controls(
 			esc_html__( 'Shop by category', 'sreesaanvika' ),
-			esc_html__( 'Find Your <em>Drape</em>', 'sreesaanvika' ),
+			__( 'Find Your <em>Drape</em>', 'sreesaanvika' ),
 			esc_html__( 'From nine-yard Kanjivarams to everyday cottons and festive jewellery.', 'sreesaanvika' )
 		);
 
@@ -303,7 +303,7 @@ class SS_Widget_Category_Mosaic extends SS_Widget {
 
 		$this->add_heading_controls(
 			esc_html__( 'The collections', 'sreesaanvika' ),
-			esc_html__( 'Curated for <em>Every Celebration</em>', 'sreesaanvika' ),
+			__( 'Curated for <em>Every Celebration</em>', 'sreesaanvika' ),
 			esc_html__( 'Weddings, festivals, workdays and the quiet evenings in between.', 'sreesaanvika' )
 		);
 
@@ -414,7 +414,7 @@ class SS_Widget_Lookbook extends SS_Widget {
 
 		$this->add_heading_controls(
 			esc_html__( 'Styled by us', 'sreesaanvika' ),
-			esc_html__( 'The <em>Lookbook</em>', 'sreesaanvika' ),
+			__( 'The <em>Lookbook</em>', 'sreesaanvika' ),
 			esc_html__( 'How our team drapes the season — shot on real women, no retouching.', 'sreesaanvika' )
 		);
 

@@ -82,8 +82,9 @@ Sixteen sections, each of which can be switched off individually in
   plus a floating compare bar.
 - **Wishlist** — cookie-backed for guests, user meta for members, merged
   automatically on login.
-- Lookbook, Our Story, Contact, FAQs, 404, search, blog, archive and
-  single-post templates.
+- **Track Order** (WooCommerce's order lookup, styled, with support details
+  beside it), Lookbook, Our Story, Contact, FAQs, 404, search, blog, archive
+  and single-post templates.
 
 ---
 
@@ -295,6 +296,40 @@ add_filter( 'ss_dequeue_woo_layout', '__return_false' );
 Also fixed in 1.0.2: the shop stylesheet only loaded on shop screens, which
 left the homepage product grids, the mini-cart and any Elementor product
 widget unstyled. It now loads wherever WooCommerce is active.
+
+### The checkout fields are white boxes with no styling
+
+WooCommerce 8.3+ builds the Cart and Checkout pages out of **blocks** rather
+than the old `[woocommerce_checkout]` shortcode. Block pages never load the
+theme's `cart.php` / `form-checkout.php` templates and ship a light palette of
+their own. Version 1.0.3 restyles the blocks to match the dark theme, so either
+kind of page now looks right.
+
+If you would rather use the theme's own hand-built cart and checkout — they
+have the free-shipping meter, the savings line and the three-step indicator —
+edit the Cart and Checkout pages, delete the block, and put the shortcode in
+its place:
+
+```
+[woocommerce_cart]
+[woocommerce_checkout]
+```
+
+### The trust strip runs off the screen on a phone
+
+Fixed in 1.0.3, and only affected the Elementor version. An Elementor
+responsive control with no per-device default applies its desktop value at
+every width, so the four boxes stayed four across on a 390px screen. The
+Trust Strip, Testimonials and Instagram widgets now ship tablet and mobile
+defaults. If you had already placed one of those widgets, open it and set
+**Columns** on the tablet and mobile tabs.
+
+### A title shows the literal text `<em>`
+
+Fixed in 1.0.3. Some widget defaults were run through `esc_html__()`, which
+turned the `<em>` markers into visible text. New widgets are correct. A widget
+already on your page keeps the old stored value — retype the title and the
+gilding comes back.
 
 ### Elementor
 

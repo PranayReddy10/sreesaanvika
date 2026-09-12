@@ -25,7 +25,7 @@ class SS_Widget_Heading extends SS_Widget {
 
 		$this->add_heading_controls(
 			esc_html__( 'The collections', 'sreesaanvika' ),
-			esc_html__( 'Curated for <em>Every Celebration</em>', 'sreesaanvika' ),
+			__( 'Curated for <em>Every Celebration</em>', 'sreesaanvika' ),
 			esc_html__( 'Weddings, festivals, workdays and the quiet evenings in between.', 'sreesaanvika' )
 		);
 
@@ -67,7 +67,7 @@ class SS_Widget_Hero extends SS_Widget {
 				'description' => esc_html__( 'Wrap a word in <em> tags to gild it.', 'sreesaanvika' ),
 				'type'        => Controls_Manager::TEXTAREA,
 				'rows'        => 2,
-				'default'     => esc_html__( 'Kanchipuram Silk, <em>Woven in Gold</em>', 'sreesaanvika' ),
+				'default'     => __( 'Kanchipuram Silk, <em>Woven in Gold</em>', 'sreesaanvika' ),
 			)
 		);
 
@@ -333,11 +333,15 @@ class SS_Widget_USP extends SS_Widget {
 		$this->add_responsive_control(
 			'columns',
 			array(
-				'label'     => esc_html__( 'Columns', 'sreesaanvika' ),
-				'type'      => Controls_Manager::SELECT,
-				'default'   => '4',
-				'options'   => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
-				'selectors' => array(
+				'label'          => esc_html__( 'Columns', 'sreesaanvika' ),
+				'type'           => Controls_Manager::SELECT,
+				'default'        => '4',
+				// Without per-device defaults Elementor applies the desktop
+				// value at every width and the row overflows the screen.
+				'tablet_default' => '2',
+				'mobile_default' => '1',
+				'options'        => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4' ),
+				'selectors'      => array(
 					'{{WRAPPER}} .ss-usp__grid' => 'grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 				),
 			)
@@ -514,7 +518,7 @@ class SS_Widget_Newsletter extends SS_Widget {
 	protected function register_controls() {
 		$this->start_controls_section( 'content', array( 'label' => esc_html__( 'Newsletter', 'sreesaanvika' ) ) );
 
-		$this->add_control( 'title', array( 'label' => esc_html__( 'Heading', 'sreesaanvika' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'Be first to the <em>New Drop</em>', 'sreesaanvika' ) ) );
+		$this->add_control( 'title', array( 'label' => __( 'Heading', 'sreesaanvika' ), 'type' => Controls_Manager::TEXT, 'default' => __( 'Be first to the <em>New Drop</em>', 'sreesaanvika' ) ) );
 		$this->add_control( 'text', array( 'label' => esc_html__( 'Text', 'sreesaanvika' ), 'type' => Controls_Manager::TEXTAREA, 'rows' => 3, 'default' => esc_html__( 'Weave stories, early access to festive collections and a ₹500 voucher on your first order.', 'sreesaanvika' ) ) );
 		$this->add_control( 'button', array( 'label' => esc_html__( 'Button label', 'sreesaanvika' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'Subscribe', 'sreesaanvika' ) ) );
 		$this->add_control( 'note', array( 'label' => esc_html__( 'Small print', 'sreesaanvika' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'No spam. Unsubscribe any time.', 'sreesaanvika' ) ) );

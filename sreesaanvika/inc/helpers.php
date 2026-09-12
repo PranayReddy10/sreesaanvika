@@ -89,7 +89,7 @@ function ss_page_url( $slug ) {
  * Clear the cached template page URLs when pages change.
  */
 function ss_flush_page_urls() {
-	foreach ( array( 'compare', 'wishlist', 'auth', 'lookbook', 'faq', 'contact', 'about' ) as $slug ) {
+	foreach ( array( 'compare', 'wishlist', 'auth', 'lookbook', 'faq', 'contact', 'about', 'track' ) as $slug ) {
 		delete_transient( 'ss_page_url_' . $slug );
 	}
 }

@@ -50,7 +50,7 @@ function ss_defaults() {
 		'brand_tagline'        => 'Heritage Weaves',
 		'topbar_on'            => true,
 		'topbar_items'         => "Free shipping across India on orders above ₹2,999\nHandloom certified — direct from the weavers of Kanchipuram & Banaras\nEasy 7-day returns · 100% secure payments",
-		'topbar_phone'         => '+91 98765 43210',
+		'topbar_phone'         => '+91 73869 12300',
 		'sticky_header'        => true,
 
 		/* Hero slide 1 ----------------------------------------------- */
@@ -137,14 +137,14 @@ function ss_defaults() {
 		/* Footer ----------------------------------------------------- */
 		'footer_about'         => 'Sree Saanvika brings you handloom sarees, temple jewellery and festive dresses sourced directly from Indian weavers and artisans — honest pricing, heirloom quality.',
 		'footer_address'       => "Plot 42, Jubilee Hills Road No. 36,\nHyderabad, Telangana 500033",
-		'footer_phone'         => '+91 98765 43210',
+		'footer_phone'         => '+91 73869 12300',
 		'footer_email'         => 'care@sreesaanvika.in',
 		'footer_hours'         => 'Mon–Sat, 10 am – 7 pm IST',
 		'footer_copy'          => '',
 		'social_instagram'     => '',
 		'social_facebook'      => '',
 		'social_youtube'       => '',
-		'social_whatsapp'      => '',
+		'social_whatsapp'      => 'https://wa.me/917386912300',
 		'social_pinterest'     => '',
 		'gram_handle'          => 'sreesaanvika',
 

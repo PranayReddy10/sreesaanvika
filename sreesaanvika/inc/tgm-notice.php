@@ -61,7 +61,7 @@ function ss_admin_notices() {
 		<div class="notice notice-info is-dismissible">
 			<p>
 				<strong><?php esc_html_e( 'Almost there.', 'sreesaanvika' ); ?></strong>
-				<?php esc_html_e( 'Run the one-click setup to create the Compare, Wishlist, Sign In, Lookbook, About, Contact and FAQ pages and build your main menu.', 'sreesaanvika' ); ?>
+				<?php esc_html_e( 'Run the one-click setup to create the Compare, Wishlist, Sign In, Lookbook, About, Contact, FAQ and Track Order pages and build your main menu.', 'sreesaanvika' ); ?>
 			</p>
 			<p>
 				<a class="button button-primary" href="<?php echo esc_url( admin_url( 'themes.php?page=sreesaanvika' ) ); ?>">
@@ -170,7 +170,7 @@ function ss_welcome_screen() {
 
 			<h2><?php esc_html_e( 'Step 2 — Create the theme pages and menu', 'sreesaanvika' ); ?></h2>
 			<p>
-				<?php esc_html_e( 'This creates Compare, Wishlist, Sign In, Lookbook, Our Story, Contact and FAQs, then builds a primary menu from your product categories. It never overwrites a page or menu you already have.', 'sreesaanvika' ); ?>
+				<?php esc_html_e( 'This creates Compare, Wishlist, Sign In, Lookbook, Our Story, Contact, FAQs and Track Your Order, then builds a primary menu from your product categories. It never overwrites a page or menu you already have.', 'sreesaanvika' ); ?>
 			</p>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
