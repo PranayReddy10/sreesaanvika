@@ -1,0 +1,21 @@
+# Translation template for the Sree Saanvika theme.
+# Copyright (C) 2024 Sree Saanvika
+# This file is distributed under the GNU GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Sree Saanvika 1.0.0\n"
+"Report-Msgid-Bugs-To: https://sreesaanvika.in\n"
+"POT-Creation-Date: 2024-01-01T00:00:00+05:30\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: \n"
+"X-Generator: manual\n"
+"X-Domain: sreesaanvika\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Regenerate this file with WP-CLI:
+#.   wp i18n make-pot . languages/sreesaanvika.pot --domain=sreesaanvika
+#.
+#. Then copy it to e.g. languages/hi_IN.po, translate, and compile with
+#.   wp i18n make-mo languages/

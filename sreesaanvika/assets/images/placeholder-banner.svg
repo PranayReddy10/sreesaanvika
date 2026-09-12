@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="Banner image coming soon">
+  <defs>
+    <linearGradient id="bBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3a1226"/>
+      <stop offset="0.55" stop-color="#1a0d17"/>
+      <stop offset="1" stop-color="#123f4d"/>
+    </linearGradient>
+    <linearGradient id="bGold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a97a26"/>
+      <stop offset="0.5" stop-color="#f0d08a"/>
+      <stop offset="1" stop-color="#d9a441"/>
+    </linearGradient>
+    <pattern id="bArch" width="80" height="40" patternUnits="userSpaceOnUse">
+      <path d="M0 40 C0 18 18 0 40 0 C62 0 80 18 80 40" fill="none" stroke="#d9a441" stroke-opacity="0.12" stroke-width="1.2"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bBg)"/>
+  <rect width="1600" height="900" fill="url(#bArch)"/>
+
+  <g transform="translate(800 430)" fill="none" stroke="url(#bGold)" stroke-width="2.5" opacity="0.8">
+    <circle r="150" stroke-opacity="0.28"/>
+    <circle r="108" stroke-opacity="0.4"/>
+    <path d="M0-130 C0-70 56-14 116-14 C56-14 0 42 0 102 C0 42 -56-14 -116-14 C-56-14 0-70 0-130Z" stroke-opacity="0.7"/>
+  </g>
+
+  <text x="800" y="640" text-anchor="middle" font-family="Georgia, serif" font-size="52" fill="#f0d08a" opacity="0.92">
+    Sree Saanvika
+  </text>
+  <text x="800" y="686" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16"
+        letter-spacing="9" fill="#a8909c">SET YOUR BANNER IN THE CUSTOMIZER</text>
+</svg>
