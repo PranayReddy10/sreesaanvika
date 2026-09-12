@@ -37,7 +37,7 @@ $ss_groups = array(
 ?>
 
 <div class="ss-container ss-section">
-	<div class="ss-layout" style="grid-template-columns:1fr 300px">
+	<div class="ss-layout">
 
 		<div>
 			<?php foreach ( $ss_groups as $ss_group => $ss_items ) : ?>

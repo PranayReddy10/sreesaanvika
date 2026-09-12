@@ -296,7 +296,10 @@ th {
 
 .ss-layout {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) 300px;
+	/* Templates vary the aside width through --ss-aside rather than an inline
+	   grid-template-columns, which would outrank the media query below and
+	   keep the two-column layout on a phone. */
+	grid-template-columns: minmax(0, 1fr) var(--ss-aside, 300px);
 	gap: clamp(28px, 4vw, 56px);
 	align-items: start;
 }
@@ -2742,4 +2745,122 @@ body.admin-bar .ss-drawer { top: 32px; }
 
 @media (max-width: 400px) {
 	.ss-brand__tag { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   32. Form field hardening
+   Elementor's Site Settings → Theme Style → Form Fields emits
+   `.elementor-kit-N input:not([type="button"]):not([type="submit"])` — a
+   0,3,1 selector loaded after the theme, so it beats the plain
+   `input[type="text"]` rule in section 7 and repaints every field white.
+   It sets only background and colour, which is why padding and labels still
+   looked themed while the boxes went white.
+
+   These declarations are marked important so the dark fields survive any
+   builder or plugin "theme style" layer. Scope is deliberately limited to
+   real form controls, and the focus and validation states below are marked
+   the same way so they keep working.
+   -------------------------------------------------------------------------- */
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+input[type="month"],
+input[type="week"],
+input[type="time"],
+input[type="datetime-local"],
+select,
+textarea,
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea,
+.woocommerce form .form-row select,
+.woocommerce-page form .form-row input.input-text,
+.woocommerce-page form .form-row textarea,
+.woocommerce-page form .form-row select {
+	background-color: var(--ss-surface) !important;
+	color: var(--ss-text) !important;
+	border-color: var(--ss-line-soft) !important;
+	border-style: solid !important;
+	border-width: 1px !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus,
+.woocommerce form .form-row input.input-text:focus,
+.woocommerce form .form-row textarea:focus,
+.woocommerce form .form-row select:focus {
+	background-color: var(--ss-surface-2) !important;
+	border-color: var(--ss-gold) !important;
+}
+
+input::placeholder,
+textarea::placeholder,
+.woocommerce form .form-row input.input-text::placeholder {
+	color: var(--ss-faint) !important;
+	opacity: 1;
+}
+
+/* Woo's own validation colours have to survive the important above. */
+.woocommerce form .form-row.woocommerce-invalid input.input-text,
+.woocommerce form .form-row.woocommerce-invalid select,
+.woocommerce form .form-row.woocommerce-invalid .select2-container .select2-selection--single {
+	border-color: var(--ss-error) !important;
+}
+
+.woocommerce form .form-row.woocommerce-validated input.input-text,
+.woocommerce form .form-row.woocommerce-validated select,
+.woocommerce form .form-row.woocommerce-validated .select2-container .select2-selection--single {
+	border-color: var(--ss-success) !important;
+}
+
+/* The country / state pickers are select2, not native selects. */
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple,
+.select2-search--dropdown .select2-search__field {
+	background-color: var(--ss-surface) !important;
+	border-color: var(--ss-line-soft) !important;
+	color: var(--ss-text) !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+	color: var(--ss-text) !important;
+}
+
+.select2-dropdown,
+.select2-container--default .select2-results > .select2-results__options {
+	background-color: var(--ss-surface-2) !important;
+	border-color: var(--ss-line) !important;
+	color: var(--ss-text) !important;
+}
+
+.select2-container--default .select2-results__option {
+	background-color: transparent !important;
+	color: var(--ss-text-soft) !important;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected],
+.select2-container--default .select2-results__option[aria-selected="true"] {
+	background-color: var(--ss-gold) !important;
+	color: #1a0d17 !important;
+}
+
+/* Buttons must not be caught by the input rule above. */
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+	background-color: transparent;
+	color: inherit;
 }

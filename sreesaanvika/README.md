@@ -297,7 +297,24 @@ Also fixed in 1.0.2: the shop stylesheet only loaded on shop screens, which
 left the homepage product grids, the mini-cart and any Elementor product
 widget unstyled. It now loads wherever WooCommerce is active.
 
-### The checkout fields are white boxes with no styling
+### Form fields render as white boxes
+
+Fixed in 1.0.5. **Elementor**, not WooCommerce, was the cause. Elementor's
+Site Settings → Theme Style → Form Fields emits
+
+```css
+.elementor-kit-8 input:not([type="button"]):not([type="submit"]) { background-color: #FFFFFF; }
+```
+
+which loads after the theme and outranks a plain `input[type="text"]`. It sets
+only background and colour, which is why the padding and the labels still
+looked themed while the boxes went white. The theme now marks its field
+background, colour and border important, scoped to real form controls, with
+the focus and WooCommerce validation states marked the same way so they keep
+working. You can also clear the colours under Elementor → Site Settings →
+Theme Style → Form Fields; both routes work and they do not conflict.
+
+### The checkout page still uses WooCommerce's own blocks
 
 WooCommerce 8.3+ builds the Cart and Checkout pages out of **blocks** rather
 than the old `[woocommerce_checkout]` shortcode. Blocks never load the theme's
@@ -321,6 +338,22 @@ palette is layered on top. To opt out:
 ```php
 add_filter( 'ss_woo_block_dark_controls', '__return_false' );
 ```
+
+### A page overlaps itself on a phone
+
+Fixed in 1.0.5. Contact, FAQ and Track Order set their sidebar width with an
+inline `grid-template-columns`, and an inline style outranks any media query —
+so those pages kept a 300–380px sidebar inside a 390px screen. The width is now
+passed as a `--ss-aside` custom property, leaving the media query free to
+collapse the grid to one column.
+
+### A category page shows a blank band above the products on a phone
+
+Fixed in 1.0.5. The inline shop-layout CSS made the filter sidebar sticky with
+`.ss-shop-layout > .ss-shop-sidebar`, which outranked the `position: fixed`
+that takes it out of the flow below 1024px. The panel stayed in the grid,
+translated off-screen but still holding a full-width row. That sticky rule is
+now inside a `min-width: 1025px` query.
 
 ### The trust strip runs off the screen on a phone
 

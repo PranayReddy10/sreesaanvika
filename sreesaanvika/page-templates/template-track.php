@@ -21,7 +21,7 @@ $ss_hours = ss_option( 'footer_hours' );
 ?>
 
 <div class="ss-container ss-section">
-	<div class="ss-layout" style="grid-template-columns:minmax(0,1fr) 340px">
+	<div class="ss-layout" style="--ss-aside:340px">
 
 		<div class="ss-track">
 			<?php

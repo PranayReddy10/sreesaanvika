@@ -77,8 +77,15 @@ function ss_woo_layout_css() {
 		return;
 	}
 
+	/*
+	 * The sticky rule has to sit inside a min-width query. Unscoped, its
+	 * `.ss-shop-layout > .ss-shop-sidebar` beat the `position: fixed` that
+	 * shop.css applies below 1024px, so on a phone the filter panel stayed in
+	 * the grid — translated off-screen but still occupying a full-width row,
+	 * which left a blank band above the products and pushed them down.
+	 */
 	$css = '.ss-shop-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:clamp(20px,3vw,42px);align-items:start;}'
-		. '.ss-shop-layout > .ss-shop-sidebar{position:sticky;top:calc(var(--ss-header-h) + 18px);}'
+		. '@media(min-width:1025px){.ss-shop-layout > .ss-shop-sidebar{position:sticky;top:calc(var(--ss-header-h) + 18px);}}'
 		. '@media(max-width:1024px){.ss-shop-layout{grid-template-columns:minmax(0,1fr);}}';
 
 	wp_add_inline_style( 'ss-shop', $css );
