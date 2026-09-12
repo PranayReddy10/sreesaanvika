@@ -81,6 +81,9 @@ $ss_groups = array(
 				<a class="ss-btn ss-btn--block" href="<?php echo esc_url( ss_page_url( 'contact' ) ); ?>">
 					<?php esc_html_e( 'Contact us', 'sreesaanvika' ); ?>
 				</a>
+				<a class="ss-btn ss-btn--ghost ss-btn--block" style="margin-top:10px" href="<?php echo esc_url( ss_page_url( 'track' ) ); ?>">
+					<?php esc_html_e( 'Track my order', 'sreesaanvika' ); ?>
+				</a>
 			</div>
 		</aside>
 	</div>

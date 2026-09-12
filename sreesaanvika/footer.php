@@ -90,8 +90,8 @@ $ss_copy    = ss_option( 'footer_copy', '' );
 						<ul>
 							<li><a href="<?php echo esc_url( ss_page_url( 'faq' ) ); ?>"><?php esc_html_e( 'FAQs', 'sreesaanvika' ); ?></a></li>
 							<li><a href="<?php echo esc_url( ss_page_url( 'contact' ) ); ?>"><?php esc_html_e( 'Contact us', 'sreesaanvika' ); ?></a></li>
+							<li><a href="<?php echo esc_url( ss_page_url( 'track' ) ); ?>"><?php esc_html_e( 'Track my order', 'sreesaanvika' ); ?></a></li>
 							<?php if ( class_exists( 'WooCommerce' ) ) : ?>
-								<li><a href="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>"><?php esc_html_e( 'Track my order', 'sreesaanvika' ); ?></a></li>
 								<li><a href="<?php echo esc_url( wc_get_cart_url() ); ?>"><?php esc_html_e( 'My bag', 'sreesaanvika' ); ?></a></li>
 							<?php endif; ?>
 							<li><a href="<?php echo esc_url( ss_page_url( 'wishlist' ) ); ?>"><?php esc_html_e( 'Wishlist', 'sreesaanvika' ); ?></a></li>

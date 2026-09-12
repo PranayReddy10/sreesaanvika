@@ -47,6 +47,11 @@ function ss_setup_pages() {
 			'template' => 'page-templates/template-contact.php',
 			'content'  => '',
 		),
+		'track'    => array(
+			'title'    => __( 'Track Your Order', 'sreesaanvika' ),
+			'template' => 'page-templates/template-track.php',
+			'content'  => '',
+		),
 		'faq'      => array(
 			'title'    => __( 'FAQs', 'sreesaanvika' ),
 			'template' => 'page-templates/template-faq.php',

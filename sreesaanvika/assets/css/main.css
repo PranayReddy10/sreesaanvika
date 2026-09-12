@@ -1518,7 +1518,13 @@ select:-webkit-autofill {
 	gap: 15px;
 	padding: 26px 22px;
 	transition: background var(--ss-fast);
+	/* Long strings must wrap rather than push the row wider than the screen. */
+	min-width: 0;
 }
+
+.ss-usp__item > div { min-width: 0; }
+.ss-usp__item h4,
+.ss-usp__item p { overflow-wrap: anywhere; }
 
 .ss-usp__item:hover { background: var(--ss-surface-2); }
 
@@ -1656,12 +1662,31 @@ select:-webkit-autofill {
 	box-shadow: var(--ss-shadow-gold);
 }
 
+/* The ring clips its own content, so a portrait or oversized category
+   thumbnail can never spill past the circle. */
+.ss-catrail__ring,
 .ss-catrail__ring img,
+.ss-catrail__ring span {
+	overflow: hidden;
+}
+
+.ss-catrail__ring img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	object-fit: cover;
+	object-position: center;
+	border: 3px solid var(--ss-bg);
+	background: var(--ss-surface-2);
+}
+
 .ss-catrail__ring span {
 	width: 100%;
 	height: 100%;
+	aspect-ratio: 1;
 	border-radius: 50%;
-	object-fit: cover;
 	display: grid;
 	place-items: center;
 	background: var(--ss-surface-2);

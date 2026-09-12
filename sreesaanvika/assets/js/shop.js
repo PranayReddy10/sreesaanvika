@@ -756,3 +756,64 @@
 		});
 	})();
 })();
+
+/* ==========================================================================
+ * 13. Buy it now
+ * Flips the hidden flag so the add-to-cart redirect lands on checkout, and
+ * keeps the button in step with Woo's own disabled state on variable
+ * products so it cannot submit before a variation is chosen.
+ * ========================================================================== */
+(function () {
+	'use strict';
+
+	var D = document;
+
+	D.addEventListener('click', function (e) {
+		var btn = e.target.closest('[data-buy-now]');
+		if (!btn) { return; }
+
+		var form = btn.closest('form');
+		var flag = form && form.querySelector('.ss-buy-now-flag');
+
+		if (flag) { flag.value = '1'; }
+	});
+
+	// Reset the flag if the shopper then uses the plain add-to-cart button.
+	D.addEventListener('click', function (e) {
+		var btn = e.target.closest('.single_add_to_cart_button');
+		if (!btn || btn.hasAttribute('data-buy-now')) { return; }
+
+		var form = btn.closest('form');
+		var flag = form && form.querySelector('.ss-buy-now-flag');
+
+		if (flag) { flag.value = '0'; }
+	});
+
+	var variations = D.querySelector('form.variations_form');
+
+	if (variations) {
+		var mirror = function () {
+			var cart = variations.querySelector('.single_add_to_cart_button');
+			var buy = variations.querySelector('[data-buy-now]');
+
+			if (!cart || !buy) { return; }
+
+			var off = cart.classList.contains('disabled') || cart.disabled;
+			buy.classList.toggle('disabled', off);
+			buy.disabled = !!off;
+		};
+
+		['show_variation', 'hide_variation', 'reset_data', 'found_variation', 'woocommerce_variation_has_changed'].forEach(function (ev) {
+			variations.addEventListener(ev, function () { setTimeout(mirror, 30); });
+		});
+
+		if (window.jQuery) {
+			window.jQuery(variations).on(
+				'show_variation hide_variation reset_data found_variation woocommerce_variation_has_changed',
+				function () { setTimeout(mirror, 30); }
+			);
+		}
+
+		mirror();
+	}
+})();

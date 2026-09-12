@@ -72,7 +72,7 @@ defined( 'ABSPATH' ) || exit;
 							)
 						);
 					} else {
-						echo '<a href="' . esc_url( ss_page_url( 'faq' ) ) . '">' . esc_html__( 'Track order', 'sreesaanvika' ) . '</a>';
+						echo '<a href="' . esc_url( ss_page_url( 'track' ) ) . '">' . esc_html__( 'Track order', 'sreesaanvika' ) . '</a>';
 						echo '<span aria-hidden="true">|</span>';
 						echo '<a href="' . esc_url( ss_page_url( 'contact' ) ) . '">' . esc_html__( 'Help', 'sreesaanvika' ) . '</a>';
 					}

@@ -24,7 +24,7 @@ class SS_Widget_Testimonials extends SS_Widget {
 
 		$this->add_heading_controls(
 			esc_html__( 'From our customers', 'sreesaanvika' ),
-			esc_html__( 'Worn & <em>Loved</em>', 'sreesaanvika' ),
+			__( 'Worn & <em>Loved</em>', 'sreesaanvika' ),
 			esc_html__( 'Over 12,000 women across India have shopped with us.', 'sreesaanvika' )
 		);
 
@@ -107,11 +107,13 @@ class SS_Widget_Testimonials extends SS_Widget {
 		$this->add_responsive_control(
 			'columns',
 			array(
-				'label'     => esc_html__( 'Columns', 'sreesaanvika' ),
-				'type'      => Controls_Manager::SELECT,
-				'default'   => '3',
-				'options'   => array( '1' => '1', '2' => '2', '3' => '3' ),
-				'selectors' => array(
+				'label'          => esc_html__( 'Columns', 'sreesaanvika' ),
+				'type'           => Controls_Manager::SELECT,
+				'default'        => '3',
+				'tablet_default' => '2',
+				'mobile_default' => '1',
+				'options'        => array( '1' => '1', '2' => '2', '3' => '3' ),
+				'selectors'      => array(
 					'{{WRAPPER}} .ss-quotes' => 'grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 				),
 			)
@@ -250,11 +252,13 @@ class SS_Widget_Instagram extends SS_Widget {
 		$this->add_responsive_control(
 			'columns',
 			array(
-				'label'     => esc_html__( 'Columns', 'sreesaanvika' ),
-				'type'      => Controls_Manager::SELECT,
-				'default'   => '6',
-				'options'   => array( '3' => '3', '4' => '4', '5' => '5', '6' => '6' ),
-				'selectors' => array(
+				'label'          => esc_html__( 'Columns', 'sreesaanvika' ),
+				'type'           => Controls_Manager::SELECT,
+				'default'        => '6',
+				'tablet_default' => '4',
+				'mobile_default' => '3',
+				'options'        => array( '3' => '3', '4' => '4', '5' => '5', '6' => '6' ),
+				'selectors'      => array(
 					'{{WRAPPER}} .ss-gram' => 'grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));',
 				),
 			)
