@@ -1,0 +1,88 @@
+/*
+ * Right-to-left overrides.
+ * Loaded automatically by WordPress when the site language is RTL.
+ */
+
+body {
+	direction: rtl;
+	unicode-bidi: embed;
+}
+
+.ss-nav ul ul { left: auto; right: 0; }
+.ss-nav ul ul ul { left: auto; right: 100%; }
+.ss-nav ul ul a:hover { padding-left: 14px; padding-right: 19px; }
+
+.ss-nav li.ss-mega > ul { left: 50%; right: auto; }
+
+.ss-drawer {
+	inset: 0 0 0 auto;
+	border-right: 0;
+	border-left: 1px solid var(--ss-line);
+	transform: translateX(102%);
+	box-shadow: -22px 0 60px -30px #000;
+}
+
+.ss-drawer.is-open { transform: translateX(0); }
+.ss-drawer ul ul { padding-left: 0; padding-right: 14px; border-left: 0; border-right: 1px solid var(--ss-line); margin: 0 12px 10px 0; }
+.ss-drawer__toggle { right: auto; left: 6px; }
+
+.ss-panel {
+	right: auto;
+	left: 0;
+	border-left: 0;
+	border-right: 1px solid var(--ss-line);
+	transform: translateX(-102%);
+	box-shadow: 22px 0 60px -30px #000;
+}
+
+.ss-panel.is-open { transform: translateX(0); }
+
+.ss-hero__slide--right { justify-content: flex-start; text-align: left; }
+.ss-hero__eyebrow::before { order: 2; }
+
+.ss-footer h4::after { left: auto; right: 0; }
+.ss-widget__title::after,
+.ss-widget .widget-title::after { left: auto; right: 0; }
+
+.ss-postnav .next { text-align: left; }
+
+.ss-toasts { right: auto; left: 22px; }
+.ss-toast { border-left: 1px solid var(--ss-line); border-right: 3px solid var(--ss-gold); }
+.ss-toast--success { border-right-color: var(--ss-success); }
+.ss-toast--error { border-right-color: var(--ss-error); }
+
+.ss-cartrow__total { text-align: left; }
+.ss-compare tbody th,
+.ss-compare thead th:first-child { left: auto; right: 0; }
+.ss-compare__remove { right: auto; left: 10px; }
+
+.ss-pcard__actions { right: auto; left: 12px; }
+.ss-icon-btn[data-tip]::after { right: auto; left: calc(100% + 10px); }
+
+.ss-badges,
+.ss-gallery__badges { left: auto; right: 12px; }
+.ss-gallery__tools { right: auto; left: 16px; }
+.ss-gallery__arrow--prev { left: auto; right: 14px; }
+.ss-gallery__arrow--next { right: auto; left: 14px; }
+.ss-gallery__counter { right: auto; left: 16px; }
+.ss-gallery__hint { left: auto; right: 16px; }
+
+.ss-pw-toggle { right: auto; left: 6px; }
+.ss-search-close { right: auto; left: 24px; }
+.ss-to-top { right: auto; left: 22px; }
+
+select {
+	background-position: left 16px center;
+	padding-right: 16px;
+	padding-left: 40px;
+}
+
+.alignleft { float: right; margin: 0 0 1.2em 1.6em; }
+.alignright { float: left; margin: 0 1.6em 1.2em 0; }
+
+.woocommerce-MyAccount-navigation { float: right; margin-right: 0; margin-left: 34px; }
+
+.ss-metalist dt,
+.ss-metalist .k { text-align: right; }
+
+.ss-readmore:hover svg { transform: translateX(-5px); }

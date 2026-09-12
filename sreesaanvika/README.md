@@ -1,0 +1,198 @@
+# Sree Saanvika
+
+A dark-luxe WordPress + WooCommerce theme built for **sreesaanvika.in** — handloom
+sarees, temple jewellery and festive dresses. Deep aubergine, antique gold and
+marigold throughout: there is no white background anywhere in the theme.
+
+---
+
+## Installing
+
+1. In WordPress go to **Appearance → Themes → Add New → Upload Theme**.
+2. Choose `sreesaanvika.zip` and press **Install Now**, then **Activate**.
+3. Install and activate **WooCommerce** if you have not already — the shop,
+   cart, product pages, compare and wishlist all depend on it.
+4. Go to **Appearance → Sree Saanvika** and press **Run one-click setup**.
+   That creates the Compare, Wishlist, Sign In, Lookbook, Our Story, Contact
+   and FAQs pages and builds a primary menu from your product categories.
+   It never overwrites a page or menu you already have.
+5. Open the **Customizer → Sree Saanvika Options** to set your hero slides,
+   banners, colours, contact details and social links.
+
+Requires WordPress 6.0+, PHP 7.4+ and WooCommerce 7.0+.
+
+---
+
+## What's in it
+
+### Homepage
+Sixteen sections, each of which can be switched off individually in
+**Customizer → Sree Saanvika Options → Homepage — Sections**:
+
+| Section | What it shows |
+| --- | --- |
+| Hero slider | Up to 3 slides, Ken Burns backgrounds, swipe on touch |
+| Trust strip | Shipping, certification, returns, support |
+| Category rail | Round gold-ringed category circles |
+| Category mosaic | Asymmetric tile grid from your product categories |
+| New arrivals | Newest products |
+| Offer banners | Two configurable promo panels |
+| Best sellers | Ordered by `total_sales` |
+| Deal of the day | On-sale products with a live countdown |
+| Saree spotlight | Products in the `sarees` category |
+| Jewellery spotlight | Products in the `jewellery` category |
+| Lookbook strip | Editorial image grid |
+| Story band | Full-bleed parallax band |
+| Reviews | Real WooCommerce reviews, with a curated fallback |
+| Journal | Latest blog posts |
+| Instagram grid | Recent media |
+| Newsletter | AJAX sign-up, stored in an option or piped to your list plugin |
+
+### Product detail page
+- Custom gallery: vertical thumbnail rail, hover magnifier, full-screen
+  lightbox with a filmstrip, keyboard arrows and swipe.
+- Colour swatches and size chips generated from the product's attributes.
+  The native WooCommerce `<select>` stays in the DOM (visually hidden) so
+  validation, price updates and the no-JS fallback all keep working.
+- Price block with the saving spelled out, an offers panel, a low-stock
+  meter, a PIN-code delivery checker, trust badges and a share row.
+- Tabs for Description, Specifications, Care & Handling, Shipping & Returns
+  and Reviews (with a star-distribution breakdown).
+- Sticky add-to-cart bar on mobile, and a slide-in size guide.
+
+### Shop
+- Grid and list views, remembered per visitor.
+- Filter sidebar: categories, a dual-handle price slider, colour swatches,
+  size chips, any other attribute and a rating filter. Registered widgets in
+  the *Shop Filters Sidebar* replace the built-in set when present.
+- Product cards: second-image hover swap, badges (sale %, new, bestseller,
+  trending, sold out), swatches, stock meter, AJAX add to bag, and hover
+  buttons for wishlist, compare and quick view.
+
+### Other pages
+- **Cart** — card-based rows, live quantity updates, coupon box, savings
+  line, free-shipping meter and a sticky summary. Empty state shows your
+  wishlist.
+- **Checkout** — three-step indicator, two-column layout, dark payment box.
+- **Sign in / Sign up** — split-screen page template with tabbed panes,
+  password reveal, a strength meter and AJAX submission. The WooCommerce
+  My Account login is styled to match.
+- **Compare** — sticky-header table across price, rating, availability,
+  fabric, colours, occasion, work, blouse, length, weight and wash care,
+  plus a floating compare bar.
+- **Wishlist** — cookie-backed for guests, user meta for members, merged
+  automatically on login.
+- Lookbook, Our Story, Contact, FAQs, 404, search, blog, archive and
+  single-post templates.
+
+---
+
+## Customizer reference
+
+Everything lives under **Sree Saanvika Options**:
+
+- **Colours & Palette** — seven colour pickers plus four curated presets
+  (Aubergine & Gold, Midnight Peacock, Espresso & Copper, Temple Ink &
+  Emerald). Values are emitted as CSS custom properties, so a change
+  recolours the whole theme.
+- **Header & Top Bar** — brand tagline, scrolling announcements, phone
+  number, sticky header toggle.
+- **Homepage — Hero Slider** — three slides with eyebrow, title (use `<em>`
+  to gild a word), text, button, link, background image and alignment.
+- **Homepage — Sections** — a switch per section, and products per section.
+- **Homepage — Offer Banners** — two banners, the countdown end time and the
+  story band.
+- **Shop & Product Page** — columns, per page, sidebar, hover swap, swatches,
+  quick view, wishlist, compare, compare limit, gallery choice, sticky buy
+  bar, PIN checker, free-shipping threshold, low-stock threshold and the
+  offer lines.
+- **Footer** — about text, address, phone, email, hours, copyright, five
+  social URLs and the Instagram handle.
+- **Typography** — heading font, base size, corner rounding, content width.
+
+---
+
+## Tips
+
+- Add `mega` as a CSS class on a top-level menu item (Appearance → Menus →
+  Screen Options → CSS Classes) to turn its dropdown into a four-column mega
+  menu. `hot` and `new` add a small flag to the item.
+- Colour swatches read the product's **Color** / **Colour** / **Shade**
+  attribute and map ~40 common Indian textile colour names to hex. To pin an
+  exact shade, add a term meta named `ss_color` holding a hex value.
+- Product images look best portrait at 3:4 — 1200 × 1600 or larger keeps the
+  zoom sharp.
+- Set a category image under **Products → Categories** to fill the homepage
+  mosaic and the round rail.
+- The newsletter form stores addresses in the `ss_newsletter_list` option.
+  Hook `ss_newsletter_signup` (`do_action( 'ss_newsletter_signup', $email )`)
+  to hand them to Mailchimp, Brevo or similar instead.
+- Compare rows are filterable: `add_filter( 'ss_compare_rows', ... )`.
+
+---
+
+## Child theme
+
+Overriding a template is the safe way to change markup. Create
+`wp-content/themes/sreesaanvika-child/style.css`:
+
+```css
+/*
+Theme Name: Sree Saanvika Child
+Template: sreesaanvika
+Version: 1.0.0
+*/
+```
+
+…and a `functions.php`:
+
+```php
+<?php
+add_action( 'wp_enqueue_scripts', function () {
+	wp_enqueue_style( 'ss-child', get_stylesheet_uri(), array( 'ss-main' ), '1.0.0' );
+} );
+```
+
+Copy any file from the parent theme into the child at the same path to
+override it — including anything under `woocommerce/`.
+
+---
+
+## Structure
+
+```
+sreesaanvika/
+├── style.css                 Theme header + safety-net base styles
+├── functions.php             Setup, enqueues, menus, widgets
+├── rtl.css                   Right-to-left overrides
+├── screenshot.png
+├── assets/
+│   ├── css/  main.css, shop.css, editor.css
+│   ├── js/   theme.js, shop.js, customizer.js
+│   └── images/ SVG placeholders
+├── inc/
+│   ├── helpers.php           Options, colour map, small utilities
+│   ├── icons.php             Inline SVG icon set
+│   ├── nav-walker.php        Desktop + drawer walkers
+│   ├── customizer.php        All theme options
+│   ├── dynamic-css.php       Options → CSS custom properties
+│   ├── template-tags.php     Reusable markup helpers
+│   ├── ajax.php              Quick view, search, cart, auth, newsletter
+│   ├── compare-wishlist.php  List storage and the compare table data
+│   ├── woocommerce.php       Shop integration and cart fragments
+│   ├── demo-content.php      One-click page + menu setup
+│   └── tgm-notice.php        Welcome screen and admin notices
+├── template-parts/
+│   ├── header/  drawer, search overlay, cart panel
+│   ├── home/    the 16 homepage sections
+│   └── shop/    filter sidebar
+├── page-templates/           compare, wishlist, auth, lookbook, about,
+│                             contact, faq
+└── woocommerce/              Template overrides
+```
+
+---
+
+## Licence
+
+GNU General Public License v2 or later.

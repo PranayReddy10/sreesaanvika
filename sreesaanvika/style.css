@@ -1,0 +1,44 @@
+/*
+Theme Name: Sree Saanvika
+Theme URI: https://sreesaanvika.in
+Author: Sree Saanvika
+Author URI: https://sreesaanvika.in
+Description: Sree Saanvika is a premium dark-luxe WooCommerce theme crafted for Indian women's fashion — handloom sarees, fine jewellery and designer dresses. It ships with a full homepage builder, an immersive product gallery with zoom and colour swatches, product comparison, wishlist, quick view, custom cart, sign in / sign up pages and a fully responsive mobile-first layout. No white backgrounds — a deep aubergine, gold and marigold palette throughout.
+Version: 1.0.0
+Requires at least: 6.0
+Tested up to: 6.7
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: sreesaanvika
+Tags: e-commerce, woocommerce, dark, two-columns, right-sidebar, custom-colors, custom-logo, custom-menu, featured-images, full-width-template, rtl-language-support, theme-options, threaded-comments, translation-ready
+WC requires at least: 7.0
+WC tested up to: 9.4
+
+Sree Saanvika WordPress Theme, (C) 2024 Sree Saanvika.
+Sree Saanvika is distributed under the terms of the GNU GPL v2 or later.
+*/
+
+/*
+ * The compiled design system lives in assets/css/.
+ * This file only carries the theme header (required by WordPress) plus a
+ * safety net of base styles so the theme is never unstyled if an enqueue
+ * is filtered out by a plugin.
+ */
+
+:root {
+	--ss-bg: #140a12;
+	--ss-text: #f4eaee;
+	--ss-gold: #d9a441;
+}
+
+body {
+	margin: 0;
+	background-color: var(--ss-bg);
+	color: var(--ss-text);
+	font-family: "Jost", "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+a {
+	color: var(--ss-gold);
+}

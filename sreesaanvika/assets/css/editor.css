@@ -1,0 +1,103 @@
+/* Block editor styles so the admin preview matches the dark front end. */
+
+.editor-styles-wrapper {
+	background-color: #1a0d17;
+	color: #f4eaee;
+	font-family: "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
+	font-size: 16px;
+	line-height: 1.7;
+}
+
+.editor-styles-wrapper .wp-block {
+	max-width: 860px;
+}
+
+.editor-styles-wrapper .wp-block[data-align="wide"] { max-width: 1100px; }
+.editor-styles-wrapper .wp-block[data-align="full"] { max-width: none; }
+
+.editor-styles-wrapper h1,
+.editor-styles-wrapper h2,
+.editor-styles-wrapper h3,
+.editor-styles-wrapper h4,
+.editor-styles-wrapper h5,
+.editor-styles-wrapper h6 {
+	font-family: "Playfair Display", Georgia, serif;
+	color: #f4eaee;
+	font-weight: 500;
+	line-height: 1.2;
+}
+
+.editor-styles-wrapper h1 { font-size: 2.8rem; }
+.editor-styles-wrapper h2 { font-size: 2.1rem; }
+.editor-styles-wrapper h3 { font-size: 1.6rem; }
+
+.editor-styles-wrapper a { color: #d9a441; }
+
+.editor-styles-wrapper blockquote {
+	border-left: 3px solid #d9a441;
+	background: #21121d;
+	padding: 1.1em 1.6em;
+	font-family: "Cormorant Garamond", Georgia, serif;
+	font-style: italic;
+	font-size: 1.2rem;
+	color: #d8c6ce;
+}
+
+.editor-styles-wrapper code,
+.editor-styles-wrapper pre {
+	background: #2b1826;
+	color: #f0d08a;
+}
+
+.editor-styles-wrapper hr {
+	border: 0;
+	height: 1px;
+	background: rgba(217, 164, 65, 0.24);
+}
+
+.editor-styles-wrapper table th {
+	background: #2b1826;
+	color: #d9a441;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	font-size: 0.8rem;
+}
+
+.editor-styles-wrapper table td,
+.editor-styles-wrapper table th {
+	border: 1px solid rgba(244, 234, 238, 0.09);
+	padding: 0.8em 1em;
+}
+
+.editor-styles-wrapper .wp-block-button__link {
+	background: linear-gradient(135deg, #a97a26, #f0d08a 45%, #d9a441);
+	color: #1a0d17;
+	border-radius: 999px;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	font-size: 0.82rem;
+	padding: 14px 30px;
+}
+
+.editor-styles-wrapper .wp-block-button.is-style-outline .wp-block-button__link {
+	background: none;
+	border: 1px solid #d9a441;
+	color: #d9a441;
+}
+
+.editor-styles-wrapper img { border-radius: 4px; }
+
+.editor-styles-wrapper .wp-element-caption,
+.editor-styles-wrapper figcaption {
+	color: rgba(244, 234, 238, 0.62);
+	font-size: 0.84rem;
+	text-align: center;
+}
+
+/* Colour palette swatches */
+.editor-styles-wrapper .has-ss-gold-color { color: #d9a441; }
+.editor-styles-wrapper .has-ss-gold-background-color { background-color: #d9a441; }
+.editor-styles-wrapper .has-ss-maroon-background-color { background-color: #7b1e3b; }
+.editor-styles-wrapper .has-ss-surface-background-color { background-color: #21121d; }
+.editor-styles-wrapper .has-ss-bg-background-color { background-color: #140a12; }
