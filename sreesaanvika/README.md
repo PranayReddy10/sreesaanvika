@@ -300,19 +300,26 @@ widget unstyled. It now loads wherever WooCommerce is active.
 ### The checkout fields are white boxes with no styling
 
 WooCommerce 8.3+ builds the Cart and Checkout pages out of **blocks** rather
-than the old `[woocommerce_checkout]` shortcode. Block pages never load the
-theme's `cart.php` / `form-checkout.php` templates and ship a light palette of
-their own. Version 1.0.3 restyles the blocks to match the dark theme, so either
-kind of page now looks right.
+than the old `[woocommerce_checkout]` shortcode. Blocks never load the theme's
+`cart.php` / `form-checkout.php` templates and ship a light palette of their
+own. You have two ways out, and 1.0.4 does both.
 
-If you would rather use the theme's own hand-built cart and checkout — they
-have the free-shipping meter, the savings line and the three-step indicator —
-edit the Cart and Checkout pages, delete the block, and put the shortcode in
-its place:
+**Use the theme's own cart and checkout** — the free-shipping meter, the
+savings line and the three-step indicator. One click at
+**Appearance → Sree Saanvika → Cart & Checkout style**. It swaps the block for
+the WooCommerce shortcode on both pages, saving the block markup first so the
+same screen can switch you back.
 
-```
-[woocommerce_cart]
-[woocommerce_checkout]
+**Or keep the blocks.** WooCommerce Blocks ships a full dark treatment behind a
+`has-dark-controls` class on the block wrapper, normally toggled per block in
+the editor as "Dark mode inputs". The theme declares
+`add_theme_support( 'dark-editor-style' )` so new blocks default to it, and
+adds the class at render time to blocks that already exist, so pages built
+before the theme was installed are fixed without re-saving them. The theme
+palette is layered on top. To opt out:
+
+```php
+add_filter( 'ss_woo_block_dark_controls', '__return_false' );
 ```
 
 ### The trust strip runs off the screen on a phone

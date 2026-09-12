@@ -859,3 +859,57 @@ function ss_dequeue_woo_layout() {
 	wp_dequeue_style( 'woocommerce-smallscreen' );
 }
 add_action( 'wp_enqueue_scripts', 'ss_dequeue_woo_layout', 99 );
+
+/**
+ * Force the Cart and Checkout blocks into their dark-controls mode.
+ *
+ * WooCommerce Blocks ships a proper dark treatment for every field, label,
+ * dropdown and control, switched on by a `has-dark-controls` class on the
+ * block wrapper. It is normally toggled per block in the editor ("Dark mode
+ * inputs"), which means a Cart or Checkout page created before the theme was
+ * installed keeps the light default and renders white boxes on the dark page.
+ *
+ * Adding the class at render time fixes those pages without the shop owner
+ * having to open and re-save each block.
+ *
+ * @param string $content Rendered block HTML.
+ * @param array  $block   Parsed block.
+ * @return string
+ */
+function ss_woo_block_dark_controls( $content, $block ) {
+	if ( empty( $block['blockName'] ) || ! is_string( $content ) || '' === trim( $content ) ) {
+		return $content;
+	}
+
+	$targets = array( 'woocommerce/checkout', 'woocommerce/cart' );
+
+	if ( ! in_array( $block['blockName'], $targets, true ) ) {
+		return $content;
+	}
+
+	if ( false !== strpos( $content, 'has-dark-controls' ) ) {
+		return $content;
+	}
+
+	if ( ! apply_filters( 'ss_woo_block_dark_controls', true, $block ) ) {
+		return $content;
+	}
+
+	return preg_replace_callback(
+		'/^(\s*<div\b)([^>]*)>/',
+		function ( $matches ) {
+			$attrs = $matches[2];
+
+			if ( preg_match( '/\bclass\s*=\s*"/', $attrs ) ) {
+				$attrs = preg_replace( '/\bclass\s*=\s*"/', 'class="has-dark-controls ', $attrs, 1 );
+			} else {
+				$attrs .= ' class="has-dark-controls"';
+			}
+
+			return $matches[1] . $attrs . '>';
+		},
+		$content,
+		1
+	);
+}
+add_filter( 'render_block', 'ss_woo_block_dark_controls', 10, 2 );

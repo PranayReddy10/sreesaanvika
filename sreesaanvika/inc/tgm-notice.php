@@ -94,6 +94,38 @@ function ss_welcome_screen() {
 		</p>
 
 		<?php
+		$ss_mode_result = get_transient( 'ss_woo_mode_result' );
+
+		if ( $ss_mode_result ) {
+			delete_transient( 'ss_woo_mode_result' );
+		}
+		?>
+
+		<?php if ( $ss_mode_result ) : ?>
+			<div class="notice notice-success">
+				<p>
+					<?php
+					if ( empty( $ss_mode_result['changed'] ) ) {
+						esc_html_e( 'Both pages were already set that way — nothing changed.', 'sreesaanvika' );
+					} elseif ( 'shortcode' === $ss_mode_result['mode'] ) {
+						printf(
+							/* translators: %s: comma separated page names */
+							esc_html__( 'Switched %s to the theme\'s own cart and checkout.', 'sreesaanvika' ),
+							esc_html( implode( ', ', $ss_mode_result['changed'] ) )
+						);
+					} else {
+						printf(
+							/* translators: %s: comma separated page names */
+							esc_html__( 'Restored the WooCommerce blocks on %s.', 'sreesaanvika' ),
+							esc_html( implode( ', ', $ss_mode_result['changed'] ) )
+						);
+					}
+					?>
+				</p>
+			</div>
+		<?php endif; ?>
+
+		<?php
 		$el = get_transient( 'ss_el_result' );
 
 		if ( $el ) {
@@ -193,6 +225,57 @@ function ss_welcome_screen() {
 				<?php esc_html_e( 'Edit widgets', 'sreesaanvika' ); ?>
 			</a>
 		</div>
+
+		<?php if ( class_exists( 'WooCommerce' ) && function_exists( 'ss_woo_page_modes' ) ) : ?>
+			<?php
+			$ss_modes  = ss_woo_page_modes();
+			$ss_blocks = in_array( 'block', $ss_modes, true );
+			?>
+			<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">
+				<h2><?php esc_html_e( 'Cart & Checkout style', 'sreesaanvika' ); ?></h2>
+
+				<p>
+					<?php esc_html_e( 'WooCommerce builds these two pages out of blocks by default. Blocks do not use the theme\'s cart and checkout designs, so you miss the free-shipping meter, the savings line and the three-step indicator.', 'sreesaanvika' ); ?>
+				</p>
+
+				<p>
+					<?php
+					printf(
+						/* translators: 1: cart mode, 2: checkout mode */
+						esc_html__( 'Right now — Cart: %1$s · Checkout: %2$s', 'sreesaanvika' ),
+						'<strong>' . esc_html( isset( $ss_modes['cart'] ) ? $ss_modes['cart'] : '—' ) . '</strong>',
+						'<strong>' . esc_html( isset( $ss_modes['checkout'] ) ? $ss_modes['checkout'] : '—' ) . '</strong>'
+					);
+					?>
+				</p>
+
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="ss_switch_woo_pages" />
+					<input type="hidden" name="ss_mode" value="<?php echo $ss_blocks ? 'shortcode' : 'block'; ?>" />
+					<?php wp_nonce_field( 'ss_woo_page_mode' ); ?>
+
+					<?php if ( $ss_blocks ) : ?>
+						<p>
+							<button type="submit" class="button button-primary">
+								<?php esc_html_e( 'Use the theme\'s cart & checkout', 'sreesaanvika' ); ?>
+							</button>
+						</p>
+						<p style="color:#666;font-size:12px;margin-top:-6px">
+							<?php esc_html_e( 'Replaces the block with the WooCommerce shortcode on both pages. The block markup is saved first, so you can switch back from this same screen.', 'sreesaanvika' ); ?>
+						</p>
+					<?php else : ?>
+						<p style="color:#1a7f5a">
+							✓ <?php esc_html_e( 'Both pages use the theme\'s own cart and checkout.', 'sreesaanvika' ); ?>
+						</p>
+						<p>
+							<button type="submit" class="button">
+								<?php esc_html_e( 'Switch back to WooCommerce blocks', 'sreesaanvika' ); ?>
+							</button>
+						</p>
+					<?php endif; ?>
+				</form>
+			</div>
+		<?php endif; ?>
 
 		<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">
 			<h2><?php esc_html_e( 'Editing the homepage', 'sreesaanvika' ); ?></h2>

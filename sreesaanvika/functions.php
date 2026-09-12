@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.0.3' );
+define( 'SS_VERSION', '1.0.4' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -26,6 +26,13 @@ function ss_setup() {
 	add_theme_support( 'editor-styles' );
 	add_theme_support( 'wp-block-styles' );
 	add_editor_style( 'assets/css/editor.css' );
+
+	/*
+	 * Tells WooCommerce Blocks the theme is dark, so a newly inserted Cart or
+	 * Checkout block defaults its "dark mode inputs" attribute on. Blocks that
+	 * already exist are handled by ss_woo_block_dark_controls().
+	 */
+	add_theme_support( 'dark-editor-style' );
 
 	add_theme_support(
 		'html5',
@@ -354,4 +361,5 @@ require_once SS_DIR . '/inc/elementor-import.php';
 
 if ( class_exists( 'WooCommerce' ) ) {
 	require_once SS_DIR . '/inc/woocommerce.php';
+	require_once SS_DIR . '/inc/woo-page-mode.php';
 }
