@@ -69,6 +69,17 @@ $ss_count = $product->get_review_count();
 <?php ss_single_offers(); ?>
 
 <?php
+/*
+ * The standard WooCommerce summary hook, so any plugin that expects to put
+ * something in this column can. The theme lays out the title, price, excerpt
+ * and add-to-cart itself, and ss_unhook_woo_summary() takes WooCommerce's own
+ * callbacks off this action to stop them being printed a second time — what
+ * is left is other people's.
+ */
+do_action( 'woocommerce_single_product_summary' );
+?>
+
+<?php
 /**
  * The add-to-cart form. Woo renders the variation selects; shop.js mirrors
  * each one into swatch buttons and keeps the select as the source of truth.

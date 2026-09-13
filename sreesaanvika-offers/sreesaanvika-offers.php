@@ -3,7 +3,7 @@
  * Plugin Name:       Sree Saanvika Offers
  * Plugin URI:        https://sreesaanvika.in/
  * Description:       Buy 2 get 1 free, and offers like it, without a promo code. Pick the products an offer covers; when enough of them are in the cart the cheapest ones go free on their own.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Sree Saanvika
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SSO_VERSION', '1.0.0' );
+define( 'SSO_VERSION', '1.1.0' );
 define( 'SSO_FILE', __FILE__ );
 define( 'SSO_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SSO_URI', plugin_dir_url( __FILE__ ) );
@@ -41,11 +41,15 @@ function sso_boot() {
 	require_once SSO_DIR . 'includes/class-sso-admin.php';
 	require_once SSO_DIR . 'includes/class-sso-cart.php';
 	require_once SSO_DIR . 'includes/class-sso-display.php';
+	require_once SSO_DIR . 'includes/class-sso-bundle.php';
+	require_once SSO_DIR . 'includes/class-sso-bundle-display.php';
 
 	SSO_Offer::init();
 	SSO_Admin::init();
 	SSO_Cart::init();
 	SSO_Display::init();
+	SSO_Bundle::init();
+	SSO_Bundle_Display::init();
 
 	load_plugin_textdomain( 'sreesaanvika-offers', false, dirname( plugin_basename( SSO_FILE ) ) . '/languages' );
 }

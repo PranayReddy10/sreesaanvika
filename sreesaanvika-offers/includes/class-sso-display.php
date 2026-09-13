@@ -28,6 +28,7 @@ class SSO_Display {
 		// The free line itself.
 		add_filter( 'woocommerce_cart_item_subtotal', array( __CLASS__, 'line_subtotal' ), 10, 3 );
 		add_filter( 'woocommerce_cart_item_name', array( __CLASS__, 'line_name' ), 10, 3 );
+		add_filter( 'woocommerce_cart_item_name', array( __CLASS__, 'look_name' ), 11, 3 );
 
 		// A badge on product cards.
 		add_action( 'woocommerce_before_shop_loop_item_title', array( __CLASS__, 'on_card' ), 15 );
@@ -39,21 +40,33 @@ class SSO_Display {
 	 * Styles and the countdown script, only where an offer is running.
 	 */
 	public static function assets() {
-		if ( ! SSO_Offer::live() ) {
-			return;
-		}
+		// Registered everywhere, printed only where something asks for it.
+		wp_register_style( 'sso', SSO_URI . 'assets/sso.css', array(), SSO_VERSION );
+		wp_register_script( 'sso', SSO_URI . 'assets/sso.js', array(), SSO_VERSION, true );
 
-		wp_enqueue_style( 'sso', SSO_URI . 'assets/sso.css', array(), SSO_VERSION );
-		wp_enqueue_script( 'sso', SSO_URI . 'assets/sso.js', array(), SSO_VERSION, true );
+		if ( SSO_Offer::live() ) {
+			wp_enqueue_style( 'sso' );
+			wp_enqueue_script( 'sso' );
+		}
 
 		wp_localize_script(
 			'sso',
-			'ssoI18n',
+			'ssoData',
 			array(
-				'hours'   => __( 'Hours', 'sreesaanvika-offers' ),
-				'minutes' => __( 'Minutes', 'sreesaanvika-offers' ),
-				'seconds' => __( 'Seconds', 'sreesaanvika-offers' ),
-				'ended'   => __( 'This offer has ended.', 'sreesaanvika-offers' ),
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'i18n'    => array(
+					'hours'   => __( 'Hours', 'sreesaanvika-offers' ),
+					'minutes' => __( 'Minutes', 'sreesaanvika-offers' ),
+					'seconds' => __( 'Seconds', 'sreesaanvika-offers' ),
+					'ended'   => __( 'This offer has ended.', 'sreesaanvika-offers' ),
+					'total'   => __( 'Total for %d pieces', 'sreesaanvika-offers' ),
+					'one'     => __( 'This piece only', 'sreesaanvika-offers' ),
+					'save'    => __( 'You save %s', 'sreesaanvika-offers' ),
+					'adding'  => __( 'Adding…', 'sreesaanvika-offers' ),
+					'added'   => __( 'Added', 'sreesaanvika-offers' ),
+					'error'   => __( 'That did not work. Please try again.', 'sreesaanvika-offers' ),
+					'viewBag' => __( 'View bag', 'sreesaanvika-offers' ),
+				),
 			)
 		);
 	}
@@ -184,6 +197,28 @@ class SSO_Display {
 			);
 
 		return $name . '<span class="sso-line-flag">' . esc_html( $label ) . '</span>';
+	}
+
+	/**
+	 * The matching-piece discount gets its own note.
+	 *
+	 * @param string $name Current name html.
+	 * @param array  $item Cart item.
+	 * @param string $key  Cart item key.
+	 * @return string
+	 */
+	public static function look_name( $name, $item, $key ) {
+		unset( $item );
+
+		$applied = SSO_Cart::applied_to( $key );
+
+		if ( ! $applied || empty( $applied['look'] ) || $applied['saved'] <= 0 ) {
+			return $name;
+		}
+
+		return $name . '<span class="sso-line-flag sso-line-flag--look">'
+			. esc_html__( 'Matching piece discount', 'sreesaanvika-offers' )
+			. '</span>';
 	}
 
 	/* ---------------------------------------------------------------------

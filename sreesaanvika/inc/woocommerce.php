@@ -707,6 +707,34 @@ function ss_single_share() {
 }
 
 /**
+ * Take WooCommerce's own callbacks off the single-product summary hook.
+ *
+ * The theme's summary template lays out the title, rating, price, excerpt,
+ * add-to-cart and meta itself, but it still fires
+ * woocommerce_single_product_summary so that plugins hooking there — offer
+ * banners, size charts, trust badges — actually appear. Without this the
+ * default callbacks would print all of it twice.
+ */
+function ss_unhook_woo_summary() {
+	$defaults = array(
+		5  => 'woocommerce_template_single_title',
+		10 => 'woocommerce_template_single_price',
+		20 => 'woocommerce_template_single_excerpt',
+		30 => 'woocommerce_template_single_add_to_cart',
+		40 => 'woocommerce_template_single_meta',
+		50 => 'woocommerce_template_single_sharing',
+	);
+
+	foreach ( $defaults as $priority => $callback ) {
+		remove_action( 'woocommerce_single_product_summary', $callback, $priority );
+	}
+
+	// The rating shares priority 10 with the price.
+	remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_rating', 10 );
+}
+add_action( 'wp', 'ss_unhook_woo_summary' );
+
+/**
  * A "Buy it now" button that adds to the cart and jumps to checkout.
  */
 function ss_buy_now_button() {

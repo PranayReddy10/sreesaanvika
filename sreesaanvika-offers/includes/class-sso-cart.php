@@ -124,18 +124,21 @@ class SSO_Cart {
 		self::$applied  = array();
 		self::$progress = array();
 
-		$offers = SSO_Offer::live();
+		$contents = $cart->get_cart();
 
-		if ( ! $offers ) {
+		if ( ! $contents ) {
 			return;
 		}
 
-		$contents = $cart->get_cart();
-
-		// Free units to grant, gathered across offers, keyed by cart item.
+		// Discounts to grant, gathered across offers, keyed by cart item.
 		$free = array();
 
-		foreach ( $offers as $offer ) {
+		/*
+		 * Offers first, then the Complete the look pairings — which apply on
+		 * their own even when no offer is running, so this must not bail out
+		 * early on an empty offer list.
+		 */
+		foreach ( SSO_Offer::live() as $offer ) {
 			$units = array();
 
 			foreach ( $contents as $key => $item ) {
@@ -208,6 +211,8 @@ class SSO_Cart {
 			}
 		}
 
+		self::add_bundle_discounts( $contents, $free );
+
 		if ( ! $free ) {
 			return;
 		}
@@ -241,7 +246,64 @@ class SSO_Cart {
 				'free'  => $grant['units'],
 				'saved' => ( $base * $qty ) - $line,
 				'unit'  => $base,
+				'look'  => ! empty( $grant['look'] ),
 			);
+		}
+	}
+
+	/**
+	 * "Complete the look": take the pairing discount off the matching pieces
+	 * when the product they were chosen for is in the same cart.
+	 *
+	 * Anything an offer has already made free is left alone, so the two never
+	 * stack into a negative line.
+	 *
+	 * @param array $contents Cart contents.
+	 * @param array $free     Discounts gathered so far, by cart item key.
+	 */
+	protected static function add_bundle_discounts( array $contents, array &$free ) {
+		if ( ! class_exists( 'SSO_Bundle' ) ) {
+			return;
+		}
+
+		// Which product is on which cart line.
+		$lines = array();
+
+		foreach ( $contents as $key => $item ) {
+			$lines[ (int) $item['product_id'] ][] = $key;
+		}
+
+		foreach ( $contents as $item ) {
+			$lead    = (int) $item['product_id'];
+			$percent = SSO_Bundle::percent( $lead );
+
+			if ( $percent <= 0 ) {
+				continue;
+			}
+
+			foreach ( SSO_Bundle::partners( $lead ) as $partner ) {
+				if ( empty( $lines[ $partner ] ) ) {
+					continue;
+				}
+
+				foreach ( $lines[ $partner ] as $key ) {
+					// An offer already handled this line; do not discount twice.
+					if ( isset( $free[ $key ] ) ) {
+						continue;
+					}
+
+					$base = self::base_price( $contents[ $key ] );
+					$qty  = (int) $contents[ $key ]['quantity'];
+
+					$free[ $key ] = array(
+						'units'   => 0,
+						'off'     => $base * $qty * ( $percent / 100 ),
+						'offer'   => 0,
+						'percent' => $percent / 100,
+						'look'    => true,
+					);
+				}
+			}
 		}
 	}
 }

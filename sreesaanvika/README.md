@@ -431,6 +431,29 @@ so months later it is clear why a saree went out at nothing.
 
 `[ss_offer]` places a banner anywhere; `[ss_offer id="12"]` places one.
 
+### Complete the look
+
+The other half of the plugin, and the one that lifts basket size. On **any
+product**, a *Complete the look* panel lets you pick the pieces that go with
+it by hand — the jhumkas for a saree, the bangles, a matching blouse.
+
+Under the product they appear as **this piece + match + match**, each with a
+tick box, a running total, and one button that puts the whole look in the bag.
+Unticking a piece re-totals immediately. A piece already in the cart is shown
+as such rather than added twice, and a variable product is never added blind —
+it says to choose the options on its own page.
+
+Set a **discount on the matching items** and the pairing becomes a real offer:
+the matches are reduced whenever the product they were chosen for is in the
+same cart. A line an offer has already made free is never cut a second time.
+
+Tick **show this product on the matching products' pages too** and the pairing
+works both ways — pick the jewellery on the saree once, and the saree turns up
+beside the jewellery as well.
+
+In the cart, *Goes with what is in your bag* shows the matches for whatever is
+in there, with an Add button on each.
+
 The discount is worked out on the server during WooCommerce's own totals pass,
 so it holds with JavaScript off, survives a page reload, and cannot be applied
 twice by a recalculation.
@@ -577,6 +600,18 @@ each page by its address or its title (it knows the usual variants —
 `about-us`, `our-story`, `track-order` and so on) and puts it back on the theme
 template without touching what you have written. Or set it by hand: edit the
 page, then Page Attributes → Template.
+
+---
+
+### A plugin's product-page output does not appear
+
+The theme lays out the product summary itself, so for a long time it never
+fired `woocommerce_single_product_summary` and nothing hooked there could
+appear. It fires now, with WooCommerce's own callbacks removed from it so the
+title, price, excerpt, add-to-cart and meta are not printed twice.
+
+If you are writing a plugin, hook `woocommerce_single_product_summary` as
+usual; output lands under the short description, above the add-to-cart form.
 
 ---
 
