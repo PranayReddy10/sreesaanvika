@@ -306,6 +306,14 @@ function ss_card_swatches( $product, $limit = 5 ) {
 	echo '</div>';
 }
 
+/*
+ * WooCommerce only sends a variation's price to the browser when the
+ * variations differ in price, so on a product where every colour costs the
+ * same the price simply never moves when you choose one — which reads as a
+ * broken page rather than as "same price". Always send it.
+ */
+add_filter( 'woocommerce_show_variation_price', '__return_true' );
+
 /**
  * The colour attribute terms attached to a product.
  *

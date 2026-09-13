@@ -260,7 +260,43 @@
 
 	/* ==================================================================
 	 * 2. Quantity steppers
+	 *
+	 * WooCommerce rewrites min and max on the input when a variation is
+	 * chosen, so a stepper that only clamps silently looks broken the moment
+	 * stock runs low — the button has to say it is at the limit.
 	 * ================================================================== */
+	function qtyInput(wrap) {
+		return wrap && wrap.querySelector('input[type="number"], input.qty');
+	}
+
+	function syncQty(wrap) {
+		var input = qtyInput(wrap);
+
+		if (!input) { return; }
+
+		var value = parseFloat(input.value);
+		var min = parseFloat(input.getAttribute('min'));
+		var max = parseFloat(input.getAttribute('max'));
+
+		if (isNaN(value)) { value = isNaN(min) ? 1 : min; }
+
+		$$('.ss-qty-btn', wrap).forEach(function (btn) {
+			var up = btn.classList.contains('ss-qty-plus');
+			var at = up ? (!isNaN(max) && value >= max) : (value <= (isNaN(min) ? 1 : min));
+
+			btn.disabled = at;
+			btn.classList.toggle('is-disabled', at);
+			btn.setAttribute('aria-disabled', at ? 'true' : 'false');
+			btn.title = at
+				? (up ? (i18n.maxQty || 'That is all we have in stock') : (i18n.minQty || 'Minimum quantity'))
+				: '';
+		});
+	}
+
+	function syncAllQty() {
+		$$('.ss-qty, .quantity').forEach(syncQty);
+	}
+
 	on(D, 'click', function (e) {
 		var btn = e.target.closest('.ss-qty-btn');
 		if (!btn) { return; }
@@ -268,9 +304,9 @@
 		e.preventDefault();
 
 		var wrap = btn.closest('.ss-qty, .quantity');
-		var input = wrap && wrap.querySelector('input[type="number"], input.qty');
+		var input = qtyInput(wrap);
 
-		if (!input) { return; }
+		if (!input || btn.disabled) { return; }
 
 		var step = parseFloat(input.getAttribute('step')) || 1;
 		var min = parseFloat(input.getAttribute('min'));
@@ -285,7 +321,27 @@
 
 		input.value = value;
 		input.dispatchEvent(new Event('change', { bubbles: true }));
+
+		syncQty(wrap);
 	});
+
+	on(D, 'change', function (e) {
+		var input = e.target.closest('input[type="number"], input.qty');
+
+		if (input) { syncQty(input.closest('.ss-qty, .quantity')); }
+	});
+
+	syncAllQty();
+
+	/*
+	 * Woo swaps the min and max attributes as variations are chosen, and
+	 * reveals the buy row it had hidden — both after our first pass.
+	 */
+	if (window.jQuery) {
+		window.jQuery(D).on('found_variation reset_data show_variation hide_variation', function () {
+			setTimeout(syncAllQty, 30);
+		});
+	}
 
 	/* ==================================================================
 	 * 3. Variation swatches mirrored from Woo's <select>s
@@ -442,29 +498,80 @@
 
 	buildSwatches();
 
-	/* Swap the main gallery image when a variation is picked. */
+	/* Follow the chosen variation: its price, and its image when the colour
+	   has no gallery of its own to take over. */
 	(function () {
 		var form = $('form.variations_form');
 		if (!form || !window.jQuery) { return; }
 
-		window.jQuery(form).on('found_variation', function (event, variation) {
-			var stage = $('.ss-gallery__frame img');
-			var zoom = $('.ss-gallery__zoom');
+		var price = $('[data-var-price]');
+		var basePrice = price ? price.innerHTML : '';
 
-			if (stage && variation.image && variation.image.src) {
-				stage.src = variation.image.src;
-				stage.alt = variation.image.alt || '';
-			}
+		/*
+		 * Write the variation's price into the theme's own price block rather
+		 * than over it, so the "now", "was" and "% off" styling survives.
+		 */
+		function paintPrice(variation) {
+			if (!price || !variation.price_html) { return; }
 
-			if (zoom && variation.image && variation.image.full_src) {
-				zoom.style.backgroundImage = 'url(' + variation.image.full_src + ')';
-			}
+			var now = price.querySelector('.ss-price-now');
 
-			var price = $('[data-var-price]');
-
-			if (price && variation.price_html) {
+			if (now) {
+				now.innerHTML = variation.price_html;
+			} else {
 				price.innerHTML = variation.price_html;
 			}
+
+			var regular = parseFloat(variation.display_regular_price);
+			var sale = parseFloat(variation.display_price);
+			var pct = (regular > 0 && sale > 0 && sale < regular)
+				? Math.round(((regular - sale) / regular) * 100)
+				: 0;
+
+			var off = price.querySelector('.ss-price-off');
+
+			if (!off && pct > 0) {
+				off = D.createElement('span');
+				off.className = 'ss-price-off';
+				(price.querySelector('.ss-price-block, [class*="price"]') || price).appendChild(off);
+			}
+
+			if (off) {
+				off.textContent = pct > 0 ? (i18n.percentOff || '%d%% off').replace('%d', pct).replace('%%', '%') : '';
+				off.hidden = pct < 1;
+			}
+		}
+
+		window.jQuery(form).on('found_variation', function (event, variation) {
+			var gallery = $('[data-gallery]');
+			var hasSet = false;
+
+			// A colour gallery has already repainted the stage — leave it be.
+			if (gallery && gallery.getAttribute('data-color-galleries')) {
+				hasSet = true;
+			}
+
+			if (!hasSet) {
+				var stage = $('.ss-gallery__frame img');
+				var zoom = $('.ss-gallery__zoom');
+
+				if (stage && variation.image && variation.image.src) {
+					stage.src = variation.image.src;
+					stage.alt = variation.image.alt || '';
+					stage.removeAttribute('srcset');
+				}
+
+				if (zoom && variation.image && variation.image.full_src) {
+					zoom.style.backgroundImage = 'url(' + variation.image.full_src + ')';
+				}
+			}
+
+			paintPrice(variation);
+		});
+
+		// Clearing the selection puts the product's own price range back.
+		window.jQuery(form).on('reset_data', function () {
+			if (price && basePrice) { price.innerHTML = basePrice; }
 		});
 	})();
 

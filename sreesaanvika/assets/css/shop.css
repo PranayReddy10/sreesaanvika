@@ -708,7 +708,13 @@ ul.products li.product .added_to_cart { display: none; }
  * A one-image product still renders the thumbs, arrows and counter, because
  * choosing a colour can swap in a set of four without a page load. They stay
  * hidden until there is more than one shot to move between.
+ *
+ * Collapsing the thumb track matters as much as hiding the rail: with the rail
+ * out of flow, grid auto-placement drops the stage into that 84px column and
+ * the product photo renders thumbnail-sized.
  */
+.ss-gallery.is-single { grid-template-columns: minmax(0, 1fr); }
+
 .ss-gallery.is-single .ss-gallery__thumbs,
 .ss-gallery.is-single .ss-gallery__arrow,
 .ss-gallery.is-single .ss-gallery__counter,
@@ -1112,11 +1118,20 @@ ul.products li.product .added_to_cart { display: none; }
 	cursor: pointer;
 	display: grid;
 	place-items: center;
-	transition: color var(--ss-fast);
+	transition: opacity var(--ss-fast), color var(--ss-fast);
 	padding: 0;
 }
 
-.ss-qty button:hover { color: var(--ss-gold); }
+/* At the stock ceiling or the minimum, the button says so rather than
+   silently doing nothing. */
+.ss-qty-btn[disabled],
+.ss-qty-btn.is-disabled {
+	opacity: 0.34;
+	cursor: not-allowed;
+	color: var(--ss-muted);
+}
+
+.ss-qty button:not([disabled]):hover { color: var(--ss-gold); }
 
 .ss-qty input,
 .quantity input.qty {

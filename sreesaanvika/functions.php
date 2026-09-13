@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.3.0' );
+define( 'SS_VERSION', '1.3.1' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -210,6 +210,10 @@ function ss_assets() {
 				'deliverTo'      => __( 'Delivery to %s in 3–6 business days', 'sreesaanvika' ),
 				'badPin'         => __( 'Enter a valid 6-digit PIN code', 'sreesaanvika' ),
 				'viewImage'      => __( 'View image', 'sreesaanvika' ),
+				'maxQty'         => __( 'That is all we have in stock', 'sreesaanvika' ),
+				'minQty'         => __( 'Minimum quantity', 'sreesaanvika' ),
+				/* translators: %d: discount percentage */
+				'percentOff'     => __( '%d%% off', 'sreesaanvika' ),
 			),
 		)
 	);

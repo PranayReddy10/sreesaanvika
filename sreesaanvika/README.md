@@ -314,6 +314,11 @@ Everything lives under **Sree Saanvika Options**:
   exact shade, add a term meta named `ss_color` holding a hex value.
 - Product images look best portrait at 3:4 — 1200 × 1600 or larger keeps the
   zoom sharp.
+- Every variation sends its own price, so the price in the summary updates the
+  moment a colour or size is chosen — even where all the variations cost the
+  same and WooCommerce would normally send nothing.
+- The quantity stepper stops at the chosen variation's stock. At the limit the
+  **+** dims and says why on hover, rather than silently doing nothing.
 - Set a category image under **Products → Categories** to fill the homepage
   mosaic and the round rail.
 - The newsletter form stores addresses in the `ss_newsletter_list` option.
