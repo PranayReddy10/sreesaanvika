@@ -1,0 +1,368 @@
+@font-face { font-family: Gloock; src: url(fonts/Gloock-Regular.ttf); font-weight: 400; }
+@font-face { font-family: Outfit; src: url(fonts/Outfit-Regular.ttf); font-weight: 400; }
+@font-face { font-family: Outfit; src: url(fonts/Outfit-Bold.ttf); font-weight: 700; }
+@font-face { font-family: Lora; src: url(fonts/Lora-Regular.ttf); font-weight: 400; }
+@font-face { font-family: Lora; src: url(fonts/Lora-Italic.ttf); font-weight: 400; font-style: italic; }
+
+:root {
+	--bg: #140a12;
+	--surface: #21121d;
+	--surface2: #2b1826;
+	--gold: #d9a441;
+	--gold-lt: #f0d08a;
+	--maroon: #7b1e3b;
+	--marigold: #e8952f;
+	--text: #f4eaee;
+	--soft: #cbb8c2;
+	--mute: #a8909c;
+	--line: rgba(244, 234, 238, 0.11);
+	--green: #3f9d7c;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: Outfit, sans-serif;
+	font-size: 10.2pt;
+	line-height: 1.62;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+.page {
+	width: 210mm;
+	min-height: 297mm;
+	padding: 19mm 18mm 16mm;
+	position: relative;
+	page-break-after: always;
+	overflow: hidden;
+	background:
+		radial-gradient(120% 60% at 100% 0%, rgba(123, 30, 59, 0.16), transparent 62%),
+		var(--bg);
+}
+
+.page:last-child { page-break-after: auto; }
+
+/* ---------- Cover ---------- */
+.cover {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 30mm 20mm;
+	background:
+		radial-gradient(75% 55% at 50% 34%, #34172c 0%, #1b0d17 55%, #0d060b 100%);
+}
+
+.cover__mark { width: 34mm; height: 34mm; margin-bottom: 12mm; }
+
+.cover__eyebrow {
+	font-size: 8pt;
+	letter-spacing: 0.42em;
+	text-transform: uppercase;
+	color: var(--gold);
+	margin: 0 0 7mm;
+}
+
+.cover h1 {
+	font-family: Gloock, serif;
+	font-size: 40pt;
+	line-height: 1.04;
+	margin: 0 0 5mm;
+	color: var(--text);
+	font-weight: 400;
+}
+
+.cover h1 em { color: var(--gold); font-style: normal; }
+
+.cover__tag {
+	font-family: Lora, serif;
+	font-style: italic;
+	font-size: 14pt;
+	color: var(--soft);
+	margin: 0 0 14mm;
+}
+
+.cover__rule {
+	width: 46mm;
+	height: 2px;
+	background: linear-gradient(90deg, var(--gold-lt), var(--gold), transparent);
+	margin-bottom: 9mm;
+}
+
+.cover__meta { font-size: 9.5pt; color: var(--mute); line-height: 1.9; }
+.cover__meta strong { color: var(--text); font-weight: 700; }
+
+.cover__foot {
+	position: absolute;
+	left: 20mm;
+	right: 20mm;
+	bottom: 16mm;
+	display: flex;
+	justify-content: space-between;
+	font-size: 8pt;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--mute);
+	border-top: 1px solid var(--line);
+	padding-top: 5mm;
+}
+
+/* ---------- Section chrome ---------- */
+.sec-head { display: flex; align-items: flex-start; gap: 6mm; margin-bottom: 8mm; }
+
+.sec-num {
+	font-family: Gloock, serif;
+	font-size: 26pt;
+	line-height: 1;
+	color: var(--maroon);
+	-webkit-text-stroke: 0.6pt var(--gold);
+	flex: none;
+	padding-top: 1mm;
+}
+
+.sec-head h2 {
+	font-family: Gloock, serif;
+	font-weight: 400;
+	font-size: 21pt;
+	line-height: 1.15;
+	margin: 0 0 2mm;
+	color: var(--gold);
+}
+
+.sec-head p { margin: 0; color: var(--mute); font-size: 10pt; max-width: 135mm; }
+
+h3 {
+	font-family: Outfit, sans-serif;
+	font-size: 8.4pt;
+	font-weight: 700;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--gold);
+	margin: 7mm 0 3mm;
+}
+
+h3:first-of-type { margin-top: 0; }
+
+p { margin: 0 0 3.4mm; }
+strong { color: var(--text); font-weight: 700; }
+em { font-family: Lora, serif; font-style: italic; color: var(--soft); }
+
+.lede { font-size: 11pt; color: var(--soft); }
+
+/* ---------- Cards ---------- */
+.card {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 3mm;
+	padding: 6mm 7mm;
+	margin-bottom: 5mm;
+}
+
+.card--gold { border-color: rgba(217, 164, 65, 0.34); }
+
+.grid { display: grid; gap: 4mm; }
+.grid--2 { grid-template-columns: 1fr 1fr; }
+.grid--3 { grid-template-columns: repeat(3, 1fr); }
+.grid--4 { grid-template-columns: repeat(4, 1fr); }
+
+.stat {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 3mm;
+	padding: 5mm;
+	text-align: center;
+}
+
+.stat b {
+	display: block;
+	font-family: Gloock, serif;
+	font-weight: 400;
+	font-size: 22pt;
+	line-height: 1;
+	color: var(--gold);
+	margin-bottom: 2mm;
+}
+
+.stat span {
+	font-size: 7.6pt;
+	letter-spacing: 0.13em;
+	text-transform: uppercase;
+	color: var(--mute);
+	line-height: 1.4;
+	display: block;
+}
+
+/* ---------- Lists ---------- */
+ul.ticks { list-style: none; margin: 0 0 4mm; padding: 0; }
+
+ul.ticks li {
+	position: relative;
+	padding-left: 6mm;
+	margin-bottom: 2.4mm;
+}
+
+ul.ticks li::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 1.7mm;
+	width: 2.2mm;
+	height: 2.2mm;
+	border-radius: 50%;
+	background: var(--gold);
+}
+
+ul.ticks li strong { color: var(--text); }
+
+.pills { display: flex; flex-wrap: wrap; gap: 2mm; margin: 0 0 4mm; padding: 0; list-style: none; }
+
+.pills li {
+	padding: 1.4mm 3.4mm;
+	border-radius: 20mm;
+	border: 1px solid rgba(217, 164, 65, 0.3);
+	background: rgba(217, 164, 65, 0.07);
+	font-size: 8.4pt;
+	color: var(--soft);
+}
+
+/* ---------- Table ---------- */
+table { width: 100%; border-collapse: collapse; margin: 0 0 5mm; font-size: 9.4pt; }
+
+th {
+	text-align: left;
+	font-size: 7.6pt;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--mute);
+	font-weight: 700;
+	padding: 0 3mm 2.2mm 0;
+	border-bottom: 1px solid var(--line);
+}
+
+td { padding: 2.6mm 3mm 2.6mm 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+td:last-child, th:last-child { padding-right: 0; }
+tr:last-child td { border-bottom: 0; }
+td strong { color: var(--text); }
+
+/* ---------- Swatches ---------- */
+.swatches { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3mm; margin-bottom: 5mm; }
+
+.sw { text-align: center; }
+
+.sw i {
+	display: block;
+	height: 17mm;
+	border-radius: 2.4mm;
+	border: 1px solid var(--line);
+	margin-bottom: 2mm;
+}
+
+.sw b { display: block; font-size: 7.4pt; color: var(--text); font-weight: 700; line-height: 1.3; }
+.sw span { display: block; font-size: 7pt; color: var(--mute); font-family: Outfit, monospace; }
+
+/* ---------- Callout ---------- */
+.callout {
+	border-left: 2.4pt solid var(--gold);
+	background: linear-gradient(90deg, rgba(217, 164, 65, 0.1), transparent 70%);
+	padding: 4mm 6mm;
+	margin: 0 0 5mm;
+	font-family: Lora, serif;
+	font-size: 10.4pt;
+	color: var(--gold-lt);
+}
+
+.callout strong { color: var(--gold-lt); }
+
+/* The ticket, echoing the offer banner on the site. */
+.ticket {
+	display: flex;
+	border-radius: 3mm;
+	overflow: hidden;
+	border: 1px solid rgba(217, 164, 65, 0.34);
+	margin-bottom: 5mm;
+}
+
+.ticket__stub {
+	flex: 0 0 20mm;
+	background: var(--maroon);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: Gloock, serif;
+	font-size: 17pt;
+	color: var(--gold-lt);
+}
+
+.ticket__body {
+	flex: 1;
+	padding: 5mm 7mm;
+	background: linear-gradient(180deg, rgba(123, 30, 59, 0.2), rgba(123, 30, 59, 0.06));
+}
+
+.ticket__body b {
+	display: block;
+	font-size: 14pt;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--gold);
+	line-height: 1.2;
+}
+
+.ticket__body span { font-size: 9.4pt; color: var(--soft); }
+
+/* ---------- Flow (the delivery stages) ---------- */
+.flow { display: flex; align-items: stretch; gap: 0; margin-bottom: 5mm; }
+
+.flow div {
+	flex: 1;
+	text-align: center;
+	padding: 3.4mm 1mm;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-right: 0;
+	font-size: 7.8pt;
+	color: var(--soft);
+	line-height: 1.3;
+}
+
+.flow div:first-child { border-radius: 2.4mm 0 0 2.4mm; }
+.flow div:last-child { border-right: 1px solid var(--line); border-radius: 0 2.4mm 2.4mm 0; }
+
+.flow div:last-child {
+	background: rgba(63, 157, 124, 0.14);
+	border-color: rgba(63, 157, 124, 0.4);
+	color: var(--green);
+	font-weight: 700;
+}
+
+/* ---------- Footer ---------- */
+.foot {
+	position: absolute;
+	left: 18mm;
+	right: 18mm;
+	bottom: 9mm;
+	display: flex;
+	justify-content: space-between;
+	font-size: 7.4pt;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: rgba(168, 144, 156, 0.75);
+	border-top: 1px solid var(--line);
+	padding-top: 3mm;
+}
+
+.contact {
+	background: var(--surface);
+	border: 1px solid rgba(217, 164, 65, 0.34);
+	border-radius: 3mm;
+	padding: 8mm;
+	text-align: center;
+}
+
+.contact b { font-family: Gloock, serif; font-size: 15pt; color: var(--gold); font-weight: 400; display: block; margin-bottom: 3mm; }
+.contact p { color: var(--soft); margin-bottom: 2mm; }
+.contact .big { color: var(--text); font-size: 11pt; }
