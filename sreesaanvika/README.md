@@ -282,6 +282,30 @@ reduced motion gets it without the moving parts, and no curtain between pages.
 
 ---
 
+## Choosing what the homepage shows
+
+Two sections read from the category list, and both are picked the same way in
+**Customizer → Sree Saanvika Options → Homepage Sections**: type a few letters,
+tick the ones you want, and drag them into the order they should appear.
+Nothing chosen means the busiest categories, automatically.
+
+| Section | Setting |
+| --- | --- |
+| **The collections** — the big mosaic under the hero | *The collections — which categories* |
+| **Shop by category** — the round rail | *Shop by category — which categories* |
+
+### The collections can show products instead
+
+Set **The collections — show** to *Chosen products* and the mosaic switches from
+categories to a hand-picked set of products, with the price under each name and
+a link straight to the piece rather than to a listing. Same picker, same
+dragging, same tiles — useful for a festival edit or a handful of new arrivals
+you want on the front page by name.
+
+Leave it on *Categories* and nothing changes.
+
+---
+
 ## Colour galleries — one saree, two colourways
 
 A saree photographed in green and in red is one product with two sets of

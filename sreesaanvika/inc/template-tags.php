@@ -437,6 +437,73 @@ function ss_cat_query( $slugs ) {
  * @param bool   $top_level Restrict the automatic pick to top-level terms.
  * @return WP_Term[]
  */
+/**
+ * Products chosen by hand, in the order they were chosen.
+ *
+ * @param string $ids   Comma separated product ids.
+ * @param int    $count How many to fall back to when nothing is chosen.
+ * @return WC_Product[]
+ */
+function ss_picked_products( $ids = '', $count = 6 ) {
+	if ( ! function_exists( 'wc_get_product' ) ) {
+		return array();
+	}
+
+	$count  = max( 1, absint( $count ) );
+	$chosen = array_values( array_filter( array_map( 'absint', preg_split( '/[,\r\n\s]+/', (string) $ids ) ) ) );
+
+	$args = array(
+		'post_type'           => 'product',
+		'post_status'         => 'publish',
+		'posts_per_page'      => $chosen ? count( $chosen ) : $count,
+		'no_found_rows'       => true,
+		'ignore_sticky_posts' => true,
+	);
+
+	if ( $chosen ) {
+		// post__in on its own returns them in date order; this keeps the order
+		// the shop dragged them into.
+		$args['post__in'] = $chosen;
+		$args['orderby']  = 'post__in';
+	} else {
+		$args['orderby'] = 'date';
+		$args['order']   = 'DESC';
+	}
+
+	$query = new WP_Query( $args );
+	$out   = array();
+
+	foreach ( $query->posts as $post ) {
+		$product = wc_get_product( $post );
+
+		if ( $product && $product->is_visible() ) {
+			$out[] = $product;
+		}
+	}
+
+	wp_reset_postdata();
+
+	return $out;
+}
+
+/**
+ * A product's picture, or the theme's placeholder.
+ *
+ * @param WC_Product $product Product.
+ * @param string     $size    Image size.
+ * @return string
+ */
+function ss_product_image_url( $product, $size = 'ss-product' ) {
+	if ( ! $product instanceof WC_Product ) {
+		return ss_placeholder( 'product' );
+	}
+
+	$id  = $product->get_image_id();
+	$url = $id ? wp_get_attachment_image_url( $id, $size ) : '';
+
+	return $url ? $url : ss_placeholder( 'product' );
+}
+
 function ss_category_terms( $slugs = '', $count = 6, $top_level = true ) {
 	if ( ! taxonomy_exists( 'product_cat' ) ) {
 		return array();

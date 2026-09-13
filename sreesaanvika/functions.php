@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.5.0' );
+define( 'SS_VERSION', '1.6.0' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -368,6 +368,7 @@ require_once SS_DIR . '/inc/helpers.php';
 require_once SS_DIR . '/inc/icons.php';
 require_once SS_DIR . '/inc/branding.php';
 require_once SS_DIR . '/inc/nav-walker.php';
+require_once SS_DIR . '/inc/customize-picker.php';
 require_once SS_DIR . '/inc/customizer.php';
 require_once SS_DIR . '/inc/dynamic-css.php';
 require_once SS_DIR . '/inc/template-tags.php';
