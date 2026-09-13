@@ -262,20 +262,30 @@ opens the product with the colour already selected.
 
 ### Where the images come from
 
-Two sources, in order:
+**The variation's own photos — nothing to fill in twice.** Each colour's images
+are read straight from that colour's variation: its main image first, then its
+variation gallery. Set them once under Product data → Variations, the way you
+already would, and the shop picks them up.
 
-1. **Products → edit a product → Colour galleries.** A row per colour of the
-   product's Colour attribute, each with its own media picker. This is the one
-   to use for several photos per colour.
-2. **The variation image**, if you have already set one under Product data →
-   Variations. Nothing to fill in — a shop that has variation images gets
-   working image swatches straight away.
+That covers WooCommerce's own variation gallery and the usual gallery plugins.
+If yours stores its images under some other meta key, add it:
 
-Anything set in the Colour galleries panel wins over the variation image.
+```php
+add_filter( 'ss_variation_gallery_meta_keys', function ( $keys ) {
+    $keys[] = '_my_plugin_variation_images';
+    return $keys;
+} );
+```
+
+**Products → edit a product → Colour galleries** is an override, not a second
+place to do the same work. Each row shows the photos that colour is already
+using and where they came from; you only touch it to make a colour show
+*different* photos on the shop than on its variation. "Go back to the variation
+photos" undoes an override.
 
 The panel appears once the product has a **Color**, **Colour** or **Shade**
-attribute saved. Images are stored per colour rather than per variation, so a
-colour that spans six sizes only needs its photos attached once.
+attribute saved. Overrides are stored per colour rather than per variation, so
+a colour that spans six sizes only needs its photos attached once.
 
 ---
 
@@ -319,6 +329,9 @@ Everything lives under **Sree Saanvika Options**:
   same and WooCommerce would normally send nothing.
 - The quantity stepper stops at the chosen variation's stock. At the limit the
   **+** dims and says why on hover, rather than silently doing nothing.
+- Raising the quantity shows the line total under the buy row — `2 × ₹1,999.00
+  = ₹3,998.00` — so the figures move with the stepper. The price above it stays
+  the price of one, which is what the cart, the schema and the shopper expect.
 - Set a category image under **Products → Categories** to fill the homepage
   mosaic and the round rail.
 - The newsletter form stores addresses in the `ss_newsletter_list` option.

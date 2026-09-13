@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.3.1' );
+define( 'SS_VERSION', '1.3.2' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -197,6 +197,14 @@ function ss_assets() {
 			'maxCompare'  => (int) ss_option( 'compare_max', 4 ),
 			'freeShip'    => (float) ss_option( 'free_ship_threshold', 2999 ),
 			'currency'    => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '₹',
+			// Enough of WooCommerce's price settings to format a line total in JS.
+			'price'       => function_exists( 'wc_get_price_decimals' ) ? array(
+				'symbol'   => get_woocommerce_currency_symbol(),
+				'decimals' => wc_get_price_decimals(),
+				'thousand' => wc_get_price_thousand_separator(),
+				'decimal'  => wc_get_price_decimal_separator(),
+				'position' => get_option( 'woocommerce_currency_pos', 'left' ),
+			) : array(),
 			'i18n'        => array(
 				'added'          => __( 'Added to your bag', 'sreesaanvika' ),
 				'wishAdded'      => __( 'Saved to wishlist', 'sreesaanvika' ),
@@ -214,6 +222,8 @@ function ss_assets() {
 				'minQty'         => __( 'Minimum quantity', 'sreesaanvika' ),
 				/* translators: %d: discount percentage */
 				'percentOff'     => __( '%d%% off', 'sreesaanvika' ),
+				/* translators: 1: quantity, 2: unit price, 3: line total */
+				'lineTotal'      => __( '%1$s × %2$s = %3$s', 'sreesaanvika' ),
 			),
 		)
 	);

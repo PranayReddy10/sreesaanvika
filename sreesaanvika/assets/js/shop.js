@@ -15,6 +15,26 @@
 	function $$(sel, ctx) { return Array.prototype.slice.call((ctx || D).querySelectorAll(sel)); }
 	function on(el, ev, fn, opts) { if (el) { el.addEventListener(ev, fn, opts || false); } }
 
+	/* Format an amount the way WooCommerce formats it server-side. */
+	function formatPrice(amount) {
+		var cfg = data.price || {};
+		var decimals = typeof cfg.decimals === 'number' ? cfg.decimals : 2;
+		var fixed = (Math.round(amount * Math.pow(10, decimals)) / Math.pow(10, decimals)).toFixed(decimals);
+		var parts = fixed.split('.');
+
+		parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, cfg.thousand === undefined ? ',' : cfg.thousand);
+
+		var number = parts.join(cfg.decimal === undefined ? '.' : cfg.decimal);
+		var symbol = cfg.symbol || data.currency || '';
+
+		switch (cfg.position) {
+			case 'right': return number + symbol;
+			case 'left_space': return symbol + ' ' + number;
+			case 'right_space': return number + ' ' + symbol;
+			default: return symbol + number;
+		}
+	}
+
 	/* ==================================================================
 	 * 1. Product gallery — thumbs, zoom, lightbox
 	 * ================================================================== */
@@ -291,10 +311,39 @@
 				? (up ? (i18n.maxQty || 'That is all we have in stock') : (i18n.minQty || 'Minimum quantity'))
 				: '';
 		});
+
+		paintLineTotal();
 	}
 
 	function syncAllQty() {
 		$$('.ss-qty, .quantity').forEach(syncQty);
+	}
+
+	/*
+	 * The summary price is the price of one, so raising the quantity looks
+	 * like nothing happened. Spell out what the shopper will actually pay.
+	 */
+	function paintLineTotal() {
+		var line = $('[data-line-total]');
+
+		if (!line) { return; }
+
+		var form = line.closest('form');
+		var input = form && qtyInput(form.querySelector('.ss-qty, .quantity'));
+		var qty = input ? parseFloat(input.value) : 1;
+		var unit = parseFloat(line.getAttribute('data-unit-price'));
+
+		if (!unit || isNaN(unit) || isNaN(qty) || qty < 2) {
+			line.hidden = true;
+			line.textContent = '';
+			return;
+		}
+
+		line.hidden = false;
+		line.textContent = (i18n.lineTotal || '%1$s × %2$s = %3$s')
+			.replace('%1$s', qty)
+			.replace('%2$s', formatPrice(unit))
+			.replace('%3$s', formatPrice(unit * qty));
 	}
 
 	on(D, 'click', function (e) {
@@ -325,10 +374,14 @@
 		syncQty(wrap);
 	});
 
-	on(D, 'change', function (e) {
-		var input = e.target.closest('input[type="number"], input.qty');
+	// 'input' as well as 'change', so typing a quantity updates the total as
+	// it is typed rather than only on blur.
+	['input', 'change'].forEach(function (ev) {
+		on(D, ev, function (e) {
+			var input = e.target.closest('input[type="number"], input.qty');
 
-		if (input) { syncQty(input.closest('.ss-qty, .quantity')); }
+			if (input) { syncQty(input.closest('.ss-qty, .quantity')); }
+		});
 	});
 
 	syncAllQty();
@@ -567,11 +620,25 @@
 			}
 
 			paintPrice(variation);
+
+			var line = $('[data-line-total]');
+
+			if (line) {
+				line.setAttribute('data-unit-price', variation.display_price);
+				paintLineTotal();
+			}
 		});
 
 		// Clearing the selection puts the product's own price range back.
 		window.jQuery(form).on('reset_data', function () {
 			if (price && basePrice) { price.innerHTML = basePrice; }
+
+			var line = $('[data-line-total]');
+
+			if (line) {
+				line.setAttribute('data-unit-price', '');
+				paintLineTotal();
+			}
 		});
 	})();
 

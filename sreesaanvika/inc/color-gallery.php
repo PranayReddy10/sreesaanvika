@@ -45,11 +45,61 @@ function ss_color_gallery_ids( $product_id ) {
 }
 
 /**
+ * Every image attached to one variation: its own, then its gallery.
+ *
+ * WooCommerce and several gallery plugins now let a variation carry more than
+ * one photo. Reading whatever is already there is the whole point — nobody
+ * should have to attach the same four images twice.
+ *
+ * @param WC_Product_Variation $variation Variation.
+ * @return int[]
+ */
+function ss_variation_image_ids( $variation ) {
+	$ids = array();
+
+	if ( is_callable( array( $variation, 'get_image_id' ) ) ) {
+		$ids[] = (int) $variation->get_image_id();
+	}
+
+	if ( is_callable( array( $variation, 'get_gallery_image_ids' ) ) ) {
+		$ids = array_merge( $ids, array_map( 'absint', (array) $variation->get_gallery_image_ids() ) );
+	}
+
+	/*
+	 * Where the gallery is not exposed through the product object, read the
+	 * meta directly — core's own key first, then the keys used by the popular
+	 * variation-gallery plugins.
+	 */
+	$keys = apply_filters(
+		'ss_variation_gallery_meta_keys',
+		array(
+			'_product_image_gallery',
+			'_wc_additional_variation_images',
+			'_woo_variation_gallery_images',
+			'_wc_variation_gallery_images',
+			'rtwpvg_images',
+		)
+	);
+
+	foreach ( $keys as $key ) {
+		$saved = get_post_meta( $variation->get_id(), $key, true );
+
+		if ( ! $saved ) {
+			continue;
+		}
+
+		$ids = array_merge( $ids, array_map( 'absint', is_array( $saved ) ? $saved : explode( ',', (string) $saved ) ) );
+	}
+
+	return array_values( array_unique( array_filter( $ids ) ) );
+}
+
+/**
  * Colour → attachment ids taken from the product's own variations.
  *
- * WooCommerce lets each variation carry one image, so a shop that has already
- * set those gets working colour swatches and a colour-aware gallery without
- * filling in the panel below. Anything saved in the panel wins over this.
+ * Read straight from the variation's own image and gallery, so a shop that has
+ * already filled those in gets working colour swatches and a colour-aware
+ * gallery with nothing more to do. The panel below is only an override.
  *
  * @param WC_Product $product Product.
  * @return array<string,int[]>
@@ -98,9 +148,9 @@ function ss_color_variation_images( $product ) {
 			}
 		}
 
-		$image_id = $variation->get_image_id();
+		$images = ss_variation_image_ids( $variation );
 
-		if ( ! $slug || ! $image_id ) {
+		if ( ! $slug || ! $images ) {
 			continue;
 		}
 
@@ -108,8 +158,10 @@ function ss_color_variation_images( $product ) {
 			$out[ $slug ] = array();
 		}
 
-		if ( ! in_array( (int) $image_id, $out[ $slug ], true ) ) {
-			$out[ $slug ][] = (int) $image_id;
+		foreach ( $images as $image_id ) {
+			if ( ! in_array( $image_id, $out[ $slug ], true ) ) {
+				$out[ $slug ][] = $image_id;
+			}
 		}
 	}
 
@@ -239,42 +291,76 @@ function ss_color_gallery_panel( $post ) {
 		return;
 	}
 
-	$saved = ss_color_gallery_ids( $post->ID );
+	$saved   = ss_color_gallery_ids( $post->ID );
+	$derived = ss_color_variation_images( $product );
 
 	wp_nonce_field( 'ss_color_gallery', 'ss_color_gallery_nonce' );
 	?>
 	<p class="description" style="margin-bottom:14px">
-		<?php esc_html_e( 'Give each colour the photos that show it. When a shopper picks that colour, the product gallery switches to these images, and the colour swatch shows the first one instead of a plain circle. A colour left empty uses its variation image if it has one, and otherwise the main product gallery.', 'sreesaanvika' ); ?>
+		<?php esc_html_e( 'The shop already takes each colour\'s photos from that colour\'s variation — its image and its gallery. There is nothing to fill in here unless you want a colour to show different photos on the shop than on its variation.', 'sreesaanvika' ); ?>
 	</p>
 
 	<div class="ss-cg">
 		<?php foreach ( $terms as $term ) : ?>
-			<?php $ids = isset( $saved[ $term->slug ] ) ? $saved[ $term->slug ] : array(); ?>
-			<div class="ss-cg__row" data-color="<?php echo esc_attr( $term->slug ); ?>">
+			<?php
+			$override = isset( $saved[ $term->slug ] ) ? $saved[ $term->slug ] : array();
+			$from_var = isset( $derived[ $term->slug ] ) ? $derived[ $term->slug ] : array();
+			$showing  = $override ? $override : $from_var;
+			?>
+			<div class="ss-cg__row<?php echo $override ? ' is-override' : ''; ?>" data-color="<?php echo esc_attr( $term->slug ); ?>">
 				<div class="ss-cg__label">
 					<span class="ss-cg__dot" style="background:<?php echo esc_attr( ss_color_hex( $term->name, $term->term_id ) ); ?>"></span>
 					<strong><?php echo esc_html( $term->name ); ?></strong>
+
+					<span class="ss-cg__source">
+						<?php
+						if ( $override ) {
+							esc_html_e( 'using the photos set here', 'sreesaanvika' );
+						} elseif ( $from_var ) {
+							printf(
+								/* translators: %d: number of images */
+								esc_html( _n( 'using %d photo from this colour\'s variation', 'using %d photos from this colour\'s variation', count( $from_var ), 'sreesaanvika' ) ),
+								count( $from_var )
+							);
+						} else {
+							esc_html_e( 'no photos yet — add one to the variation, or here', 'sreesaanvika' );
+						}
+						?>
+					</span>
 				</div>
 
 				<div class="ss-cg__images">
-					<?php foreach ( $ids as $id ) : ?>
+					<?php foreach ( $showing as $id ) : ?>
 						<?php $thumb = wp_get_attachment_image_url( $id, 'thumbnail' ); ?>
 						<?php if ( $thumb ) : ?>
-							<span class="ss-cg__img" data-id="<?php echo absint( $id ); ?>">
+							<span class="ss-cg__img<?php echo $override ? '' : ' is-inherited'; ?>" data-id="<?php echo absint( $id ); ?>">
 								<img src="<?php echo esc_url( $thumb ); ?>" alt="" />
-								<button type="button" class="ss-cg__remove" aria-label="<?php esc_attr_e( 'Remove', 'sreesaanvika' ); ?>">&times;</button>
+								<?php if ( $override ) : ?>
+									<button type="button" class="ss-cg__remove" aria-label="<?php esc_attr_e( 'Remove', 'sreesaanvika' ); ?>">&times;</button>
+								<?php endif; ?>
 							</span>
 						<?php endif; ?>
 					<?php endforeach; ?>
 				</div>
 
 				<p>
-					<button type="button" class="button ss-cg__add"><?php esc_html_e( 'Add images', 'sreesaanvika' ); ?></button>
-					<button type="button" class="button-link ss-cg__clear"><?php esc_html_e( 'Clear', 'sreesaanvika' ); ?></button>
+					<button type="button" class="button ss-cg__add">
+						<?php $override ? esc_html_e( 'Add images', 'sreesaanvika' ) : esc_html_e( 'Show different photos here', 'sreesaanvika' ); ?>
+					</button>
+
+					<?php if ( $override ) : ?>
+						<button type="button" class="button-link ss-cg__clear">
+							<?php
+							$from_var
+								? esc_html_e( 'Go back to the variation photos', 'sreesaanvika' )
+								: esc_html_e( 'Clear', 'sreesaanvika' );
+							?>
+						</button>
+					<?php endif; ?>
 				</p>
 
 				<input type="hidden" class="ss-cg__value" name="ss_color_gallery[<?php echo esc_attr( $term->slug ); ?>]"
-					value="<?php echo esc_attr( implode( ',', $ids ) ); ?>" />
+					value="<?php echo esc_attr( implode( ',', $override ) ); ?>" />
 			</div>
 		<?php endforeach; ?>
 	</div>
@@ -342,8 +428,9 @@ function ss_color_gallery_assets( $hook ) {
 		'ss-color-gallery',
 		'ssCG',
 		array(
-			'title'  => __( 'Choose images for this colour', 'sreesaanvika' ),
-			'button' => __( 'Use these images', 'sreesaanvika' ),
+			'title'    => __( 'Choose images for this colour', 'sreesaanvika' ),
+			'button'   => __( 'Use these images', 'sreesaanvika' ),
+			'reverted' => __( 'Saved — this colour goes back to its variation photos when you update the product.', 'sreesaanvika' ),
 		)
 	);
 
@@ -353,8 +440,12 @@ function ss_color_gallery_assets( $hook ) {
 		. '.ss-cg__row:last-child{border-bottom:0}'
 		. '.ss-cg__label{display:flex;align-items:center;gap:8px;margin-bottom:8px}'
 		. '.ss-cg__dot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.2);display:inline-block}'
+		. '.ss-cg__source{color:#787c82;font-size:12px;font-style:italic}'
 		. '.ss-cg__images{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}'
+		. '.ss-cg__images:empty{display:none}'
 		. '.ss-cg__img{position:relative;width:64px;height:64px;border-radius:4px;overflow:hidden;border:1px solid #ddd}'
+		. '.ss-cg__img.is-inherited{opacity:.62}'
+		. '.ss-cg__note{color:#787c82;font-size:12px;margin-left:8px}'
 		. '.ss-cg__img img{width:100%;height:100%;object-fit:cover;display:block}'
 		. '.ss-cg__remove{position:absolute;top:0;right:0;width:20px;height:20px;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;line-height:1;padding:0}'
 	);

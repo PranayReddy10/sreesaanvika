@@ -43,6 +43,16 @@
 		});
 
 		frame.on('select', function () {
+			/*
+			 * Until now the row was showing the colour's variation photos.
+			 * The moment the shop owner picks their own, those become the
+			 * override and the inherited preview goes.
+			 */
+			if (!row.hasClass('is-override')) {
+				row.addClass('is-override').find('.ss-cg__images').empty();
+				row.find('.ss-cg__source').text('');
+			}
+
 			var chosen = ids(row);
 			var box = row.find('.ss-cg__images');
 
@@ -81,7 +91,13 @@
 
 		var row = $(this).closest('.ss-cg__row');
 
-		row.find('.ss-cg__images').empty();
+		row.removeClass('is-override').find('.ss-cg__images').empty();
 		write(row, []);
+
+		if (!row.find('.ss-cg__note').length) {
+			$(this).after($('<span class="ss-cg__note" />').text(strings.reverted || ''));
+		}
+
+		$(this).remove();
 	});
 }(jQuery));

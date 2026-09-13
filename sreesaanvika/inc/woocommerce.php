@@ -678,6 +678,29 @@ function ss_single_share() {
 }
 
 /**
+ * The line total under the buy row.
+ *
+ * The price in the summary is the price of one, which reads as "nothing
+ * happened" when a shopper raises the quantity. This says what they will
+ * actually pay. shop.js fills it in and hides it again at a quantity of one.
+ */
+function ss_line_total() {
+	global $product;
+
+	if ( ! $product instanceof WC_Product || ! $product->is_purchasable() ) {
+		return;
+	}
+
+	// Variable products get their unit price from the chosen variation instead.
+	$unit = $product->is_type( 'variable' ) ? '' : (string) wc_get_price_to_display( $product );
+
+	printf(
+		'<p class="ss-linetotal" data-line-total data-unit-price="%s" hidden></p>',
+		esc_attr( $unit )
+	);
+}
+
+/**
  * A "Buy it now" button that adds to the cart and jumps to checkout.
  */
 function ss_buy_now_button() {

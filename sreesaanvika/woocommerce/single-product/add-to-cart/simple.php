@@ -53,6 +53,8 @@ if ( $product->is_in_stock() ) :
 
 		<?php ss_buy_now_button(); ?>
 
+		<?php ss_line_total(); ?>
+
 		<?php do_action( 'woocommerce_after_add_to_cart_button' ); ?>
 	</form>
 

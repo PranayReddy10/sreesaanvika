@@ -42,6 +42,8 @@ global $product;
 
 	<?php ss_buy_now_button(); ?>
 
+	<?php ss_line_total(); ?>
+
 	<?php do_action( 'woocommerce_after_add_to_cart_button' ); ?>
 
 	<input type="hidden" name="add-to-cart" value="<?php echo absint( $product->get_id() ); ?>" />
