@@ -21,33 +21,55 @@ $ss_hours = ss_option( 'footer_hours' );
 ?>
 
 <div class="ss-container ss-section">
-	<div class="ss-layout" style="grid-template-columns:minmax(0,1fr) 340px">
+	<div class="ss-layout" style="--ss-aside:340px">
 
-		<div>
-			<div class="ss-entry ss-track">
+		<div class="ss-track">
+			<?php
+			while ( have_posts() ) :
+				the_post();
+
+				// Anything typed on the page shows above the form.
+				if ( trim( get_the_content() ) ) {
+					echo '<div class="ss-entry" style="margin-bottom:20px">';
+					the_content();
+					echo '</div>';
+				}
+			endwhile;
+			?>
+
+			<div class="ss-track__card">
+				<div class="ss-track__head">
+					<?php ss_the_icon( 'truck', 26 ); ?>
+					<h2><?php esc_html_e( 'Where is my order?', 'sreesaanvika' ); ?></h2>
+				</div>
+
 				<?php
-				while ( have_posts() ) :
-					the_post();
-
-					// Any content typed on the page shows above the form.
-					if ( trim( get_the_content() ) ) {
-						the_content();
-					}
-				endwhile;
-
 				if ( class_exists( 'WooCommerce' ) ) {
 					echo do_shortcode( '[woocommerce_order_tracking]' );
 				} else {
-					echo '<p>' . esc_html__( 'Order tracking needs WooCommerce to be active.', 'sreesaanvika' ) . '</p>';
+					echo '<p style="color:var(--ss-muted)">' . esc_html__( 'Order tracking needs WooCommerce to be active.', 'sreesaanvika' ) . '</p>';
 				}
 				?>
 			</div>
 
-			<div class="ss-card" style="padding:26px 28px;margin-top:20px">
-				<h3 style="font-size:1.15rem"><?php esc_html_e( 'Where do I find my order number?', 'sreesaanvika' ); ?></h3>
-				<p style="color:var(--ss-muted);margin:0">
-					<?php esc_html_e( 'It is at the top of your order confirmation email, and on the order page in your account. It looks like #1234.', 'sreesaanvika' ); ?>
-				</p>
+			<div class="ss-grid ss-grid--2" style="margin-top:16px">
+				<div class="ss-card" style="padding:22px 24px">
+					<h3 style="font-size:1.05rem;margin-bottom:8px">
+						<?php esc_html_e( 'Where is my order number?', 'sreesaanvika' ); ?>
+					</h3>
+					<p style="color:var(--ss-muted);margin:0;font-size:.9rem">
+						<?php esc_html_e( 'At the top of your confirmation email, and on the order page in your account. It looks like #1234.', 'sreesaanvika' ); ?>
+					</p>
+				</div>
+
+				<div class="ss-card" style="padding:22px 24px">
+					<h3 style="font-size:1.05rem;margin-bottom:8px">
+						<?php esc_html_e( 'How long does delivery take?', 'sreesaanvika' ); ?>
+					</h3>
+					<p style="color:var(--ss-muted);margin:0;font-size:.9rem">
+						<?php esc_html_e( 'Metro cities in 2–4 business days, the rest of India in 4–7. You get a tracking link by SMS and email.', 'sreesaanvika' ); ?>
+					</p>
+				</div>
 			</div>
 		</div>
 

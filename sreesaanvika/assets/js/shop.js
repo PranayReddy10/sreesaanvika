@@ -817,3 +817,84 @@
 		mirror();
 	}
 })();
+
+/* ==========================================================================
+ * 14. Load more
+ * Appends the next page of a product grid in place. The button carries only a
+ * whitelisted section key (or a widget's source and category); the query is
+ * rebuilt server side.
+ * ========================================================================== */
+(function () {
+	'use strict';
+
+	var D = document;
+	var data = window.ssData || {};
+	var post = window.ssPost;
+	var toast = window.ssToast || function () {};
+
+	if (!post) { return; }
+
+	D.addEventListener('click', function (e) {
+		var btn = e.target.closest('.ss-loadmore__btn');
+		if (!btn || btn.classList.contains('loading')) { return; }
+
+		var wrap = btn.closest('.ss-loadmore');
+		var grid = wrap && wrap.previousElementSibling;
+
+		while (grid && !grid.classList.contains('products')) {
+			grid = grid.previousElementSibling;
+		}
+
+		if (!grid) { return; }
+
+		var page = parseInt(btn.getAttribute('data-page'), 10) || 1;
+		var next = page + 1;
+
+		btn.classList.add('loading');
+
+		post('ss_load_more', {
+			section: btn.getAttribute('data-section') || '',
+			source: btn.getAttribute('data-source') || '',
+			category: btn.getAttribute('data-category') || '',
+			page: next,
+			per: btn.getAttribute('data-per') || 8
+		}).then(function (res) {
+			btn.classList.remove('loading');
+
+			if (!res.success || !res.data || !res.data.html) {
+				wrap.remove();
+				return;
+			}
+
+			var temp = D.createElement('ul');
+			temp.innerHTML = res.data.html;
+
+			var added = [];
+
+			while (temp.firstElementChild) {
+				var item = temp.firstElementChild;
+				item.classList.add('ss-just-loaded');
+				grid.appendChild(item);
+				added.push(item);
+			}
+
+			btn.setAttribute('data-page', next);
+
+			// Let the reveal animation run, then drop the marker class.
+			setTimeout(function () {
+				added.forEach(function (el) { el.classList.remove('ss-just-loaded'); });
+			}, 600);
+
+			if (!res.data.more) { wrap.remove(); }
+
+			// Move focus to the first new card so keyboard users keep their place.
+			if (added.length) {
+				var link = added[0].querySelector('a');
+				if (link) { link.setAttribute('tabindex', '-1'); link.focus({ preventScroll: true }); }
+			}
+		}).catch(function () {
+			btn.classList.remove('loading');
+			toast((data.i18n && data.i18n.error) || 'Something went wrong.', 'error');
+		});
+	});
+})();

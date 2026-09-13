@@ -19,7 +19,7 @@ $ss_wa    = ss_option( 'social_whatsapp', '' );
 ?>
 
 <div class="ss-container ss-section">
-	<div class="ss-layout" style="grid-template-columns:1fr 380px">
+	<div class="ss-layout" style="--ss-aside:380px">
 
 		<div>
 			<?php

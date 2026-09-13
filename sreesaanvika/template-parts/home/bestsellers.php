@@ -17,7 +17,9 @@ $ss_has = ss_product_loop(
 		'meta_key' => 'total_sales', // phpcs:ignore WordPress.DB.SlowDBQuery
 		'orderby'  => 'meta_value_num',
 		'order'    => 'DESC',
-	)
+	),
+	0,
+	array( 'section' => 'bestsellers' )
 );
 $ss_loop = ob_get_clean();
 

@@ -61,6 +61,28 @@ function ss_setup_pages() {
 }
 
 /**
+ * The policy pages, added to the setup list with their default copy.
+ *
+ * They are kept separate because they all share one template and their bodies
+ * come from inc/legal-content.php.
+ *
+ * @return array
+ */
+function ss_setup_legal_pages() {
+	$pages = array();
+
+	foreach ( ss_legal_pages() as $slug => $page ) {
+		$pages[ $slug ] = array(
+			'title'    => $page['title'],
+			'template' => 'page-templates/template-legal.php',
+			'content'  => ss_legal_body( $slug ),
+		);
+	}
+
+	return $pages;
+}
+
+/**
  * Create any missing theme page.
  *
  * @return array Created page titles.
@@ -68,22 +90,44 @@ function ss_setup_pages() {
 function ss_create_pages() {
 	$created = array();
 
-	foreach ( ss_setup_pages() as $slug => $page ) {
-		// Skip if a page already uses this template.
-		$existing = get_posts(
-			array(
-				'post_type'      => 'page',
-				'post_status'    => array( 'publish', 'draft', 'pending' ),
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
-				'meta_key'       => '_wp_page_template', // phpcs:ignore WordPress.DB.SlowDBQuery
-				'meta_value'     => $page['template'], // phpcs:ignore WordPress.DB.SlowDBQuery
-				'no_found_rows'  => true,
-			)
-		);
+	$pages = array_merge( ss_setup_pages(), ss_setup_legal_pages() );
 
-		if ( $existing ) {
+	// How many of the pages we create use each template.
+	$template_use = array();
+
+	foreach ( $pages as $page ) {
+		$key                  = $page['template'];
+		$template_use[ $key ] = isset( $template_use[ $key ] ) ? $template_use[ $key ] + 1 : 1;
+	}
+
+	foreach ( $pages as $slug => $page ) {
+		// A page with this slug already exists — leave it alone.
+		if ( get_page_by_path( $slug ) ) {
 			continue;
+		}
+
+		/*
+		 * Only fall back to a template check for templates used by exactly one
+		 * page. The four policy pages all share template-legal.php, so a
+		 * template check would find Privacy Policy and then skip Terms,
+		 * Shipping and Returns.
+		 */
+		if ( 1 === $template_use[ $page['template'] ] ) {
+			$existing = get_posts(
+				array(
+					'post_type'      => 'page',
+					'post_status'    => array( 'publish', 'draft', 'pending' ),
+					'posts_per_page' => 1,
+					'fields'         => 'ids',
+					'meta_key'       => '_wp_page_template', // phpcs:ignore WordPress.DB.SlowDBQuery
+					'meta_value'     => $page['template'], // phpcs:ignore WordPress.DB.SlowDBQuery
+					'no_found_rows'  => true,
+				)
+			);
+
+			if ( $existing ) {
+				continue;
+			}
 		}
 
 		$id = wp_insert_post(

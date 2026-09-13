@@ -148,6 +148,99 @@ Two notes on using them:
 
 ---
 
+## SEO
+
+The theme handles metadata itself, and gets out of the way the moment a
+dedicated plugin appears. It checks for Yoast, Rank Math, SEOPress, All in One
+SEO and The SEO Framework; if any is active it stops emitting meta, Open Graph
+and schema so nothing is ever duplicated.
+
+What it outputs on its own:
+
+- Meta description, drawn from the product short description, the excerpt, the
+  term description or the homepage default, trimmed on a word boundary to 155
+  characters.
+- Canonical URL, skipped on paged archives.
+- Open Graph and X/Twitter cards, including `product:price:amount` and
+  `product:availability` on product pages. The card upgrades to
+  `summary_large_image` once a share image exists.
+- JSON-LD: your organisation (with contact point, address and social profiles),
+  the site with a `SearchAction`, a `BreadcrumbList`, and `BlogPosting` on
+  articles. Products are deliberately left to WooCommerce, which already emits
+  them — the theme enriches that output instead through
+  `woocommerce_structured_data_product`, adding brand, material,
+  `hasMerchantReturnPolicy` and `shippingDetails` built from your policy
+  settings. Those two are what Google's shopping surfaces look for.
+
+What it does **regardless** of any SEO plugin, because a plugin cannot know
+which of the theme's templates are transactional:
+
+- `noindex, follow` on cart, checkout, account, compare, wishlist, sign-in,
+  search results and 404.
+- The same pages excluded from the core WordPress sitemap.
+- Your search-console verification codes.
+
+Settings live in **Customizer → SEO & Social Sharing**. Useful filters:
+`ss_seo_description`, `ss_seo_image`, `ss_seo_noindex`, `ss_seo_schema_graph`,
+`ss_seo_plugin_active`.
+
+---
+
+## Policy pages
+
+Privacy Policy, Terms & Conditions, Shipping Policy and Return & Refund Policy
+are created by the one-click setup with a full draft written for an Indian
+direct-to-consumer store — GST-inclusive pricing, COD, DPDP Act 2023 rights, a
+named grievance officer, and Consumer Protection (E-Commerce) Rules 2020
+redressal timelines.
+
+> **These are drafts, not legal advice.** They have not been reviewed by a
+> lawyer and cannot know the specifics of your business. Have someone qualified
+> read them before you take real orders.
+
+They share one template that gives you a highlights strip, a contents rail
+built automatically from the `<h2>` headings (with a scroll-spy), a
+last-updated stamp and cross-links to the other policies. Add or remove
+headings in the editor and the contents rail follows.
+
+The numbers in the text come from **Customizer → Policies & Legal** — return
+window, free-shipping threshold, flat rate, COD limit, business name, GSTIN,
+jurisdiction and grievance officer. Change a figure there and it updates in the
+copy *and* in the product structured data Google reads. Placeholders available
+to the default copy: `{business}`, `{site}`, `{domain}`, `{email}`, `{phone}`,
+`{address}`, `{hours}`, `{days}`, `{threshold}`, `{flat}`, `{cod}`,
+`{jurisdiction}`, `{officer}`, `{gstin}`.
+
+Once created the pages are ordinary WordPress pages — edit the text however you
+like, and the template keeps working.
+
+---
+
+## Homepage categories and Load more
+
+**Choosing categories.** The mosaic and the round rail pick the busiest
+categories automatically, which is right on a fresh install and wrong once you
+have a proper catalogue. Both now take a list of slugs in
+**Customizer → Homepage — Sections** — comma separated, in the order you want
+them shown. Leave it empty for automatic, and set the count separately.
+
+The mosaic tiles any number of categories: it leads with the tall hero tile and
+then fills whole rows, so a row is never left with a hole beside it. Verified
+for 1 through 20 tiles.
+
+**Load more.** Product sections show a "Load more" button when there are more
+products than the section displays, appending the next batch in place rather
+than sending shoppers to another page. Turn it off, or change how many each
+click loads, in the same Customizer section. The Elementor Product Grid widget
+has its own switch for it.
+
+The browser never sends query arguments — the button carries a whitelisted
+section key (or the source and category a widget was configured with) and the
+query is rebuilt and validated server side.
+
+
+---
+
 ## Customizer reference
 
 Everything lives under **Sree Saanvika Options**:
@@ -297,23 +390,63 @@ Also fixed in 1.0.2: the shop stylesheet only loaded on shop screens, which
 left the homepage product grids, the mini-cart and any Elementor product
 widget unstyled. It now loads wherever WooCommerce is active.
 
-### The checkout fields are white boxes with no styling
+### Form fields render as white boxes
+
+Fixed in 1.0.5. **Elementor**, not WooCommerce, was the cause. Elementor's
+Site Settings → Theme Style → Form Fields emits
+
+```css
+.elementor-kit-8 input:not([type="button"]):not([type="submit"]) { background-color: #FFFFFF; }
+```
+
+which loads after the theme and outranks a plain `input[type="text"]`. It sets
+only background and colour, which is why the padding and the labels still
+looked themed while the boxes went white. The theme now marks its field
+background, colour and border important, scoped to real form controls, with
+the focus and WooCommerce validation states marked the same way so they keep
+working. You can also clear the colours under Elementor → Site Settings →
+Theme Style → Form Fields; both routes work and they do not conflict.
+
+### The checkout page still uses WooCommerce's own blocks
 
 WooCommerce 8.3+ builds the Cart and Checkout pages out of **blocks** rather
-than the old `[woocommerce_checkout]` shortcode. Block pages never load the
-theme's `cart.php` / `form-checkout.php` templates and ship a light palette of
-their own. Version 1.0.3 restyles the blocks to match the dark theme, so either
-kind of page now looks right.
+than the old `[woocommerce_checkout]` shortcode. Blocks never load the theme's
+`cart.php` / `form-checkout.php` templates and ship a light palette of their
+own. You have two ways out, and 1.0.4 does both.
 
-If you would rather use the theme's own hand-built cart and checkout — they
-have the free-shipping meter, the savings line and the three-step indicator —
-edit the Cart and Checkout pages, delete the block, and put the shortcode in
-its place:
+**Use the theme's own cart and checkout** — the free-shipping meter, the
+savings line and the three-step indicator. One click at
+**Appearance → Sree Saanvika → Cart & Checkout style**. It swaps the block for
+the WooCommerce shortcode on both pages, saving the block markup first so the
+same screen can switch you back.
 
+**Or keep the blocks.** WooCommerce Blocks ships a full dark treatment behind a
+`has-dark-controls` class on the block wrapper, normally toggled per block in
+the editor as "Dark mode inputs". The theme declares
+`add_theme_support( 'dark-editor-style' )` so new blocks default to it, and
+adds the class at render time to blocks that already exist, so pages built
+before the theme was installed are fixed without re-saving them. The theme
+palette is layered on top. To opt out:
+
+```php
+add_filter( 'ss_woo_block_dark_controls', '__return_false' );
 ```
-[woocommerce_cart]
-[woocommerce_checkout]
-```
+
+### A page overlaps itself on a phone
+
+Fixed in 1.0.5. Contact, FAQ and Track Order set their sidebar width with an
+inline `grid-template-columns`, and an inline style outranks any media query —
+so those pages kept a 300–380px sidebar inside a 390px screen. The width is now
+passed as a `--ss-aside` custom property, leaving the media query free to
+collapse the grid to one column.
+
+### A category page shows a blank band above the products on a phone
+
+Fixed in 1.0.5. The inline shop-layout CSS made the filter sidebar sticky with
+`.ss-shop-layout > .ss-shop-sidebar`, which outranked the `position: fixed`
+that takes it out of the flow below 1024px. The panel stayed in the grid,
+translated off-screen but still holding a full-width row. That sticky rule is
+now inside a `min-width: 1025px` query.
 
 ### The trust strip runs off the screen on a phone
 

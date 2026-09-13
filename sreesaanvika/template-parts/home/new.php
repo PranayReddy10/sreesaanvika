@@ -12,7 +12,7 @@ if ( ! class_exists( 'WooCommerce' ) ) {
 }
 
 ob_start();
-$ss_has = ss_product_loop( array( 'orderby' => 'date', 'order' => 'DESC' ) );
+$ss_has = ss_product_loop( array( 'orderby' => 'date', 'order' => 'DESC' ), 0, array( 'section' => 'new' ) );
 $ss_loop = ob_get_clean();
 
 if ( ! $ss_has ) {

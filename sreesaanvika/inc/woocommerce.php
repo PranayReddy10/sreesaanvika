@@ -77,8 +77,15 @@ function ss_woo_layout_css() {
 		return;
 	}
 
+	/*
+	 * The sticky rule has to sit inside a min-width query. Unscoped, its
+	 * `.ss-shop-layout > .ss-shop-sidebar` beat the `position: fixed` that
+	 * shop.css applies below 1024px, so on a phone the filter panel stayed in
+	 * the grid — translated off-screen but still occupying a full-width row,
+	 * which left a blank band above the products and pushed them down.
+	 */
 	$css = '.ss-shop-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:clamp(20px,3vw,42px);align-items:start;}'
-		. '.ss-shop-layout > .ss-shop-sidebar{position:sticky;top:calc(var(--ss-header-h) + 18px);}'
+		. '@media(min-width:1025px){.ss-shop-layout > .ss-shop-sidebar{position:sticky;top:calc(var(--ss-header-h) + 18px);}}'
 		. '@media(max-width:1024px){.ss-shop-layout{grid-template-columns:minmax(0,1fr);}}';
 
 	wp_add_inline_style( 'ss-shop', $css );
@@ -859,3 +866,57 @@ function ss_dequeue_woo_layout() {
 	wp_dequeue_style( 'woocommerce-smallscreen' );
 }
 add_action( 'wp_enqueue_scripts', 'ss_dequeue_woo_layout', 99 );
+
+/**
+ * Force the Cart and Checkout blocks into their dark-controls mode.
+ *
+ * WooCommerce Blocks ships a proper dark treatment for every field, label,
+ * dropdown and control, switched on by a `has-dark-controls` class on the
+ * block wrapper. It is normally toggled per block in the editor ("Dark mode
+ * inputs"), which means a Cart or Checkout page created before the theme was
+ * installed keeps the light default and renders white boxes on the dark page.
+ *
+ * Adding the class at render time fixes those pages without the shop owner
+ * having to open and re-save each block.
+ *
+ * @param string $content Rendered block HTML.
+ * @param array  $block   Parsed block.
+ * @return string
+ */
+function ss_woo_block_dark_controls( $content, $block ) {
+	if ( empty( $block['blockName'] ) || ! is_string( $content ) || '' === trim( $content ) ) {
+		return $content;
+	}
+
+	$targets = array( 'woocommerce/checkout', 'woocommerce/cart' );
+
+	if ( ! in_array( $block['blockName'], $targets, true ) ) {
+		return $content;
+	}
+
+	if ( false !== strpos( $content, 'has-dark-controls' ) ) {
+		return $content;
+	}
+
+	if ( ! apply_filters( 'ss_woo_block_dark_controls', true, $block ) ) {
+		return $content;
+	}
+
+	return preg_replace_callback(
+		'/^(\s*<div\b)([^>]*)>/',
+		function ( $matches ) {
+			$attrs = $matches[2];
+
+			if ( preg_match( '/\bclass\s*=\s*"/', $attrs ) ) {
+				$attrs = preg_replace( '/\bclass\s*=\s*"/', 'class="has-dark-controls ', $attrs, 1 );
+			} else {
+				$attrs .= ' class="has-dark-controls"';
+			}
+
+			return $matches[1] . $attrs . '>';
+		},
+		$content,
+		1
+	);
+}
+add_filter( 'render_block', 'ss_woo_block_dark_controls', 10, 2 );

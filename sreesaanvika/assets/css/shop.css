@@ -2220,318 +2220,377 @@ a.reset_variations:hover { color: var(--ss-gold); }
 
 /* ==========================================================================
    13. WooCommerce Cart & Checkout blocks
-   WooCommerce 8.3+ builds the Cart and Checkout pages out of blocks rather
-   than the [woocommerce_checkout] shortcode. Those blocks never load the
-   theme's cart.php / form-checkout.php templates and ship a light palette of
-   their own, which is why the fields render as white boxes on a dark page.
-   Everything below repaints them to match the theme.
+   WooCommerce 8.3+ builds these pages from blocks, which never load the
+   theme's cart.php / form-checkout.php templates. Those blocks ship their own
+   dark treatment behind a `has-dark-controls` class, which inc/woocommerce.php
+   forces on. What follows layers the theme palette on top of it and covers the
+   parts Woo's dark mode leaves light.
    ========================================================================== */
 
-.wc-block-checkout,
-.wc-block-cart,
+body .wc-block-checkout,
+body .wc-block-cart,
 .wp-block-woocommerce-checkout,
 .wp-block-woocommerce-cart {
 	color: var(--ss-text);
 }
 
-/* -- Layout ---------------------------------------------------------- */
-.wc-block-components-sidebar-layout .wc-block-components-main,
-.wc-block-components-sidebar-layout .wc-block-components-sidebar {
-	padding-inline: 0;
+/* -- Belt and braces -------------------------------------------------
+   Scoped to the page rather than to block class names, so it holds even
+   if a control is renamed upstream or a payment plugin injects its own. */
+body.woocommerce-checkout .wc-block-components-form input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+body.woocommerce-checkout .wc-block-checkout input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+body.woocommerce-cart .wc-block-cart input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+body.woocommerce-checkout .wc-block-checkout textarea,
+body.woocommerce-checkout .wc-block-checkout select,
+body.woocommerce-cart .wc-block-cart select {
+	background-color: var(--ss-surface-2);
+	border: 1px solid var(--ss-line-soft);
+	border-radius: var(--ss-radius);
+	color: var(--ss-text);
+	box-shadow: none;
 }
 
-.wc-block-components-sidebar {
+/* -- Fields (Woo's own control classes) ------------------------------- */
+body .wc-block-components-text-input input[type="text"],
+body .wc-block-components-text-input input[type="email"],
+body .wc-block-components-text-input input[type="tel"],
+body .wc-block-components-text-input input[type="number"],
+body .wc-block-components-textarea,
+body .wc-blocks-components-select .wc-blocks-components-select__container,
+body .wc-blocks-components-select .wc-blocks-components-select__select,
+body .wc-block-components-combobox .components-form-token-field__input {
+	background-color: var(--ss-surface-2);
+	border-color: var(--ss-line-soft);
+	border-radius: var(--ss-radius);
+	color: var(--ss-text);
+}
+
+body .has-dark-controls .wc-block-components-text-input input,
+body .has-dark-controls .wc-blocks-components-select__container,
+body .has-dark-controls .wc-blocks-components-select__select,
+body .has-dark-controls .wc-block-components-combobox .components-form-token-field__input {
+	background-color: var(--ss-surface-2);
+	color: var(--ss-text);
+	border-color: var(--ss-line-soft);
+}
+
+body .wc-block-components-text-input input:focus,
+body .wc-block-components-textarea:focus,
+body .wc-blocks-components-select__select:focus,
+body .wc-block-components-combobox .components-form-token-field__input:focus,
+body .has-dark-controls .wc-block-components-text-input input:focus {
+	border-color: var(--ss-gold);
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(217, 164, 65, 0.14);
+}
+
+/* The floating label sits over the field, so it needs the field's colour. */
+body .wc-block-components-text-input label,
+body .wc-blocks-components-select__label,
+body .wc-block-components-combobox label,
+body .has-dark-controls .wc-block-components-text-input label {
+	color: var(--ss-muted);
+}
+
+body .wc-block-components-text-input.is-active label,
+body .has-dark-controls .wc-block-components-text-input.is-active label {
+	color: var(--ss-gold);
+	background: var(--ss-surface-2);
+	padding-inline: 4px;
+}
+
+.wc-blocks-components-select__expand { fill: var(--ss-gold); }
+
+/* Country / state suggestion list */
+body .components-form-token-field__suggestions-list,
+body .wc-block-components-combobox-control__suggestions-container {
+	background: var(--ss-surface-2);
+	border: 1px solid var(--ss-line);
+	color: var(--ss-text);
+}
+
+.components-form-token-field__suggestion { color: var(--ss-text-soft); }
+
+body .components-form-token-field__suggestion.is-selected,
+body .components-form-token-field__suggestion:hover {
+	background: var(--ss-gold);
+	color: #1a0d17;
+}
+
+/* -- Layout and panels ------------------------------------------------ */
+body .wc-block-components-sidebar-layout .wc-block-components-main,
+.wc-block-components-sidebar-layout .wc-block-components-sidebar { padding-inline: 0; }
+
+body .wc-block-components-sidebar {
 	background: var(--ss-surface);
 	border: 1px solid var(--ss-line);
 	border-radius: var(--ss-radius-lg);
-	padding: 24px !important;
+	padding: 24px;
 }
 
-/* -- Headings and copy ----------------------------------------------- */
-.wc-block-components-title,
-.wc-block-components-checkout-step__title,
-.wc-block-cart__main-title,
-.wc-block-components-order-summary__button-text {
-	font-family: var(--ss-font-head) !important;
-	color: var(--ss-text) !important;
-	font-weight: 500;
-}
+body .wc-block-checkout__form,
+body .wc-block-components-checkout-step,
+.wp-block-woocommerce-checkout-fields-block,
+.wp-block-woocommerce-cart-items-block { background: transparent; }
 
-.wc-block-components-checkout-step__description,
-.wc-block-components-checkout-step__heading-content,
-.wc-block-components-product-metadata,
-.wc-block-components-product-details__name,
-.wc-block-components-product-details__value {
-	color: var(--ss-muted) !important;
-}
-
-.wc-block-components-checkout-step {
+body .wc-block-components-checkout-step {
 	border-bottom: 1px solid var(--ss-line-soft);
 	padding-bottom: 20px;
 	margin-bottom: 20px;
 }
 
 .wc-block-components-checkout-step:last-child { border-bottom: 0; }
+.wc-block-components-checkout-step__container::after { border-color: var(--ss-line-soft); }
 
-.wc-block-components-checkout-step__container::after { border-color: var(--ss-line-soft) !important; }
-
-/* -- Fields ----------------------------------------------------------- */
-.wc-block-components-text-input input[type="text"],
-.wc-block-components-text-input input[type="email"],
-.wc-block-components-text-input input[type="tel"],
-.wc-block-components-text-input input[type="number"],
-.wc-block-components-text-input input[type="password"],
-.wc-block-components-textarea,
-.wc-block-components-select .wc-block-components-select__select,
-.wc-blocks-components-select .wc-blocks-components-select__select,
-.wc-block-components-combobox .components-form-token-field__input,
-.wc-block-components-address-form input,
-.wc-block-components-form input[type="text"],
-.wc-block-components-form input[type="email"],
-.wc-block-components-form input[type="tel"] {
-	background-color: var(--ss-surface-2) !important;
-	border: 1px solid var(--ss-line-soft) !important;
-	border-radius: var(--ss-radius) !important;
-	color: var(--ss-text) !important;
-	box-shadow: none !important;
+body .wc-block-components-title,
+body .wc-block-components-checkout-step__title,
+body .wc-block-cart__main-title {
+	font-family: var(--ss-font-head);
+	color: var(--ss-text);
+	font-weight: 500;
 }
 
-.wc-block-components-text-input input:focus,
-.wc-block-components-textarea:focus,
-.wc-block-components-select__select:focus,
-.wc-blocks-components-select__select:focus,
-.wc-block-components-combobox .components-form-token-field__input:focus {
-	border-color: var(--ss-gold) !important;
-	outline: none !important;
-	box-shadow: 0 0 0 3px rgba(217, 164, 65, 0.14) !important;
+body .wc-block-components-checkout-step__description,
+body .wc-block-components-checkout-step__heading-content,
+body .wc-block-components-product-metadata,
+body .wc-block-components-product-details__name,
+body .wc-block-components-product-details__value,
+body .wc-block-components-panel__button,
+.wc-block-components-panel__content { color: var(--ss-muted); }
+
+body .wc-block-components-address-card {
+	background: var(--ss-surface-2);
+	border: 1px solid var(--ss-line-soft);
+	border-radius: var(--ss-radius);
+	color: var(--ss-text-soft);
 }
 
-/* Floating labels sit on top of the field, so they need its background. */
-.wc-block-components-text-input label,
-.wc-block-components-select__label,
-.wc-blocks-components-select__label,
-.wc-block-components-combobox label {
-	color: var(--ss-muted) !important;
-	background: transparent !important;
-}
+/* -- Choices ---------------------------------------------------------- */
+body .wc-block-components-checkbox__label,
+body .wc-block-components-radio-control__label,
+.wc-block-components-radio-control__description { color: var(--ss-text-soft); }
 
-.wc-block-components-text-input.is-active label,
-.wc-block-components-text-input input:focus + label {
-	color: var(--ss-gold) !important;
-	background: var(--ss-surface-2) !important;
-	padding-inline: 4px;
-}
-
-.wc-block-components-text-input input::placeholder { color: var(--ss-faint) !important; }
-
-.wc-block-components-select__container,
-.wc-blocks-components-select__container { background: transparent !important; }
-
-.wc-blocks-components-select__expand,
-.wc-block-components-select__expand { fill: var(--ss-gold) !important; }
-
-/* Country / state dropdown list */
-.components-form-token-field__suggestions-list,
-.wc-block-components-combobox-control__suggestions-container {
-	background: var(--ss-surface-2) !important;
-	border: 1px solid var(--ss-line) !important;
-	color: var(--ss-text) !important;
-}
-
-.components-form-token-field__suggestion {
-	color: var(--ss-text-soft) !important;
-}
-
-.components-form-token-field__suggestion.is-selected,
-.components-form-token-field__suggestion:hover {
-	background: var(--ss-gold) !important;
-	color: #1a0d17 !important;
-}
-
-/* -- Checkboxes and radios ------------------------------------------- */
-.wc-block-components-checkbox__label,
-.wc-block-components-radio-control__label,
-.wc-block-components-radio-control__description {
-	color: var(--ss-text-soft) !important;
-}
-
-.wc-block-components-checkbox .wc-block-components-checkbox__input[type="checkbox"] {
+body .wc-block-components-checkbox .wc-block-components-checkbox__input[type="checkbox"] {
 	background: var(--ss-surface-2);
 	border: 1px solid var(--ss-line);
 	accent-color: var(--ss-gold);
 }
 
-.wc-block-components-radio-control__option {
+body .wc-block-components-radio-control__option {
 	background: var(--ss-surface-2);
 	border-radius: var(--ss-radius);
 	color: var(--ss-text-soft);
 }
 
-.wc-block-components-radio-control-accordion-option,
-.wc-block-components-radio-control__option {
-	border-color: var(--ss-line-soft) !important;
-}
+body .wc-block-components-radio-control-accordion-option,
+.wc-block-components-radio-control__option { border-color: var(--ss-line-soft); }
 
-.wc-block-components-radio-control-accordion-content {
-	background: var(--ss-surface) !important;
-	color: var(--ss-text-soft) !important;
+body .wc-block-components-radio-control-accordion-content {
+	background: var(--ss-surface);
+	color: var(--ss-text-soft);
 }
 
 /* -- Totals ----------------------------------------------------------- */
-.wc-block-components-totals-item__label,
-.wc-block-components-totals-item__value,
-.wc-block-components-totals-coupon__content,
-.wc-block-components-order-summary-item__description {
-	color: var(--ss-text-soft) !important;
-}
+body .wc-block-components-totals-item__label,
+body .wc-block-components-totals-item__value,
+body .wc-block-components-totals-coupon__content,
+.wc-block-components-order-summary-item__description { color: var(--ss-text-soft); }
 
-.wc-block-components-totals-wrapper {
-	border-top-color: var(--ss-line-soft) !important;
-}
+.wc-block-components-totals-wrapper { border-top-color: var(--ss-line-soft); }
 
-.wc-block-components-totals-footer-item .wc-block-components-totals-item__label,
-.wc-block-components-totals-footer-item .wc-block-components-totals-item__value {
-	color: var(--ss-gold) !important;
+body .wc-block-components-totals-footer-item .wc-block-components-totals-item__label,
+body .wc-block-components-totals-footer-item .wc-block-components-totals-item__value {
+	color: var(--ss-gold);
 	font-family: var(--ss-font-head);
 	font-size: 1.25rem;
 }
 
+body .wc-block-components-order-summary .wc-block-components-panel__button {
+	background: var(--ss-surface-2);
+	border-radius: var(--ss-radius);
+	padding: 12px 14px;
+}
+
 /* -- Buttons ---------------------------------------------------------- */
-.wc-block-components-button:not(.is-link) {
-	background: var(--ss-gold-grad) !important;
-	background-color: transparent !important;
-	color: #1a0d17 !important;
-	border: 0 !important;
-	border-radius: var(--ss-radius-pill) !important;
+body .wc-block-components-button:not(.is-link) {
+	background: var(--ss-gold-grad);
+	color: #1a0d17;
+	border: 0;
+	border-radius: var(--ss-radius-pill);
 	font-family: var(--ss-font-body);
 	font-weight: 600;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
 }
 
-.wc-block-components-button:not(.is-link):hover {
-	box-shadow: var(--ss-shadow-gold) !important;
-	color: #1a0d17 !important;
+body .wc-block-components-button:not(.is-link):hover {
+	box-shadow: var(--ss-shadow-gold);
+	color: #1a0d17;
 }
 
-.wc-block-components-button.is-link,
-.wc-block-components-totals-coupon-link,
-.wc-block-cart__submit-container a {
-	color: var(--ss-gold) !important;
-}
+.wc-block-components-button:not(.is-link) .wc-block-components-button__text { color: inherit; }
+
+body .wc-block-components-button.is-link,
+.wc-block-components-totals-coupon-link { color: var(--ss-gold); }
 
 /* -- Cart rows -------------------------------------------------------- */
-.wc-block-cart-items__row {
-	border-bottom: 1px solid var(--ss-line-soft) !important;
-}
+.wc-block-cart-items__row { border-bottom: 1px solid var(--ss-line-soft); }
 
-.wc-block-cart-item__wrap .wc-block-components-product-name {
-	color: var(--ss-text) !important;
+body .wc-block-cart-item__wrap .wc-block-components-product-name {
+	color: var(--ss-text);
 	font-family: var(--ss-font-head);
 }
 
-.wc-block-cart-item__wrap .wc-block-components-product-price__value,
-.wc-block-components-product-price__value {
-	color: var(--ss-gold) !important;
-}
-
-.wc-block-components-product-price del { color: var(--ss-faint) !important; }
-
+.wc-block-components-product-price__value { color: var(--ss-gold); }
+.wc-block-components-product-price del { color: var(--ss-faint); }
 .wc-block-cart-item__image img { border-radius: var(--ss-radius); }
 
-.wc-block-components-quantity-selector {
+body .wc-block-components-quantity-selector {
 	background: var(--ss-surface-2);
-	border: 1px solid var(--ss-line) !important;
+	border: 1px solid var(--ss-line);
 	border-radius: var(--ss-radius-pill);
 }
 
-.wc-block-components-quantity-selector::after { border: 0 !important; }
+.wc-block-components-quantity-selector::after { border: 0; }
 
-.wc-block-components-quantity-selector__input,
-.wc-block-components-quantity-selector__button {
-	background: transparent !important;
-	color: var(--ss-text) !important;
-	box-shadow: none !important;
+body .wc-block-components-quantity-selector__input,
+body .wc-block-components-quantity-selector__button {
+	background: transparent;
+	color: var(--ss-text);
+	box-shadow: none;
 }
 
-.wc-block-components-quantity-selector__button:hover { color: var(--ss-gold) !important; }
+.wc-block-components-quantity-selector__button:hover { color: var(--ss-gold); }
 
-/* -- Panels and notices ----------------------------------------------- */
-.wc-block-components-panel__button,
-.wc-block-components-panel__content {
-	color: var(--ss-text-soft) !important;
-}
-
-.wc-block-components-notice-banner {
-	background: var(--ss-surface) !important;
-	border-color: var(--ss-line) !important;
-	color: var(--ss-text-soft) !important;
+/* -- Notices ---------------------------------------------------------- */
+body .wc-block-components-notice-banner {
+	background: var(--ss-surface);
+	border-color: var(--ss-line);
+	color: var(--ss-text-soft);
 	border-radius: var(--ss-radius);
 }
 
-.wc-block-components-notice-banner.is-error { border-left-color: var(--ss-error) !important; }
-.wc-block-components-notice-banner.is-success { border-left-color: var(--ss-success) !important; }
-.wc-block-components-notice-banner > .wc-block-components-notice-banner__content { color: var(--ss-text-soft) !important; }
+.wc-block-components-notice-banner.is-error { border-left-color: var(--ss-error); }
+.wc-block-components-notice-banner.is-success { border-left-color: var(--ss-success); }
+.wc-block-components-notice-banner > .wc-block-components-notice-banner__content { color: var(--ss-text-soft); }
 
-.wc-block-components-validation-error,
-.wc-block-components-validation-error p { color: var(--ss-error) !important; }
+body .wc-block-components-validation-error,
+.wc-block-components-validation-error p { color: var(--ss-error); }
 
-.wc-block-components-order-summary .wc-block-components-panel__button {
-	background: var(--ss-surface-2) !important;
-	border-radius: var(--ss-radius);
-	padding: 12px 14px !important;
-}
+body .wc-block-components-express-payment,
+.wc-block-components-express-payment__title-container { border-color: var(--ss-line-soft); }
 
-.wc-block-components-address-card {
-	background: var(--ss-surface-2) !important;
-	border: 1px solid var(--ss-line-soft) !important;
-	border-radius: var(--ss-radius) !important;
-	color: var(--ss-text-soft) !important;
-}
-
-.wc-block-components-express-payment,
-.wc-block-components-express-payment__title-container {
-	border-color: var(--ss-line-soft) !important;
-}
-
-.wc-block-components-express-payment__event-buttons > li::before { background: var(--ss-line-soft) !important; }
-
-/* Blocks occasionally paint a hard white sheet behind a step. */
-.wc-block-checkout__form,
-.wc-block-components-checkout-step,
-.wp-block-woocommerce-checkout-fields-block,
-.wp-block-woocommerce-cart-items-block { background: transparent !important; }
+.wc-block-components-express-payment__event-buttons > li::before { background: var(--ss-line-soft); }
 
 @media (max-width: 782px) {
-	.wc-block-components-sidebar { padding: 18px !important; }
+	.wc-block-components-sidebar { padding: 18px; }
 }
 
 /* --------------------------------------------------------------------------
-   14. Order tracking form
+   14. Order tracking
+   WooCommerce's form-tracking.php emits an intro <p>, then
+   p.form-row.form-row-first (order id), p.form-row.form-row-last (email),
+   a <div class="clear">, then p.form-row holding the button. Its two-column
+   split came from woocommerce-layout.css, which the theme dequeues, so the
+   grid below re-creates it.
    -------------------------------------------------------------------------- */
-.ss-track .track_order {
-	display: grid;
-	gap: 16px;
-	max-width: 520px;
+.ss-track__card {
+	background: var(--ss-surface);
+	border: 1px solid var(--ss-line);
+	border-radius: var(--ss-radius-lg);
+	padding: clamp(22px, 4vw, 40px);
+	position: relative;
+	overflow: hidden;
 }
 
-.ss-track .track_order .form-row { margin: 0; width: 100%; }
+/* A thin gold seam along the top edge, like the other cards. */
+.ss-track__card::before {
+	content: "";
+	position: absolute;
+	inset: 0 0 auto 0;
+	height: 2px;
+	background: var(--ss-gold-grad);
+	opacity: 0.75;
+}
+
+.ss-track__head {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin-bottom: 6px;
+}
+
+.ss-track__head svg { width: 26px; height: 26px; color: var(--ss-gold); flex: none; }
+.ss-track__head h2 { margin: 0; font-size: clamp(1.25rem, 2.4vw, 1.6rem); }
+
+.ss-track .track_order {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 18px;
+	margin: 0;
+}
+
+/* The intro paragraph WooCommerce prints above the fields. */
+.ss-track .track_order > p:not(.form-row) {
+	grid-column: 1 / -1;
+	margin: 0;
+	color: var(--ss-muted);
+	font-size: 0.92rem;
+}
+
+.ss-track .track_order .form-row { margin: 0; padding: 0; width: auto; }
+.ss-track .track_order .form-row-first { grid-column: 1; }
+.ss-track .track_order .form-row-last { grid-column: 2; }
+
+/* The button row carries no first/last modifier. */
+.ss-track .track_order > .form-row:not(.form-row-first):not(.form-row-last) {
+	grid-column: 1 / -1;
+}
+
+.ss-track .track_order .clear { display: none; }
 
 .ss-track .track_order label {
 	display: block;
 	margin-bottom: 7px;
-	font-size: 0.78rem;
-	letter-spacing: 0.1em;
+	font-size: 0.76rem;
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	color: var(--ss-muted);
 }
 
-.ss-track .track_order .button { width: 100%; justify-content: center; }
-
-.ss-track .woocommerce-order-details,
-.ss-track .woocommerce-customer-details {
-	margin-top: 28px;
+/* The theme renders this shortcode on a plain page, so body.woocommerce is
+   absent and the Woo button rules further up do not reach it. Style it here. */
+.ss-track .track_order .button,
+.ss-track .track_order button[type="submit"] {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 52px;
+	padding: 0 30px;
+	border: 0;
+	border-radius: var(--ss-radius-pill);
+	background: var(--ss-gold-grad);
+	color: #1a0d17;
+	font-family: var(--ss-font-body);
+	font-size: 0.82rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: transform var(--ss-fast), box-shadow var(--ss-fast);
 }
+
+.ss-track .track_order .button:hover,
+.ss-track .track_order button[type="submit"]:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--ss-shadow-gold);
+	color: #1a0d17;
+}
+
+/* -- The result, once an order is found ------------------------------- */
+.ss-track .woocommerce-order-details,
+.ss-track .woocommerce-customer-details { margin-top: 30px; }
 
 .ss-track .woocommerce-order-details__title,
 .ss-track .woocommerce-column__title {
@@ -2540,13 +2599,29 @@ a.reset_variations:hover { color: var(--ss-gold); }
 	margin-bottom: 14px;
 }
 
+.ss-track p.order-info {
+	background: var(--ss-surface-2);
+	border: 1px solid var(--ss-line);
+	border-left: 3px solid var(--ss-gold);
+	border-radius: var(--ss-radius);
+	padding: 16px 20px;
+	color: var(--ss-text-soft);
+	margin-bottom: 24px;
+}
+
+.ss-track p.order-info mark {
+	background: none;
+	color: var(--ss-gold);
+	font-weight: 600;
+}
+
 .ss-track ul.order_details {
 	list-style: none;
 	margin: 0 0 24px;
 	padding: 18px 20px;
 	display: flex;
 	flex-wrap: wrap;
-	gap: 20px 32px;
+	gap: 18px 34px;
 	background: var(--ss-surface-2);
 	border: 1px solid var(--ss-line-soft);
 	border-radius: var(--ss-radius-lg);
@@ -2556,11 +2631,11 @@ a.reset_variations:hover { color: var(--ss-gold); }
 	margin: 0;
 	padding: 0;
 	border: 0;
-	font-size: 0.72rem;
+	list-style: none;
+	font-size: 0.7rem;
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
 	color: var(--ss-muted);
-	list-style: none;
 }
 
 .ss-track ul.order_details li strong {
@@ -2573,4 +2648,91 @@ a.reset_variations:hover { color: var(--ss-gold); }
 	font-family: var(--ss-font-head);
 }
 
-.ss-track .shop_table { background: var(--ss-surface-2); border-radius: var(--ss-radius-lg); overflow: hidden; }
+.ss-track .shop_table {
+	background: var(--ss-surface-2);
+	border: 1px solid var(--ss-line-soft);
+	border-radius: var(--ss-radius-lg);
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow: hidden;
+}
+
+.ss-track .woocommerce-customer-details address {
+	background: var(--ss-surface-2);
+	border: 1px solid var(--ss-line-soft);
+	border-radius: var(--ss-radius);
+	padding: 16px 18px;
+	font-style: normal;
+	color: var(--ss-text-soft);
+}
+
+@media (max-width: 600px) {
+	.ss-track .track_order { grid-template-columns: 1fr; }
+	.ss-track .track_order .form-row-first,
+	.ss-track .track_order .form-row-last { grid-column: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   15. WooCommerce buttons outside WooCommerce pages
+   Theme templates print Woo output (order tracking, product loops on the
+   homepage, quick view) on pages that carry no body.woocommerce class, so the
+   scoped rules in section 10 never reach them.
+   -------------------------------------------------------------------------- */
+.ss-track a.button,
+.ss-track button.button,
+.ss-track input.button,
+.ss-elementor-content a.button,
+.ss-elementor-content button.button,
+ul.products a.button,
+ul.products button.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 14px 30px;
+	border: 0;
+	border-radius: var(--ss-radius-pill);
+	background: var(--ss-gold-grad);
+	color: #1a0d17;
+	font-family: var(--ss-font-body);
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	text-decoration: none;
+	line-height: 1.2;
+	cursor: pointer;
+	transition: transform var(--ss-fast), box-shadow var(--ss-fast);
+}
+
+.ss-track a.button:hover,
+.ss-track button.button:hover,
+.ss-elementor-content a.button:hover,
+ul.products a.button:hover,
+ul.products button.button:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--ss-shadow-gold);
+	color: #1a0d17;
+}
+
+/* --------------------------------------------------------------------------
+   16. Load more
+   -------------------------------------------------------------------------- */
+.ss-loadmore {
+	display: flex;
+	justify-content: center;
+	margin-top: clamp(26px, 4vw, 40px);
+}
+
+.ss-loadmore__btn svg { transition: transform var(--ss-fast); }
+.ss-loadmore__btn:hover svg { transform: translateY(3px); }
+
+/* Newly appended cards fade up rather than snapping in. */
+ul.products li.product.ss-just-loaded {
+	animation: ss-card-in 0.5s var(--ss-ease) both;
+}
+
+@keyframes ss-card-in {
+	from { opacity: 0; transform: translateY(18px); }
+	to { opacity: 1; transform: none; }
+}

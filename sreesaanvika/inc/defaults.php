@@ -100,6 +100,13 @@ function ss_defaults() {
 		'sec_gram'             => true,
 		'sec_newsletter'       => true,
 		'products_per_section' => 8,
+		'cats_count'           => 5,
+		'cats_slugs'           => '',
+		'catrail_count'        => 10,
+		'catrail_slugs'        => '',
+		'catrail_top_level'    => false,
+		'loadmore'             => true,
+		'loadmore_step'        => 4,
 
 		/* Offer banners ---------------------------------------------- */
 		'promo1_off'           => '40% OFF',
@@ -153,6 +160,28 @@ function ss_defaults() {
 		'font_scale'           => 16,
 		'radius'               => 10,
 		'container'            => 1320,
+
+		/* SEO & social ----------------------------------------------- */
+		'seo_enable'           => true,
+		'seo_schema'           => true,
+		'seo_meta_home'        => 'Shop handloom sarees, temple jewellery and festive dresses at Sree Saanvika. Kanchipuram and Banarasi silks sourced direct from Indian weavers, with free shipping over ₹2,999 and 7-day returns.',
+		'seo_og_image'         => '',
+		'seo_twitter'          => '',
+		'seo_org_type'         => 'OnlineStore',
+		'seo_verify_google'    => '',
+		'seo_verify_bing'      => '',
+		'seo_verify_facebook'  => '',
+		'seo_verify_pinterest' => '',
+
+		/* Policy figures, shared by the policy pages and product schema -- */
+		'returns_window_days'  => 7,
+		'flat_ship_rate'       => 99,
+		'cod_limit'            => 15000,
+		'policy_updated'       => '',
+		'legal_entity'         => 'Sree Saanvika',
+		'legal_jurisdiction'   => 'Hyderabad, Telangana',
+		'legal_gstin'          => '',
+		'grievance_officer'    => 'Customer Care Team',
 
 		/* Behaviour not exposed as a control ------------------------- */
 		'auth_redirect'        => false,

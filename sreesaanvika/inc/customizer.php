@@ -232,6 +232,36 @@ function ss_customize_register( $wp_customize ) {
 		);
 	}
 
+	$add(
+		'cats_slugs',
+		array(
+			'label'       => __( 'Category mosaic — which categories', 'sreesaanvika' ),
+			'description' => __( 'Category slugs, comma separated, in the order you want them. Leave empty to use the busiest categories automatically.', 'sreesaanvika' ),
+			'section'     => 'ss_home',
+			'type'        => 'textarea',
+		),
+		'sanitize_textarea_field'
+	);
+
+	$add( 'cats_count', array( 'label' => __( 'Category mosaic — how many (automatic)', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 1, 'max' => 20 ) ), 'absint' );
+
+	$add(
+		'catrail_slugs',
+		array(
+			'label'       => __( 'Category rail — which categories', 'sreesaanvika' ),
+			'description' => __( 'Same idea: slugs in order, or empty for automatic.', 'sreesaanvika' ),
+			'section'     => 'ss_home',
+			'type'        => 'textarea',
+		),
+		'sanitize_textarea_field'
+	);
+
+	$add( 'catrail_count', array( 'label' => __( 'Category rail — how many (automatic)', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 30 ) ), 'absint' );
+	$add( 'catrail_top_level', array( 'label' => __( 'Category rail — top-level categories only', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+
+	$add( 'loadmore', array( 'label' => __( 'Show a "Load more" button under product sections', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'loadmore_step', array( 'label' => __( 'How many more each click loads', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 24 ) ), 'absint' );
+
 	$add( 'products_per_section', array( 'label' => __( 'Products shown per section', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 12 ) ), 'absint' );
 
 	/* -----------------------------------------------------------------
@@ -330,6 +360,74 @@ function ss_customize_register( $wp_customize ) {
 	}
 
 	$add( 'gram_handle', array( 'label' => __( 'Instagram handle (without @)', 'sreesaanvika' ), 'section' => 'ss_footer' ) );
+
+	/* -----------------------------------------------------------------
+	 * SEO & social
+	 * -------------------------------------------------------------- */
+	$wp_customize->add_section(
+		'ss_seo',
+		array(
+			'title'       => __( 'SEO & Social Sharing', 'sreesaanvika' ),
+			'panel'       => 'ss_panel',
+			'description' => __( 'The theme only writes these tags when no SEO plugin is active. Install Yoast or Rank Math and it steps aside automatically — except the verification codes and the noindex rules for cart, checkout and account, which stay.', 'sreesaanvika' ),
+		)
+	);
+
+	$add( 'seo_enable', array( 'label' => __( 'Output meta tags and Open Graph', 'sreesaanvika' ), 'section' => 'ss_seo', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'seo_schema', array( 'label' => __( 'Output structured data (schema.org)', 'sreesaanvika' ), 'section' => 'ss_seo', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add(
+		'seo_meta_home',
+		array(
+			'label'       => __( 'Homepage meta description', 'sreesaanvika' ),
+			'description' => __( 'Aim for 140–155 characters. Also used as the fallback anywhere else.', 'sreesaanvika' ),
+			'section'     => 'ss_seo',
+			'type'        => 'textarea',
+		),
+		'sanitize_textarea_field'
+	);
+	$add( 'seo_og_image', array( 'label' => __( 'Default share image', 'sreesaanvika' ), 'description' => __( '1200 × 630 works best.', 'sreesaanvika' ), 'section' => 'ss_seo', 'type' => 'image' ), 'esc_url_raw' );
+	$add( 'seo_twitter', array( 'label' => __( 'X / Twitter handle', 'sreesaanvika' ), 'section' => 'ss_seo' ) );
+	$add(
+		'seo_org_type',
+		array(
+			'label'   => __( 'Business type in structured data', 'sreesaanvika' ),
+			'section' => 'ss_seo',
+			'type'    => 'select',
+			'choices' => array(
+				'OnlineStore'   => __( 'Online store', 'sreesaanvika' ),
+				'Store'         => __( 'Store', 'sreesaanvika' ),
+				'ClothingStore' => __( 'Clothing store', 'sreesaanvika' ),
+				'LocalBusiness' => __( 'Local business', 'sreesaanvika' ),
+				'Organization'  => __( 'Organisation', 'sreesaanvika' ),
+			),
+		),
+		'ss_sanitize_choice'
+	);
+	$add( 'seo_verify_google', array( 'label' => __( 'Google Search Console code', 'sreesaanvika' ), 'section' => 'ss_seo' ) );
+	$add( 'seo_verify_bing', array( 'label' => __( 'Bing Webmaster code', 'sreesaanvika' ), 'section' => 'ss_seo' ) );
+	$add( 'seo_verify_facebook', array( 'label' => __( 'Facebook domain verification', 'sreesaanvika' ), 'section' => 'ss_seo' ) );
+	$add( 'seo_verify_pinterest', array( 'label' => __( 'Pinterest domain verification', 'sreesaanvika' ), 'section' => 'ss_seo' ) );
+
+	/* -----------------------------------------------------------------
+	 * Policies
+	 * -------------------------------------------------------------- */
+	$wp_customize->add_section(
+		'ss_policy',
+		array(
+			'title'       => __( 'Policies & Legal', 'sreesaanvika' ),
+			'panel'       => 'ss_panel',
+			'description' => __( 'These figures are written into the policy pages and into the product structured data Google reads, so they only need changing in one place.', 'sreesaanvika' ),
+		)
+	);
+
+	$add( 'legal_entity', array( 'label' => __( 'Registered business name', 'sreesaanvika' ), 'section' => 'ss_policy' ) );
+	$add( 'legal_gstin', array( 'label' => __( 'GSTIN', 'sreesaanvika' ), 'section' => 'ss_policy' ) );
+	$add( 'legal_jurisdiction', array( 'label' => __( 'Legal jurisdiction (city, state)', 'sreesaanvika' ), 'section' => 'ss_policy' ) );
+	$add( 'grievance_officer', array( 'label' => __( 'Grievance officer name', 'sreesaanvika' ), 'description' => __( 'India\'s Consumer Protection (E-Commerce) Rules require one to be named.', 'sreesaanvika' ), 'section' => 'ss_policy' ) );
+	$add( 'returns_window_days', array( 'label' => __( 'Return window (days)', 'sreesaanvika' ), 'section' => 'ss_policy', 'type' => 'number', 'input_attrs' => array( 'min' => 0, 'max' => 90 ) ), 'absint' );
+	$add( 'flat_ship_rate', array( 'label' => __( 'Flat shipping rate below the free threshold (₹)', 'sreesaanvika' ), 'section' => 'ss_policy', 'type' => 'number' ), 'absint' );
+	$add( 'cod_limit', array( 'label' => __( 'Cash-on-delivery limit (₹)', 'sreesaanvika' ), 'section' => 'ss_policy', 'type' => 'number' ), 'absint' );
+	$add( 'policy_updated', array( 'label' => __( 'Policies last updated', 'sreesaanvika' ), 'description' => __( 'Shown on every policy page. Leave empty to use each page\'s modified date.', 'sreesaanvika' ), 'section' => 'ss_policy' ) );
 
 	/* -----------------------------------------------------------------
 	 * Typography

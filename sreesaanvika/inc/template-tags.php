@@ -356,38 +356,20 @@ function ss_empty_state( $icon, $title, $text, $url = '', $label = '' ) {
  * @param int   $cols  Columns.
  * @return bool True when something was rendered.
  */
-function ss_product_loop( $args = array(), $cols = 0 ) {
+function ss_product_loop( $args = array(), $cols = 0, $more = array() ) {
 	if ( ! class_exists( 'WooCommerce' ) ) {
 		return false;
 	}
 
 	$cols = $cols ? $cols : absint( ss_option( 'shop_columns', 4 ) );
+	$per  = isset( $args['posts_per_page'] ) ? (int) $args['posts_per_page'] : absint( ss_option( 'products_per_section' ) );
 
-	$defaults = array(
-		'post_type'           => 'product',
-		'post_status'         => 'publish',
-		'posts_per_page'      => absint( ss_option( 'products_per_section', 8 ) ),
-		'ignore_sticky_posts' => true,
-		'no_found_rows'       => true,
-		'tax_query'           => array(), // phpcs:ignore WordPress.DB.SlowDBQuery
-	);
+	$defaults = ss_product_query_defaults();
 
-	// Respect the "hide out of stock" catalog setting.
-	if ( 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' ) ) {
-		$defaults['tax_query'][] = array(
-			'taxonomy' => 'product_visibility',
-			'field'    => 'name',
-			'terms'    => 'outofstock',
-			'operator' => 'NOT IN',
-		);
-	}
+	$defaults['posts_per_page'] = $per;
 
-	$defaults['tax_query'][] = array(
-		'taxonomy' => 'product_visibility',
-		'field'    => 'name',
-		'terms'    => 'exclude-from-catalog',
-		'operator' => 'NOT IN',
-	);
+	// Counting rows is only worth it when a Load more button needs to know.
+	$defaults['no_found_rows'] = empty( $more );
 
 	$query = new WP_Query( array_merge( $defaults, $args ) );
 
@@ -404,6 +386,21 @@ function ss_product_loop( $args = array(), $cols = 0 ) {
 	}
 
 	echo '</ul>';
+
+	if ( $more && $query->max_num_pages > 1 && $per > 0 ) {
+		ss_load_more_button(
+			array_merge(
+				$more,
+				array(
+					'page'    => 1,
+					'per'     => absint( ss_option( 'loadmore_step' ) ) ? absint( ss_option( 'loadmore_step' ) ) : $per,
+					'columns' => $cols,
+					'pages'   => $query->max_num_pages,
+					'total'   => $query->found_posts,
+				)
+			)
+		);
+	}
 
 	wp_reset_postdata();
 
@@ -425,5 +422,299 @@ function ss_cat_query( $slugs ) {
 				'terms'    => (array) $slugs,
 			),
 		),
+	);
+}
+
+/**
+ * Product categories for a homepage section.
+ *
+ * A comma or newline separated list of slugs wins, and keeps the shop owner's
+ * order. With nothing listed the busiest categories are used, which is what a
+ * fresh install needs.
+ *
+ * @param string $slugs     Chosen slugs, in display order.
+ * @param int    $count     How many to show when choosing automatically.
+ * @param bool   $top_level Restrict the automatic pick to top-level terms.
+ * @return WP_Term[]
+ */
+function ss_category_terms( $slugs = '', $count = 6, $top_level = true ) {
+	if ( ! taxonomy_exists( 'product_cat' ) ) {
+		return array();
+	}
+
+	$chosen = array_filter( array_map( 'trim', preg_split( '/[,\r\n]+/', (string) $slugs ) ) );
+
+	if ( $chosen ) {
+		$terms = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'hide_empty' => false,
+				'slug'       => array_map( 'sanitize_title', $chosen ),
+			)
+		);
+
+		if ( ! $terms || is_wp_error( $terms ) ) {
+			return array();
+		}
+
+		// get_terms ignores the order of the slug list, so restore it.
+		$by_slug = array();
+
+		foreach ( $terms as $term ) {
+			$by_slug[ $term->slug ] = $term;
+		}
+
+		$ordered = array();
+
+		foreach ( $chosen as $slug ) {
+			$slug = sanitize_title( $slug );
+
+			if ( isset( $by_slug[ $slug ] ) ) {
+				$ordered[] = $by_slug[ $slug ];
+			}
+		}
+
+		return $ordered;
+	}
+
+	$args = array(
+		'taxonomy'   => 'product_cat',
+		'hide_empty' => false,
+		'number'     => max( 1, absint( $count ) ),
+		'orderby'    => 'count',
+		'order'      => 'DESC',
+		'exclude'    => array( get_option( 'default_product_cat' ) ),
+	);
+
+	if ( $top_level ) {
+		$args['parent'] = 0;
+	}
+
+	$terms = get_terms( $args );
+
+	return ( $terms && ! is_wp_error( $terms ) ) ? $terms : array();
+}
+
+/**
+ * Tile sizes for the category mosaic, for any number of tiles.
+ *
+ * The grid is six columns wide, so each row has to add up to six. Small counts
+ * get a hand-tuned pattern; beyond that the tiles are laid out in rows of
+ * three twos or two threes so nothing is ever left with a hole beside it.
+ *
+ * @param int $count How many tiles.
+ * @return string[] One size class per tile.
+ */
+function ss_category_tile_sizes( $count ) {
+	$count = max( 1, (int) $count );
+
+	$patterns = array(
+		1 => array( 'w6 ss-cat--h2' ),
+		2 => array( 'w3', 'w3' ),
+		3 => array( 'w4 ss-cat--h2', 'w2', 'w2' ),
+		4 => array( 'w3', 'w3', 'w3', 'w3' ),
+		5 => array( 'w4 ss-cat--h2', 'w2', 'w2', 'w3', 'w3' ),
+		6 => array( 'w4 ss-cat--h2', 'w2', 'w2', 'w2', 'w2', 'w2' ),
+	);
+
+	if ( isset( $patterns[ $count ] ) ) {
+		return $patterns[ $count ];
+	}
+
+	// Lead with the hero pattern, then fill whole rows with the remainder.
+	$sizes     = $patterns[5];
+	$remaining = $count - 5;
+
+	while ( $remaining > 0 ) {
+		if ( 0 === $remaining % 3 || $remaining > 4 ) {
+			$take = 3;
+			$size = 'w2';
+		} elseif ( 0 === $remaining % 2 ) {
+			$take = 2;
+			$size = 'w3';
+		} else {
+			// A single leftover tile spans the row rather than leaving a hole.
+			$take = 1;
+			$size = 'w6';
+		}
+
+		for ( $i = 0; $i < $take && $remaining > 0; $i++ ) {
+			$sizes[]    = $size;
+			$remaining--;
+		}
+	}
+
+	return $sizes;
+}
+
+/**
+ * The product queries the homepage sections use, keyed so the browser can ask
+ * for the next page without ever sending raw query arguments.
+ *
+ * @return array
+ */
+function ss_product_sections() {
+	return apply_filters(
+		'ss_product_sections',
+		array(
+			'new'         => array( 'orderby' => 'date', 'order' => 'DESC' ),
+			'bestsellers' => array( 'meta_key' => 'total_sales', 'orderby' => 'meta_value_num', 'order' => 'DESC' ), // phpcs:ignore WordPress.DB.SlowDBQuery
+			'sarees'      => array_merge( ss_cat_query( array( 'sarees', 'saree', 'silk-sarees' ) ), array( 'orderby' => 'popularity' ) ),
+			'jewel'       => array_merge( ss_cat_query( array( 'jewellery', 'jewelry', 'temple-jewellery' ) ), array( 'orderby' => 'date' ) ),
+			'dresses'     => array_merge( ss_cat_query( array( 'dresses', 'dress', 'lehengas' ) ), array( 'orderby' => 'date' ) ),
+		)
+	);
+}
+
+/**
+ * Query args for an Elementor Product Grid widget, rebuilt from validated
+ * request values rather than trusted from the browser.
+ *
+ * @param string $source   One of the widget's source options.
+ * @param string $category Category slug, or empty.
+ * @return array
+ */
+function ss_product_source_args( $source, $category = '' ) {
+	$args = array();
+
+	switch ( $source ) {
+		case 'best':
+			$args = array( 'meta_key' => 'total_sales', 'orderby' => 'meta_value_num', 'order' => 'DESC' ); // phpcs:ignore WordPress.DB.SlowDBQuery
+			break;
+
+		case 'sale':
+			$ids  = function_exists( 'wc_get_product_ids_on_sale' ) ? wc_get_product_ids_on_sale() : array();
+			$args = array( 'post__in' => $ids ? $ids : array( 0 ), 'orderby' => 'date' );
+			break;
+
+		case 'featured':
+			$args = array(
+				'tax_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery
+					array( 'taxonomy' => 'product_visibility', 'field' => 'name', 'terms' => 'featured' ),
+				),
+			);
+			break;
+
+		case 'rated':
+			$args = array( 'meta_key' => '_wc_average_rating', 'orderby' => 'meta_value_num', 'order' => 'DESC' ); // phpcs:ignore WordPress.DB.SlowDBQuery
+			break;
+
+		case 'random':
+			$args = array( 'orderby' => 'rand' );
+			break;
+
+		default:
+			$args = array( 'orderby' => 'date', 'order' => 'DESC' );
+	}
+
+	if ( $category ) {
+		$cat = ss_cat_query( sanitize_title( $category ) );
+
+		$args['tax_query'] = isset( $args['tax_query'] ) // phpcs:ignore WordPress.DB.SlowDBQuery
+			? array_merge( $args['tax_query'], $cat['tax_query'] )
+			: $cat['tax_query'];
+	}
+
+	return $args;
+}
+
+/**
+ * Render just the <li> items for a page of products.
+ *
+ * @param array $args Query args.
+ * @param int   $page Page number.
+ * @param int   $per  Items per page.
+ * @return array{html:string,more:bool}
+ */
+function ss_product_items( $args, $page, $per ) {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return array( 'html' => '', 'more' => false );
+	}
+
+	$query = new WP_Query(
+		array_merge(
+			ss_product_query_defaults(),
+			$args,
+			array(
+				'posts_per_page' => max( 1, (int) $per ),
+				'paged'          => max( 1, (int) $page ),
+				'no_found_rows'  => false,
+			)
+		)
+	);
+
+	if ( ! $query->have_posts() ) {
+		wp_reset_postdata();
+		return array( 'html' => '', 'more' => false );
+	}
+
+	ob_start();
+
+	while ( $query->have_posts() ) {
+		$query->the_post();
+		wc_get_template_part( 'content', 'product' );
+	}
+
+	$html = ob_get_clean();
+	$more = $query->max_num_pages > max( 1, (int) $page );
+
+	wp_reset_postdata();
+
+	return array( 'html' => $html, 'more' => $more );
+}
+
+/**
+ * The visibility and stock rules every product query in the theme shares.
+ *
+ * @return array
+ */
+function ss_product_query_defaults() {
+	$defaults = array(
+		'post_type'           => 'product',
+		'post_status'         => 'publish',
+		'ignore_sticky_posts' => true,
+		'tax_query'           => array(), // phpcs:ignore WordPress.DB.SlowDBQuery
+	);
+
+	if ( 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' ) ) {
+		$defaults['tax_query'][] = array(
+			'taxonomy' => 'product_visibility',
+			'field'    => 'name',
+			'terms'    => 'outofstock',
+			'operator' => 'NOT IN',
+		);
+	}
+
+	$defaults['tax_query'][] = array(
+		'taxonomy' => 'product_visibility',
+		'field'    => 'name',
+		'terms'    => 'exclude-from-catalog',
+		'operator' => 'NOT IN',
+	);
+
+	return $defaults;
+}
+
+/**
+ * The "Load more" button under a product grid.
+ *
+ * @param array $data Button data attributes.
+ */
+function ss_load_more_button( $data ) {
+	if ( ! ss_option( 'loadmore' ) ) {
+		return;
+	}
+
+	$attrs = '';
+
+	foreach ( $data as $key => $value ) {
+		$attrs .= sprintf( ' data-%s="%s"', esc_attr( $key ), esc_attr( $value ) );
+	}
+
+	printf(
+		'<div class="ss-loadmore"><button type="button" class="ss-btn ss-btn--ghost ss-btn--lg ss-loadmore__btn"%s>%s%s</button></div>',
+		$attrs, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		esc_html__( 'Load more', 'sreesaanvika' ),
+		ss_icon( 'chevron-down', 16 ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	);
 }

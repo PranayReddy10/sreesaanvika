@@ -80,6 +80,16 @@ class SS_Widget_Products extends SS_Widget {
 		);
 
 		$this->add_control(
+			'show_loadmore',
+			array(
+				'label'        => esc_html__( 'Show a "Load more" button', 'sreesaanvika' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Appends the next products in place instead of sending shoppers to another page.', 'sreesaanvika' ),
+			)
+		);
+
+		$this->add_control(
 			'button_text',
 			array(
 				'label'       => esc_html__( 'Button below the grid', 'sreesaanvika' ),
@@ -167,8 +177,17 @@ class SS_Widget_Products extends SS_Widget {
 
 		$s = $this->get_settings_for_display();
 
+		$more = array();
+
+		if ( ! empty( $s['show_loadmore'] ) && 'yes' === $s['show_loadmore'] ) {
+			$more = array(
+				'source'   => $s['source'],
+				'category' => $s['category'],
+			);
+		}
+
 		ob_start();
-		$found = ss_product_loop( $this->query_args( $s ), absint( $s['columns'] ) );
+		$found = ss_product_loop( $this->query_args( $s ), absint( $s['columns'] ), $more );
 		$loop  = ob_get_clean();
 
 		if ( ! $found ) {

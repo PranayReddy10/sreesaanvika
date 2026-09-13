@@ -541,3 +541,55 @@
 		head.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
 	});
 })();
+
+/* ==========================================================================
+ * Policy pages — highlight the contents entry for the section in view.
+ * ========================================================================== */
+(function () {
+	'use strict';
+
+	var nav = document.querySelector('.ss-legal-toc');
+	var body = document.querySelector('.ss-legal__body');
+
+	if (!nav || !body || !('IntersectionObserver' in window)) { return; }
+
+	var links = {};
+
+	Array.prototype.forEach.call(nav.querySelectorAll('a[href^="#"]'), function (a) {
+		links[a.getAttribute('href').slice(1)] = a;
+	});
+
+	var headings = Array.prototype.slice.call(body.querySelectorAll('h2[id]'));
+
+	if (!headings.length) { return; }
+
+	function mark(id) {
+		Object.keys(links).forEach(function (key) {
+			links[key].classList.toggle('is-current', key === id);
+		});
+	}
+
+	var seen = [];
+
+	var io = new IntersectionObserver(function (entries) {
+		entries.forEach(function (entry) {
+			var id = entry.target.id;
+			var at = seen.indexOf(id);
+
+			if (entry.isIntersecting) {
+				if (at === -1) { seen.push(id); }
+			} else if (at > -1) {
+				seen.splice(at, 1);
+			}
+		});
+
+		if (seen.length) {
+			// Whichever visible heading sits highest on the page wins.
+			var top = headings.filter(function (h) { return seen.indexOf(h.id) > -1; })[0];
+			if (top) { mark(top.id); }
+		}
+	}, { rootMargin: '-15% 0px -70% 0px' });
+
+	headings.forEach(function (h) { io.observe(h); });
+	mark(headings[0].id);
+})();

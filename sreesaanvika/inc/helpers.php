@@ -66,19 +66,30 @@ function ss_page_url( $slug ) {
 		return $cached;
 	}
 
-	$pages = get_posts(
-		array(
-			'post_type'      => 'page',
-			'post_status'    => 'publish',
-			'posts_per_page' => 1,
-			'fields'         => 'ids',
-			'meta_key'       => '_wp_page_template', // phpcs:ignore WordPress.DB.SlowDBQuery
-			'meta_value'     => 'page-templates/template-' . $slug . '.php', // phpcs:ignore WordPress.DB.SlowDBQuery
-			'no_found_rows'  => true,
-		)
-	);
+	// Slug first. The four policy pages all share one template, so a lookup by
+	// template alone would return whichever of them the query happened to hit.
+	$page = get_page_by_path( $slug );
+	$url  = $page ? get_permalink( $page ) : '';
 
-	$url = $pages ? get_permalink( $pages[0] ) : home_url( '/' . $slug . '/' );
+	if ( ! $url && ! array_key_exists( $slug, ss_legal_pages() ) ) {
+		$pages = get_posts(
+			array(
+				'post_type'      => 'page',
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'meta_key'       => '_wp_page_template', // phpcs:ignore WordPress.DB.SlowDBQuery
+				'meta_value'     => 'page-templates/template-' . $slug . '.php', // phpcs:ignore WordPress.DB.SlowDBQuery
+				'no_found_rows'  => true,
+			)
+		);
+
+		$url = $pages ? get_permalink( $pages[0] ) : '';
+	}
+
+	if ( ! $url ) {
+		$url = home_url( '/' . $slug . '/' );
+	}
 
 	set_transient( $cache_key, $url, DAY_IN_SECONDS );
 
@@ -89,7 +100,9 @@ function ss_page_url( $slug ) {
  * Clear the cached template page URLs when pages change.
  */
 function ss_flush_page_urls() {
-	foreach ( array( 'compare', 'wishlist', 'auth', 'lookbook', 'faq', 'contact', 'about', 'track' ) as $slug ) {
+	$slugs = array( 'compare', 'wishlist', 'auth', 'lookbook', 'faq', 'contact', 'about', 'track' );
+
+	foreach ( array_merge( $slugs, array_keys( ss_legal_pages() ) ) as $slug ) {
 		delete_transient( 'ss_page_url_' . $slug );
 	}
 }
