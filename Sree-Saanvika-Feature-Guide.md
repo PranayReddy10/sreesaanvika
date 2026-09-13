@@ -186,7 +186,8 @@ Give the pairing a percentage and it becomes a real offer — the matching piece
 are discounted whenever the product they were chosen for is in the same cart.
 Tick *show this both ways* and the saree turns up beside the jewellery too.
 
-The cart carries the same idea as **Goes with what is in your bag**.
+The cart carries the same idea as **Complete your look** — a tile grid on a
+desktop, and a compact list on a phone.
 
 ### Countdown and banners
 

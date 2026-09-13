@@ -474,8 +474,10 @@ Tick **show this product on the matching products' pages too** and the pairing
 works both ways — pick the jewellery on the saree once, and the saree turns up
 beside the jewellery as well.
 
-In the cart, *Goes with what is in your bag* shows the matches for whatever is
-in there, with an Add button on each.
+In the cart, **Complete your look** shows the matches for whatever is in there,
+with an Add button on each — a tile grid on a desktop, and a compact list with
+small thumbnails on a phone, where four 3:4 tiles would be most of a screen.
+`sso_cart_matches_heading` filters the wording.
 
 The discount is worked out on the server during WooCommerce's own totals pass,
 so it holds with JavaScript off, survives a page reload, and cannot be applied
