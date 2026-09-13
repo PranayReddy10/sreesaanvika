@@ -329,9 +329,15 @@ Everything lives under **Sree Saanvika Options**:
   same and WooCommerce would normally send nothing.
 - The quantity stepper stops at the chosen variation's stock. At the limit the
   **+** dims and says why on hover, rather than silently doing nothing.
-- Raising the quantity shows the line total under the buy row — `2 × ₹1,999.00
-  = ₹3,998.00` — so the figures move with the stepper. The price above it stays
-  the price of one, which is what the cart, the schema and the shopper expect.
+- The price on the product page is the price of what is in the box: it
+  multiplies with the quantity and follows the chosen variation, struck-through
+  figure included. The discount percentage stays the same, since it does not
+  depend on how many you buy. Product cards and the structured data keep the
+  unit price.
+- Simple and variable products render the same price shape — the current price
+  in gold, the old one struck through, then the discount chip. A variable
+  product whose variations differ in price shows the range instead, and swaps
+  to a single figure once a variation is chosen.
 - Set a category image under **Products → Categories** to fill the homepage
   mosaic and the round rail.
 - The newsletter form stores addresses in the `ss_newsletter_list` option.

@@ -1122,15 +1122,6 @@ ul.products li.product .added_to_cart { display: none; }
 	padding: 0;
 }
 
-/* What the shopper actually pays, once they want more than one. */
-.ss-linetotal {
-	margin: 12px 0 0;
-	font-size: 0.92rem;
-	color: var(--ss-text-soft);
-	font-variant-numeric: tabular-nums;
-	letter-spacing: 0.02em;
-}
-
 /* At the stock ceiling or the minimum, the button says so rather than
    silently doing nothing. */
 .ss-qty-btn[disabled],

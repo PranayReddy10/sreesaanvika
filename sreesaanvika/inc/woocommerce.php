@@ -230,15 +230,44 @@ function ss_price_block( $product, $class = 'ss-pcard__price' ) {
 
 	$pct = ss_discount_pct( $product );
 
-	echo '<div class="' . esc_attr( $class ) . '">';
-
+	/*
+	 * A variable product used to print Woo's own get_price_html() here, which
+	 * carries its own <del>/<ins> and so came out looking nothing like a
+	 * simple product's price. Work in numbers instead and render one shape for
+	 * both, which also gives shop.js something to recalculate.
+	 */
 	if ( $product->is_type( 'variable' ) ) {
-		echo '<span class="ss-price-now">' . wp_kses_post( $product->get_price_html() ) . '</span>';
+		$now     = (float) $product->get_variation_price( 'min', true );
+		$high    = (float) $product->get_variation_price( 'max', true );
+		$regular = (float) $product->get_variation_regular_price( 'min', true );
+		$range   = $high > $now;
 	} else {
-		echo '<span class="ss-price-now">' . wp_kses_post( wc_price( wc_get_price_to_display( $product ) ) ) . '</span>';
+		$now     = (float) wc_get_price_to_display( $product );
+		$high    = $now;
+		$regular = $product->get_regular_price()
+			? (float) wc_get_price_to_display( $product, array( 'price' => $product->get_regular_price() ) )
+			: 0.0;
+		$range   = false;
+	}
 
-		if ( $product->is_on_sale() && $product->get_regular_price() ) {
-			echo '<span class="ss-price-was">' . wp_kses_post( wc_price( wc_get_price_to_display( $product, array( 'price' => $product->get_regular_price() ) ) ) ) . '</span>';
+	printf(
+		'<div class="%1$s" data-price-block data-unit-price="%2$s" data-unit-regular="%3$s"%4$s>',
+		esc_attr( $class ),
+		esc_attr( $now ),
+		esc_attr( $regular > $now ? $regular : '' ),
+		// A "from — to" range has no single figure for shop.js to multiply.
+		$range ? ' data-price-range' : ''
+	);
+
+	if ( $range ) {
+		echo '<span class="ss-price-now">'
+			. wp_kses_post( wc_price( $now ) ) . ' &ndash; ' . wp_kses_post( wc_price( $high ) )
+			. '</span>';
+	} else {
+		echo '<span class="ss-price-now">' . wp_kses_post( wc_price( $now ) ) . '</span>';
+
+		if ( $regular > $now ) {
+			echo '<span class="ss-price-was">' . wp_kses_post( wc_price( $regular ) ) . '</span>';
 		}
 	}
 
@@ -675,29 +704,6 @@ function ss_single_share() {
 	);
 
 	echo '</div>';
-}
-
-/**
- * The line total under the buy row.
- *
- * The price in the summary is the price of one, which reads as "nothing
- * happened" when a shopper raises the quantity. This says what they will
- * actually pay. shop.js fills it in and hides it again at a quantity of one.
- */
-function ss_line_total() {
-	global $product;
-
-	if ( ! $product instanceof WC_Product || ! $product->is_purchasable() ) {
-		return;
-	}
-
-	// Variable products get their unit price from the chosen variation instead.
-	$unit = $product->is_type( 'variable' ) ? '' : (string) wc_get_price_to_display( $product );
-
-	printf(
-		'<p class="ss-linetotal" data-line-total data-unit-price="%s" hidden></p>',
-		esc_attr( $unit )
-	);
 }
 
 /**

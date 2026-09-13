@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.3.2' );
+define( 'SS_VERSION', '1.3.3' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -196,10 +196,14 @@ function ss_assets() {
 			'cartUrl'     => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
 			'maxCompare'  => (int) ss_option( 'compare_max', 4 ),
 			'freeShip'    => (float) ss_option( 'free_ship_threshold', 2999 ),
-			'currency'    => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '₹',
-			// Enough of WooCommerce's price settings to format a line total in JS.
+			/*
+			 * Decoded, because WooCommerce returns the symbol as an HTML
+			 * entity (&#8377;) and these are written to the page as text.
+			 */
+			'currency'    => function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : '₹',
+			// Enough of WooCommerce's price settings to reprice in JS.
 			'price'       => function_exists( 'wc_get_price_decimals' ) ? array(
-				'symbol'   => get_woocommerce_currency_symbol(),
+				'symbol'   => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
 				'decimals' => wc_get_price_decimals(),
 				'thousand' => wc_get_price_thousand_separator(),
 				'decimal'  => wc_get_price_decimal_separator(),
@@ -222,8 +226,6 @@ function ss_assets() {
 				'minQty'         => __( 'Minimum quantity', 'sreesaanvika' ),
 				/* translators: %d: discount percentage */
 				'percentOff'     => __( '%d%% off', 'sreesaanvika' ),
-				/* translators: 1: quantity, 2: unit price, 3: line total */
-				'lineTotal'      => __( '%1$s × %2$s = %3$s', 'sreesaanvika' ),
 			),
 		)
 	);

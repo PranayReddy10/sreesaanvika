@@ -312,7 +312,7 @@
 				: '';
 		});
 
-		paintLineTotal();
+		repriceSummary();
 	}
 
 	function syncAllQty() {
@@ -320,30 +320,92 @@
 	}
 
 	/*
-	 * The summary price is the price of one, so raising the quantity looks
-	 * like nothing happened. Spell out what the shopper will actually pay.
+	 * The price on the product page is the price of what is in the box: it
+	 * follows the chosen variation and the quantity. The unit figures live on
+	 * the block as data attributes and the visible amounts are rebuilt from
+	 * them, so the two can never drift apart.
 	 */
-	function paintLineTotal() {
-		var line = $('[data-line-total]');
+	var priceCache;
 
-		if (!line) { return; }
+	function priceState() {
+		if (priceCache !== undefined) { return priceCache; }
 
-		var form = line.closest('form');
-		var input = form && qtyInput(form.querySelector('.ss-qty, .quantity'));
+		var block = $('[data-var-price] [data-price-block]') || $('.ss-summary [data-price-block]');
+
+		priceCache = block ? {
+			block: block,
+			html: block.innerHTML,
+			unit: block.getAttribute('data-unit-price'),
+			regular: block.getAttribute('data-unit-regular'),
+			range: block.hasAttribute('data-price-range')
+		} : null;
+
+		return priceCache;
+	}
+
+	function currentQty() {
+		var input = qtyInput($('form.cart .ss-qty, form.cart .quantity'));
 		var qty = input ? parseFloat(input.value) : 1;
-		var unit = parseFloat(line.getAttribute('data-unit-price'));
 
-		if (!unit || isNaN(unit) || isNaN(qty) || qty < 2) {
-			line.hidden = true;
-			line.textContent = '';
+		return (isNaN(qty) || qty < 1) ? 1 : qty;
+	}
+
+	function repriceSummary() {
+		var state = priceState();
+
+		if (!state) { return; }
+
+		var block = state.block;
+		var unit = parseFloat(block.getAttribute('data-unit-price'));
+		var regular = parseFloat(block.getAttribute('data-unit-regular'));
+		var qty = currentQty();
+
+		// A "from — to" range has no single figure to multiply.
+		if (block.hasAttribute('data-price-range') || isNaN(unit) || unit <= 0) { return; }
+
+		// One of the product's own price: exactly what the server rendered.
+		if (qty < 2 && !block.hasAttribute('data-variation')) {
+			if (block.innerHTML !== state.html) { block.innerHTML = state.html; }
 			return;
 		}
 
-		line.hidden = false;
-		line.textContent = (i18n.lineTotal || '%1$s × %2$s = %3$s')
-			.replace('%1$s', qty)
-			.replace('%2$s', formatPrice(unit))
-			.replace('%3$s', formatPrice(unit * qty));
+		var now = block.querySelector('.ss-price-now');
+
+		if (!now) {
+			now = D.createElement('span');
+			now.className = 'ss-price-now';
+			block.insertBefore(now, block.firstChild);
+		}
+
+		now.textContent = formatPrice(unit * qty);
+
+		var onSale = !isNaN(regular) && regular > unit;
+		var was = block.querySelector('.ss-price-was');
+
+		if (onSale && !was) {
+			was = D.createElement('span');
+			was.className = 'ss-price-was';
+			now.insertAdjacentElement('afterend', was);
+		}
+
+		if (was) {
+			was.hidden = !onSale;
+			was.textContent = onSale ? formatPrice(regular * qty) : '';
+		}
+
+		var pct = onSale ? Math.round(((regular - unit) / regular) * 100) : 0;
+		var off = block.querySelector('.ss-price-off');
+
+		if (pct > 0 && !off) {
+			off = D.createElement('span');
+			off.className = 'ss-price-off';
+			block.appendChild(off);
+		}
+
+		if (off) {
+			off.hidden = pct < 1;
+			off.textContent = pct > 0 ? (i18n.percentOff || '%d%% off').replace('%d', pct).replace('%%', '%') : '';
+		}
 	}
 
 	on(D, 'click', function (e) {
@@ -557,54 +619,33 @@
 		var form = $('form.variations_form');
 		if (!form || !window.jQuery) { return; }
 
-		var price = $('[data-var-price]');
-		var basePrice = price ? price.innerHTML : '';
-
 		/*
-		 * Write the variation's price into the theme's own price block rather
-		 * than over it, so the "now", "was" and "% off" styling survives.
+		 * Hand the chosen variation's own figures to the price block and let
+		 * it re-render. Woo's price_html is deliberately not used: it brings
+		 * its own <del>/<ins> markup, which is what made a variable product's
+		 * price look nothing like a simple one's.
 		 */
-		function paintPrice(variation) {
-			if (!price || !variation.price_html) { return; }
+		function useVariationPrice(variation) {
+			var state = priceState();
 
-			var now = price.querySelector('.ss-price-now');
+			if (!state) { return; }
 
-			if (now) {
-				now.innerHTML = variation.price_html;
-			} else {
-				price.innerHTML = variation.price_html;
-			}
+			var block = state.block;
 
-			var regular = parseFloat(variation.display_regular_price);
-			var sale = parseFloat(variation.display_price);
-			var pct = (regular > 0 && sale > 0 && sale < regular)
-				? Math.round(((regular - sale) / regular) * 100)
-				: 0;
+			// A range is replaced by this variation's single price.
+			block.removeAttribute('data-price-range');
+			block.setAttribute('data-variation', '');
+			block.setAttribute('data-unit-price', variation.display_price);
+			block.setAttribute('data-unit-regular', variation.display_regular_price);
 
-			var off = price.querySelector('.ss-price-off');
-
-			if (!off && pct > 0) {
-				off = D.createElement('span');
-				off.className = 'ss-price-off';
-				(price.querySelector('.ss-price-block, [class*="price"]') || price).appendChild(off);
-			}
-
-			if (off) {
-				off.textContent = pct > 0 ? (i18n.percentOff || '%d%% off').replace('%d', pct).replace('%%', '%') : '';
-				off.hidden = pct < 1;
-			}
+			repriceSummary();
 		}
 
 		window.jQuery(form).on('found_variation', function (event, variation) {
 			var gallery = $('[data-gallery]');
-			var hasSet = false;
 
 			// A colour gallery has already repainted the stage — leave it be.
-			if (gallery && gallery.getAttribute('data-color-galleries')) {
-				hasSet = true;
-			}
-
-			if (!hasSet) {
+			if (!gallery || !gallery.getAttribute('data-color-galleries')) {
 				var stage = $('.ss-gallery__frame img');
 				var zoom = $('.ss-gallery__zoom');
 
@@ -619,26 +660,25 @@
 				}
 			}
 
-			paintPrice(variation);
-
-			var line = $('[data-line-total]');
-
-			if (line) {
-				line.setAttribute('data-unit-price', variation.display_price);
-				paintLineTotal();
-			}
+			useVariationPrice(variation);
 		});
 
-		// Clearing the selection puts the product's own price range back.
+		// Clearing the selection puts the product's own price back.
 		window.jQuery(form).on('reset_data', function () {
-			if (price && basePrice) { price.innerHTML = basePrice; }
+			var state = priceState();
 
-			var line = $('[data-line-total]');
+			if (!state) { return; }
 
-			if (line) {
-				line.setAttribute('data-unit-price', '');
-				paintLineTotal();
-			}
+			var block = state.block;
+
+			block.innerHTML = state.html;
+			block.removeAttribute('data-variation');
+			block.setAttribute('data-unit-price', state.unit);
+			block.setAttribute('data-unit-regular', state.regular || '');
+
+			if (state.range) { block.setAttribute('data-price-range', ''); }
+
+			repriceSummary();
 		});
 	})();
 
