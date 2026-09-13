@@ -152,6 +152,118 @@ function ss_create_pages() {
 }
 
 /**
+ * Slugs a shop owner is likely to have used for each theme page.
+ *
+ * Setup creates "about"; someone who wrote their own page first may well have
+ * called it "about-us" or "our-story", and that page is then sitting on the
+ * default template wondering why it looks nothing like the theme's.
+ *
+ * @return array<string,string[]>
+ */
+function ss_page_aliases() {
+	return array(
+		'about'                => array( 'about', 'about-us', 'our-story', 'story', 'aboutus' ),
+		'contact'              => array( 'contact', 'contact-us', 'contactus', 'get-in-touch' ),
+		'track'                => array( 'track', 'track-order', 'track-your-order', 'order-tracking', 'track-my-order' ),
+		'faq'                  => array( 'faq', 'faqs', 'help', 'questions' ),
+		'compare'              => array( 'compare', 'compare-products' ),
+		'wishlist'             => array( 'wishlist', 'my-wishlist', 'favourites', 'favorites' ),
+		'auth'                 => array( 'auth', 'sign-in', 'signin', 'login', 'sign-up', 'register' ),
+		'lookbook'             => array( 'lookbook', 'look-book', 'gallery' ),
+		'privacy-policy'       => array( 'privacy-policy', 'privacy', 'privacy-notice' ),
+		'terms-and-conditions' => array( 'terms-and-conditions', 'terms', 'terms-conditions', 'terms-of-service', 'terms-of-use' ),
+		'shipping-policy'      => array( 'shipping-policy', 'shipping', 'shipping-delivery', 'delivery' ),
+		'returns'              => array( 'returns', 'return-policy', 'return-refund-policy', 'refund-policy', 'refunds', 'returns-refunds' ),
+	);
+}
+
+/**
+ * Put every theme page back on its theme template.
+ *
+ * A page created before the theme was installed, or one whose template was
+ * changed by an importer or a page builder, renders through page.php and looks
+ * like a plain post — the commonest reason a rebuilt template appears not to
+ * have taken effect.
+ *
+ * @return array{fixed:array,missing:array}
+ */
+function ss_repair_templates() {
+	$pages   = array_merge( ss_setup_pages(), ss_setup_legal_pages() );
+	$aliases = ss_page_aliases();
+
+	$fixed   = array();
+	$missing = array();
+
+	foreach ( $pages as $slug => $page ) {
+		$candidates = isset( $aliases[ $slug ] ) ? $aliases[ $slug ] : array( $slug );
+		$found      = null;
+
+		foreach ( $candidates as $candidate ) {
+			$post = get_page_by_path( $candidate );
+
+			if ( $post instanceof WP_Post ) {
+				$found = $post;
+				break;
+			}
+		}
+
+		// Fall back to the title, for a page named right but slugged oddly.
+		if ( ! $found ) {
+			$by_title = get_posts(
+				array(
+					'post_type'      => 'page',
+					'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
+					'posts_per_page' => 1,
+					'title'          => $page['title'],
+					'no_found_rows'  => true,
+				)
+			);
+
+			if ( $by_title ) {
+				$found = $by_title[0];
+			}
+		}
+
+		if ( ! $found ) {
+			$missing[] = $page['title'];
+			continue;
+		}
+
+		if ( get_page_template_slug( $found->ID ) === $page['template'] ) {
+			continue;
+		}
+
+		update_post_meta( $found->ID, '_wp_page_template', $page['template'] );
+
+		$fixed[] = $found->post_title;
+	}
+
+	ss_flush_page_urls();
+
+	return array(
+		'fixed'   => $fixed,
+		'missing' => $missing,
+	);
+}
+
+/**
+ * Run the repair from the welcome screen.
+ */
+function ss_run_repair() {
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		wp_die( esc_html__( 'You do not have permission to do that.', 'sreesaanvika' ) );
+	}
+
+	check_admin_referer( 'ss_repair' );
+
+	set_transient( 'ss_repair_done', ss_repair_templates(), 60 );
+
+	wp_safe_redirect( admin_url( 'themes.php?page=sreesaanvika&ss-repair=1' ) );
+	exit;
+}
+add_action( 'admin_post_ss_repair_templates', 'ss_run_repair' );
+
+/**
  * Build a primary menu from the shop, categories and theme pages.
  *
  * @return bool

@@ -188,6 +188,41 @@ function ss_welcome_screen() {
 			</div>
 		<?php endif; ?>
 
+		<?php
+		$ss_repair = get_transient( 'ss_repair_done' );
+
+		if ( $ss_repair ) {
+			delete_transient( 'ss_repair_done' );
+		}
+		?>
+
+		<?php if ( $ss_repair ) : ?>
+			<div class="notice notice-success">
+				<p>
+					<?php
+					if ( ! empty( $ss_repair['fixed'] ) ) {
+						printf(
+							/* translators: %s: comma separated page names */
+							esc_html__( 'Put these pages back on their theme template: %s. Reload them to see the theme design.', 'sreesaanvika' ),
+							esc_html( implode( ', ', $ss_repair['fixed'] ) )
+						);
+					} else {
+						esc_html_e( 'Every theme page was already on the right template.', 'sreesaanvika' );
+					}
+
+					if ( ! empty( $ss_repair['missing'] ) ) {
+						echo ' ';
+						printf(
+							/* translators: %s: comma separated page names */
+							esc_html__( 'Not found at all, so nothing to repair: %s — run the one-click setup to create them.', 'sreesaanvika' ),
+							esc_html( implode( ', ', $ss_repair['missing'] ) )
+						);
+					}
+					?>
+				</p>
+			</div>
+		<?php endif; ?>
+
 		<div class="card" style="max-width:820px;padding:8px 22px 22px">
 			<h2><?php esc_html_e( 'Step 1 — WooCommerce', 'sreesaanvika' ); ?></h2>
 
@@ -210,6 +245,19 @@ function ss_welcome_screen() {
 				<?php wp_nonce_field( 'ss_setup' ); ?>
 				<button type="submit" class="button button-primary">
 					<?php esc_html_e( 'Run one-click setup', 'sreesaanvika' ); ?>
+				</button>
+			</form>
+
+			<h2><?php esc_html_e( 'Page looks plain? Repair its template', 'sreesaanvika' ); ?></h2>
+			<p>
+				<?php esc_html_e( 'If Our Story, Contact, Track Your Order or a policy page renders as a plain page with none of the theme design, it is on WordPress\'s default template rather than the theme\'s — usually because the page already existed, or an importer or page builder reset it. This finds each one by its address or title and puts it back on the theme template. It never changes what you have written.', 'sreesaanvika' ); ?>
+			</p>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="ss_repair_templates" />
+				<?php wp_nonce_field( 'ss_repair' ); ?>
+				<button type="submit" class="button">
+					<?php esc_html_e( 'Repair page templates', 'sreesaanvika' ); ?>
 				</button>
 			</form>
 

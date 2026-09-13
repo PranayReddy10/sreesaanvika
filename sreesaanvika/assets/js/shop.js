@@ -22,19 +22,37 @@
 		var stageImg = $('.ss-gallery__frame img', root);
 		var frame = $('.ss-gallery__frame', root);
 		var zoomLayer = $('.ss-gallery__zoom', root);
-		var thumbs = $$('.ss-gallery__thumb', root);
+		var thumbsWrap = $('.ss-gallery__thumbs', root);
 		var counter = $('.ss-gallery__counter', root);
+		var box = $('.ss-lightbox');
 
-		if (!stageImg || !thumbs.length) { return; }
+		if (!stageImg) { return; }
 
-		var shots = thumbs.map(function (t) {
-			return {
-				full: t.getAttribute('data-full'),
-				large: t.getAttribute('data-large') || t.getAttribute('data-full'),
-				alt: t.getAttribute('data-alt') || ''
-			};
-		});
+		function readShots() {
+			return $$('.ss-gallery__thumb', thumbsWrap).map(function (t) {
+				var img = t.querySelector('img');
 
+				return {
+					thumb: (img && img.getAttribute('src')) || t.getAttribute('data-large'),
+					full: t.getAttribute('data-full'),
+					large: t.getAttribute('data-large') || t.getAttribute('data-full'),
+					alt: t.getAttribute('data-alt') || ''
+				};
+			});
+		}
+
+		/*
+		 * The set the page was rendered with. Choosing a colour swaps in that
+		 * colour's photos; clearing the choice comes back here.
+		 */
+		var base = readShots();
+
+		if (!base.length) {
+			base = [{ thumb: stageImg.src, large: stageImg.src, full: stageImg.src, alt: stageImg.alt || '' }];
+		}
+
+		var shots = base;
+		var thumbs = $$('.ss-gallery__thumb', thumbsWrap);
 		var index = 0;
 
 		function render(i, skipScroll) {
@@ -43,6 +61,7 @@
 
 			stageImg.src = shot.large;
 			stageImg.alt = shot.alt;
+			stageImg.removeAttribute('srcset');
 
 			if (zoomLayer) { zoomLayer.style.backgroundImage = 'url(' + shot.full + ')'; }
 
@@ -58,9 +77,78 @@
 			}
 		}
 
-		thumbs.forEach(function (t, n) {
-			on(t, 'click', function () { render(n); });
-			on(t, 'mouseenter', function () { render(n, true); });
+		function buildThumbs() {
+			if (!thumbsWrap) { return; }
+
+			thumbsWrap.innerHTML = '';
+
+			shots.forEach(function (shot, n) {
+				var btn = D.createElement('button');
+				btn.type = 'button';
+				btn.className = 'ss-gallery__thumb';
+				btn.setAttribute('role', 'tab');
+				btn.setAttribute('data-full', shot.full);
+				btn.setAttribute('data-large', shot.large);
+				btn.setAttribute('data-alt', shot.alt);
+
+				var img = D.createElement('img');
+				img.src = shot.thumb || shot.large;
+				img.alt = '';
+				img.loading = 'lazy';
+				img.width = 90;
+				img.height = 120;
+				btn.appendChild(img);
+
+				var label = D.createElement('span');
+				label.className = 'screen-reader-text';
+				label.textContent = (i18n.viewImage || 'View image') + ' ' + (n + 1);
+				btn.appendChild(label);
+
+				thumbsWrap.appendChild(btn);
+			});
+
+			thumbs = $$('.ss-gallery__thumb', thumbsWrap);
+		}
+
+		function markSingle() {
+			var single = shots.length < 2;
+
+			root.classList.toggle('is-single', single);
+
+			if (box) { box.classList.toggle('is-single', single); }
+		}
+
+		// Swap the whole set — used when a colour with its own photos is picked.
+		function setShots(list) {
+			shots = (list && list.length) ? list : base;
+
+			buildThumbs();
+			markSingle();
+
+			if (box) {
+				var strip = $('.ss-lightbox__strip', box);
+
+				if (strip) {
+					strip.innerHTML = '';
+					strip.removeAttribute('data-built');
+				}
+			}
+
+			render(0, true);
+		}
+
+		root.ssSetShots = setShots;
+		markSingle();
+
+		// Delegated, because the thumbs are rebuilt on every colour change.
+		on(thumbsWrap, 'click', function (e) {
+			var t = e.target.closest('.ss-gallery__thumb');
+			if (t) { render(thumbs.indexOf(t)); }
+		});
+
+		on(thumbsWrap, 'mouseover', function (e) {
+			var t = e.target.closest('.ss-gallery__thumb');
+			if (t) { render(thumbs.indexOf(t), true); }
 		});
 
 		on($('.ss-gallery__arrow--next', root), 'click', function () { render(index + 1); });
@@ -72,9 +160,9 @@
 			on(frame, 'mouseleave', function () { frame.classList.remove('is-zooming'); });
 
 			on(frame, 'mousemove', function (e) {
-				var box = frame.getBoundingClientRect();
-				var x = ((e.clientX - box.left) / box.width) * 100;
-				var y = ((e.clientY - box.top) / box.height) * 100;
+				var rect = frame.getBoundingClientRect();
+				var x = ((e.clientX - rect.left) / rect.width) * 100;
+				var y = ((e.clientY - rect.top) / rect.height) * 100;
 				zoomLayer.style.backgroundPosition = x + '% ' + y + '%';
 			});
 		}
@@ -92,8 +180,6 @@
 		});
 
 		/* --- Lightbox --- */
-		var box = $('.ss-lightbox');
-
 		function openLightbox(at) {
 			if (!box) { return; }
 
@@ -107,9 +193,11 @@
 				img.alt = shots[current].alt;
 				img.classList.remove('is-zoomed');
 
-				$$('img', strip).forEach(function (t, n) {
-					t.classList.toggle('is-active', n === current);
-				});
+				if (strip) {
+					$$('img', strip).forEach(function (t, n) {
+						t.classList.toggle('is-active', n === current);
+					});
+				}
 			}
 
 			if (strip && !strip.dataset.built) {
@@ -202,6 +290,30 @@
 	/* ==================================================================
 	 * 3. Variation swatches mirrored from Woo's <select>s
 	 * ================================================================== */
+	/**
+	 * Point the product gallery at one colour's photos, or back at the
+	 * product's own set when the choice is cleared.
+	 */
+	function showColorGallery(slug) {
+		var gallery = $('[data-gallery]');
+
+		if (!gallery || !gallery.ssSetShots) { return; }
+
+		var raw = gallery.getAttribute('data-color-galleries');
+
+		if (!raw) { return; }
+
+		var map;
+
+		try {
+			map = JSON.parse(raw);
+		} catch (err) {
+			return;
+		}
+
+		gallery.ssSetShots((slug && map[slug]) ? map[slug] : null);
+	}
+
 	function buildSwatches() {
 		$$('.ss-variation-select').forEach(function (select) {
 			if (select.dataset.ssSwatched) { return; }
@@ -226,10 +338,32 @@
 				btn.title = option.textContent;
 
 				if (isColor) {
-					btn.className = 'ss-colorswatch';
 					var hex = host.getAttribute('data-color-' + option.value);
+					var shot = host.getAttribute('data-img-' + option.value);
+
+					btn.className = 'ss-colorswatch';
 					btn.style.backgroundColor = hex || swatchColor(option.textContent);
-					btn.innerHTML = '<span class="screen-reader-text">' + option.textContent + '</span>';
+
+					// A colour with its own photos shows one instead of a circle.
+					if (shot) {
+						btn.className = 'ss-colorswatch ss-colorswatch--img';
+
+						var chip = D.createElement('img');
+						chip.src = shot;
+						chip.alt = '';
+						chip.loading = 'lazy';
+						btn.appendChild(chip);
+
+						var name = D.createElement('span');
+						name.className = 'ss-colorswatch__name';
+						name.textContent = option.textContent;
+						btn.appendChild(name);
+					}
+
+					var sr = D.createElement('span');
+					sr.className = 'screen-reader-text';
+					sr.textContent = option.textContent;
+					btn.appendChild(sr);
 				} else {
 					btn.className = 'ss-size-chip';
 					btn.textContent = option.textContent;
@@ -257,6 +391,8 @@
 					var chosen = select.options[select.selectedIndex];
 					label.textContent = (chosen && chosen.value) ? chosen.textContent : '';
 				}
+
+				if (isColor) { showColorGallery(select.value); }
 			}
 
 			select.addEventListener('change', sync);
@@ -331,6 +467,48 @@
 			}
 		});
 	})();
+
+	/* ==================================================================
+	 * 3b. Colour swatches on product cards
+	 *
+	 * A card has no variation form to drive, so a swatch either repaints the
+	 * card with that colour's photo or, when the colour has no photo of its
+	 * own, opens the product with the colour already chosen.
+	 * ================================================================== */
+	on(D, 'click', function (e) {
+		var swatch = e.target.closest('.ss-pcard__swatches .ss-swatch');
+
+		if (!swatch || swatch.classList.contains('ss-swatch--more')) { return; }
+
+		var card = swatch.closest('.ss-product-card, li.product');
+		var front = card && card.querySelector('.ss-pcard__img--front');
+		var shot = swatch.getAttribute('data-front') || swatch.getAttribute('data-img');
+
+		if (front && shot) {
+			e.preventDefault();
+
+			// srcset would win over the src we are about to set.
+			front.removeAttribute('srcset');
+			front.removeAttribute('sizes');
+			front.src = shot;
+
+			// Keep the chosen colour showing instead of the hover image.
+			card.classList.add('is-colored');
+
+			$$('.ss-swatch', swatch.parentNode).forEach(function (other) {
+				other.classList.toggle('is-active', other === swatch);
+			});
+
+			return;
+		}
+
+		var href = swatch.getAttribute('data-href');
+
+		if (href) {
+			e.preventDefault();
+			window.location.href = href;
+		}
+	});
 
 	/* ==================================================================
 	 * 4. Wishlist & compare

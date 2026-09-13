@@ -270,12 +270,30 @@ function ss_card_swatches( $product, $limit = 5 ) {
 	echo '<div class="ss-pcard__swatches">';
 
 	$shown = array_slice( $terms, 0, $limit );
+	$link  = get_permalink( $product->get_id() );
 
 	foreach ( $shown as $term ) {
+		/*
+		 * A colour with its own photos swaps the card image where it stands;
+		 * one without can only be chosen on the product page, so the swatch
+		 * links there with the colour pre-selected. Either way it does
+		 * something when clicked.
+		 */
+		$chip  = function_exists( 'ss_color_swatch_image' ) ? ss_color_swatch_image( $product, $term->slug ) : '';
+		$front = function_exists( 'ss_color_swatch_image' ) ? ss_color_swatch_image( $product, $term->slug, 'ss-product' ) : '';
+
 		printf(
-			'<span class="ss-swatch" style="background-color:%1$s" title="%2$s"><span class="screen-reader-text">%2$s</span></span>',
+			'<button type="button" class="ss-swatch%1$s" style="background-color:%2$s" title="%3$s"'
+			. ' data-color="%4$s" data-img="%5$s" data-front="%6$s" data-href="%7$s">'
+			. '%8$s<span class="screen-reader-text">%3$s</span></button>',
+			$chip ? ' ss-swatch--img' : '',
 			esc_attr( ss_color_hex( $term->name, $term->term_id ) ),
-			esc_attr( $term->name )
+			esc_attr( $term->name ),
+			esc_attr( $term->slug ),
+			esc_url( $chip ),
+			esc_url( $front ),
+			esc_url( add_query_arg( 'attribute_' . sanitize_title( $term->taxonomy ), $term->slug, $link ) ),
+			$chip ? '<img src="' . esc_url( $chip ) . '" alt="" loading="lazy" />' : ''
 		);
 	}
 

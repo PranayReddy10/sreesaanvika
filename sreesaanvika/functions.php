@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.2.0' );
+define( 'SS_VERSION', '1.3.0' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -209,6 +209,7 @@ function ss_assets() {
 				'selectOptions'  => __( 'Please choose the available options first', 'sreesaanvika' ),
 				'deliverTo'      => __( 'Delivery to %s in 3–6 business days', 'sreesaanvika' ),
 				'badPin'         => __( 'Enter a valid 6-digit PIN code', 'sreesaanvika' ),
+				'viewImage'      => __( 'View image', 'sreesaanvika' ),
 			),
 		)
 	);
@@ -364,4 +365,5 @@ require_once SS_DIR . '/inc/elementor-import.php';
 if ( class_exists( 'WooCommerce' ) ) {
 	require_once SS_DIR . '/inc/woocommerce.php';
 	require_once SS_DIR . '/inc/woo-page-mode.php';
+	require_once SS_DIR . '/inc/color-gallery.php';
 }

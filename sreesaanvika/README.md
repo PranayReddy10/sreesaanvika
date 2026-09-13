@@ -241,6 +241,44 @@ query is rebuilt and validated server side.
 
 ---
 
+## Colour galleries — one saree, two colourways
+
+A saree photographed in green and in red is one product with two sets of
+photos, and WooCommerce on its own only ever swaps a single image. The theme
+handles the whole set.
+
+**On the product page.** Picking a colour replaces the gallery — stage image,
+thumbnails, zoom layer and lightbox strip all switch to that colour's photos.
+Clearing the selection brings the product's own gallery back.
+
+**The swatch itself becomes a photo.** A colour that has images shows the first
+one, with the colour name across the bottom, instead of a flat circle — far
+easier to choose between two similar greens. A colour with no images keeps the
+circle.
+
+**On product cards.** The swatches under a card's price are live. Clicking one
+repaints the card with that colour's photo; a colour with no photo of its own
+opens the product with the colour already selected.
+
+### Where the images come from
+
+Two sources, in order:
+
+1. **Products → edit a product → Colour galleries.** A row per colour of the
+   product's Colour attribute, each with its own media picker. This is the one
+   to use for several photos per colour.
+2. **The variation image**, if you have already set one under Product data →
+   Variations. Nothing to fill in — a shop that has variation images gets
+   working image swatches straight away.
+
+Anything set in the Colour galleries panel wins over the variation image.
+
+The panel appears once the product has a **Color**, **Colour** or **Shade**
+attribute saved. Images are stored per colour rather than per variation, so a
+colour that spans six sizes only needs its photos attached once.
+
+---
+
 ## Customizer reference
 
 Everything lives under **Sree Saanvika Options**:
@@ -322,7 +360,7 @@ sreesaanvika/
 ├── screenshot.png
 ├── assets/
 │   ├── css/  main.css, shop.css, editor.css
-│   ├── js/   theme.js, shop.js, customizer.js
+│   ├── js/   theme.js, shop.js, customizer.js, admin-color-gallery.js
 │   └── images/ SVG placeholders
 ├── inc/
 │   ├── helpers.php           Options, colour map, small utilities
@@ -334,20 +372,39 @@ sreesaanvika/
 │   ├── ajax.php              Quick view, search, cart, auth, newsletter
 │   ├── compare-wishlist.php  List storage and the compare table data
 │   ├── woocommerce.php       Shop integration and cart fragments
-│   ├── demo-content.php      One-click page + menu setup
+│   ├── color-gallery.php     Per-colour image sets and the editor panel
+│   ├── seo.php               Meta tags, Open Graph and JSON-LD
+│   ├── legal-content.php     The four policy documents
+│   ├── demo-content.php      One-click page + menu setup, template repair
 │   └── tgm-notice.php        Welcome screen and admin notices
 ├── template-parts/
 │   ├── header/  drawer, search overlay, cart panel
 │   ├── home/    the 16 homepage sections
 │   └── shop/    filter sidebar
 ├── page-templates/           compare, wishlist, auth, lookbook, about,
-│                             contact, faq
+│                             contact, faq, track, legal
 └── woocommerce/              Template overrides
 ```
 
 ---
 
 ## Troubleshooting
+
+### A page renders plain, with none of the theme design
+
+Our Story, Contact, Track Your Order and the policy pages each need their theme
+page template. A page that already existed before the theme was installed, or
+one an importer or page builder touched, sits on WordPress's default template
+instead and renders through `page.php` — so a rebuilt template appears to have
+done nothing.
+
+Fix it from **Appearance → Sree Saanvika → Repair page templates**. It finds
+each page by its address or its title (it knows the usual variants —
+`about-us`, `our-story`, `track-order` and so on) and puts it back on the theme
+template without touching what you have written. Or set it by hand: edit the
+page, then Page Attributes → Template.
+
+---
 
 ### The homepage sections show in the Customizer but not on the live site
 
