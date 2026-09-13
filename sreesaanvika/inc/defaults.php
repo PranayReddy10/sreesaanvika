@@ -143,9 +143,9 @@ function ss_defaults() {
 
 		/* Footer ----------------------------------------------------- */
 		'footer_about'         => 'Sree Saanvika brings you handloom sarees, temple jewellery and festive dresses sourced directly from Indian weavers and artisans — honest pricing, heirloom quality.',
-		'footer_address'       => "Plot 42, Jubilee Hills Road No. 36,\nHyderabad, Telangana 500033",
+		'footer_address'       => "18-3-490/1, Aliyabad, Near Phool Bagh,\nChaman, Charminar, Falaknuma,\nHyderabad, Telangana 500053",
 		'footer_phone'         => '+91 73869 12300',
-		'footer_email'         => 'care@sreesaanvika.in',
+		'footer_email'         => 'support@sreesaanvika.in',
 		'footer_hours'         => 'Mon–Sat, 10 am – 7 pm IST',
 		'footer_copy'          => '',
 		'social_instagram'     => '',
@@ -178,6 +178,13 @@ function ss_defaults() {
 		'flat_ship_rate'       => 99,
 		'cod_limit'            => 15000,
 		'policy_updated'       => '',
+		// Preloader.
+		'preloader_on'         => true,
+		'preloader_ms'         => 2000,
+		'preloader_transitions' => true,
+		'preloader_once'       => false,
+		'preloader_text'       => '',
+
 		'legal_entity'         => 'Sree Saanvika',
 		'legal_jurisdiction'   => 'Hyderabad, Telangana',
 		'legal_gstin'          => '',

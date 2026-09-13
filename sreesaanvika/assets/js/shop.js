@@ -15,6 +15,26 @@
 	function $$(sel, ctx) { return Array.prototype.slice.call((ctx || D).querySelectorAll(sel)); }
 	function on(el, ev, fn, opts) { if (el) { el.addEventListener(ev, fn, opts || false); } }
 
+	/* Format an amount the way WooCommerce formats it server-side. */
+	function formatPrice(amount) {
+		var cfg = data.price || {};
+		var decimals = typeof cfg.decimals === 'number' ? cfg.decimals : 2;
+		var fixed = (Math.round(amount * Math.pow(10, decimals)) / Math.pow(10, decimals)).toFixed(decimals);
+		var parts = fixed.split('.');
+
+		parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, cfg.thousand === undefined ? ',' : cfg.thousand);
+
+		var number = parts.join(cfg.decimal === undefined ? '.' : cfg.decimal);
+		var symbol = cfg.symbol || data.currency || '';
+
+		switch (cfg.position) {
+			case 'right': return number + symbol;
+			case 'left_space': return symbol + ' ' + number;
+			case 'right_space': return number + ' ' + symbol;
+			default: return symbol + number;
+		}
+	}
+
 	/* ==================================================================
 	 * 1. Product gallery — thumbs, zoom, lightbox
 	 * ================================================================== */
@@ -22,19 +42,37 @@
 		var stageImg = $('.ss-gallery__frame img', root);
 		var frame = $('.ss-gallery__frame', root);
 		var zoomLayer = $('.ss-gallery__zoom', root);
-		var thumbs = $$('.ss-gallery__thumb', root);
+		var thumbsWrap = $('.ss-gallery__thumbs', root);
 		var counter = $('.ss-gallery__counter', root);
+		var box = $('.ss-lightbox');
 
-		if (!stageImg || !thumbs.length) { return; }
+		if (!stageImg) { return; }
 
-		var shots = thumbs.map(function (t) {
-			return {
-				full: t.getAttribute('data-full'),
-				large: t.getAttribute('data-large') || t.getAttribute('data-full'),
-				alt: t.getAttribute('data-alt') || ''
-			};
-		});
+		function readShots() {
+			return $$('.ss-gallery__thumb', thumbsWrap).map(function (t) {
+				var img = t.querySelector('img');
 
+				return {
+					thumb: (img && img.getAttribute('src')) || t.getAttribute('data-large'),
+					full: t.getAttribute('data-full'),
+					large: t.getAttribute('data-large') || t.getAttribute('data-full'),
+					alt: t.getAttribute('data-alt') || ''
+				};
+			});
+		}
+
+		/*
+		 * The set the page was rendered with. Choosing a colour swaps in that
+		 * colour's photos; clearing the choice comes back here.
+		 */
+		var base = readShots();
+
+		if (!base.length) {
+			base = [{ thumb: stageImg.src, large: stageImg.src, full: stageImg.src, alt: stageImg.alt || '' }];
+		}
+
+		var shots = base;
+		var thumbs = $$('.ss-gallery__thumb', thumbsWrap);
 		var index = 0;
 
 		function render(i, skipScroll) {
@@ -43,6 +81,7 @@
 
 			stageImg.src = shot.large;
 			stageImg.alt = shot.alt;
+			stageImg.removeAttribute('srcset');
 
 			if (zoomLayer) { zoomLayer.style.backgroundImage = 'url(' + shot.full + ')'; }
 
@@ -58,9 +97,78 @@
 			}
 		}
 
-		thumbs.forEach(function (t, n) {
-			on(t, 'click', function () { render(n); });
-			on(t, 'mouseenter', function () { render(n, true); });
+		function buildThumbs() {
+			if (!thumbsWrap) { return; }
+
+			thumbsWrap.innerHTML = '';
+
+			shots.forEach(function (shot, n) {
+				var btn = D.createElement('button');
+				btn.type = 'button';
+				btn.className = 'ss-gallery__thumb';
+				btn.setAttribute('role', 'tab');
+				btn.setAttribute('data-full', shot.full);
+				btn.setAttribute('data-large', shot.large);
+				btn.setAttribute('data-alt', shot.alt);
+
+				var img = D.createElement('img');
+				img.src = shot.thumb || shot.large;
+				img.alt = '';
+				img.loading = 'lazy';
+				img.width = 90;
+				img.height = 120;
+				btn.appendChild(img);
+
+				var label = D.createElement('span');
+				label.className = 'screen-reader-text';
+				label.textContent = (i18n.viewImage || 'View image') + ' ' + (n + 1);
+				btn.appendChild(label);
+
+				thumbsWrap.appendChild(btn);
+			});
+
+			thumbs = $$('.ss-gallery__thumb', thumbsWrap);
+		}
+
+		function markSingle() {
+			var single = shots.length < 2;
+
+			root.classList.toggle('is-single', single);
+
+			if (box) { box.classList.toggle('is-single', single); }
+		}
+
+		// Swap the whole set — used when a colour with its own photos is picked.
+		function setShots(list) {
+			shots = (list && list.length) ? list : base;
+
+			buildThumbs();
+			markSingle();
+
+			if (box) {
+				var strip = $('.ss-lightbox__strip', box);
+
+				if (strip) {
+					strip.innerHTML = '';
+					strip.removeAttribute('data-built');
+				}
+			}
+
+			render(0, true);
+		}
+
+		root.ssSetShots = setShots;
+		markSingle();
+
+		// Delegated, because the thumbs are rebuilt on every colour change.
+		on(thumbsWrap, 'click', function (e) {
+			var t = e.target.closest('.ss-gallery__thumb');
+			if (t) { render(thumbs.indexOf(t)); }
+		});
+
+		on(thumbsWrap, 'mouseover', function (e) {
+			var t = e.target.closest('.ss-gallery__thumb');
+			if (t) { render(thumbs.indexOf(t), true); }
 		});
 
 		on($('.ss-gallery__arrow--next', root), 'click', function () { render(index + 1); });
@@ -72,9 +180,9 @@
 			on(frame, 'mouseleave', function () { frame.classList.remove('is-zooming'); });
 
 			on(frame, 'mousemove', function (e) {
-				var box = frame.getBoundingClientRect();
-				var x = ((e.clientX - box.left) / box.width) * 100;
-				var y = ((e.clientY - box.top) / box.height) * 100;
+				var rect = frame.getBoundingClientRect();
+				var x = ((e.clientX - rect.left) / rect.width) * 100;
+				var y = ((e.clientY - rect.top) / rect.height) * 100;
 				zoomLayer.style.backgroundPosition = x + '% ' + y + '%';
 			});
 		}
@@ -92,8 +200,6 @@
 		});
 
 		/* --- Lightbox --- */
-		var box = $('.ss-lightbox');
-
 		function openLightbox(at) {
 			if (!box) { return; }
 
@@ -107,9 +213,11 @@
 				img.alt = shots[current].alt;
 				img.classList.remove('is-zoomed');
 
-				$$('img', strip).forEach(function (t, n) {
-					t.classList.toggle('is-active', n === current);
-				});
+				if (strip) {
+					$$('img', strip).forEach(function (t, n) {
+						t.classList.toggle('is-active', n === current);
+					});
+				}
 			}
 
 			if (strip && !strip.dataset.built) {
@@ -172,7 +280,134 @@
 
 	/* ==================================================================
 	 * 2. Quantity steppers
+	 *
+	 * WooCommerce rewrites min and max on the input when a variation is
+	 * chosen, so a stepper that only clamps silently looks broken the moment
+	 * stock runs low — the button has to say it is at the limit.
 	 * ================================================================== */
+	function qtyInput(wrap) {
+		return wrap && wrap.querySelector('input[type="number"], input.qty');
+	}
+
+	function syncQty(wrap) {
+		var input = qtyInput(wrap);
+
+		if (!input) { return; }
+
+		var value = parseFloat(input.value);
+		var min = parseFloat(input.getAttribute('min'));
+		var max = parseFloat(input.getAttribute('max'));
+
+		if (isNaN(value)) { value = isNaN(min) ? 1 : min; }
+
+		$$('.ss-qty-btn', wrap).forEach(function (btn) {
+			var up = btn.classList.contains('ss-qty-plus');
+			var at = up ? (!isNaN(max) && value >= max) : (value <= (isNaN(min) ? 1 : min));
+
+			btn.disabled = at;
+			btn.classList.toggle('is-disabled', at);
+			btn.setAttribute('aria-disabled', at ? 'true' : 'false');
+			btn.title = at
+				? (up ? (i18n.maxQty || 'That is all we have in stock') : (i18n.minQty || 'Minimum quantity'))
+				: '';
+		});
+
+		repriceSummary();
+	}
+
+	function syncAllQty() {
+		$$('.ss-qty, .quantity').forEach(syncQty);
+	}
+
+	/*
+	 * The price on the product page is the price of what is in the box: it
+	 * follows the chosen variation and the quantity. The unit figures live on
+	 * the block as data attributes and the visible amounts are rebuilt from
+	 * them, so the two can never drift apart.
+	 */
+	var priceCache;
+
+	function priceState() {
+		if (priceCache !== undefined) { return priceCache; }
+
+		var block = $('[data-var-price] [data-price-block]') || $('.ss-summary [data-price-block]');
+
+		priceCache = block ? {
+			block: block,
+			html: block.innerHTML,
+			unit: block.getAttribute('data-unit-price'),
+			regular: block.getAttribute('data-unit-regular'),
+			range: block.hasAttribute('data-price-range')
+		} : null;
+
+		return priceCache;
+	}
+
+	function currentQty() {
+		var input = qtyInput($('form.cart .ss-qty, form.cart .quantity'));
+		var qty = input ? parseFloat(input.value) : 1;
+
+		return (isNaN(qty) || qty < 1) ? 1 : qty;
+	}
+
+	function repriceSummary() {
+		var state = priceState();
+
+		if (!state) { return; }
+
+		var block = state.block;
+		var unit = parseFloat(block.getAttribute('data-unit-price'));
+		var regular = parseFloat(block.getAttribute('data-unit-regular'));
+		var qty = currentQty();
+
+		// A "from — to" range has no single figure to multiply.
+		if (block.hasAttribute('data-price-range') || isNaN(unit) || unit <= 0) { return; }
+
+		// One of the product's own price: exactly what the server rendered.
+		if (qty < 2 && !block.hasAttribute('data-variation')) {
+			if (block.innerHTML !== state.html) { block.innerHTML = state.html; }
+			return;
+		}
+
+		var now = block.querySelector('.ss-price-now');
+
+		if (!now) {
+			now = D.createElement('span');
+			now.className = 'ss-price-now';
+			block.insertBefore(now, block.firstChild);
+		}
+
+		now.textContent = formatPrice(unit * qty);
+
+		var onSale = !isNaN(regular) && regular > unit;
+		var was = block.querySelector('.ss-price-was');
+
+		if (onSale && !was) {
+			was = D.createElement('span');
+			was.className = 'ss-price-was';
+			now.insertAdjacentElement('afterend', was);
+		}
+
+		if (was) {
+			was.hidden = !onSale;
+			was.textContent = onSale ? formatPrice(regular * qty) : '';
+		}
+
+		var pct = onSale ? Math.round(((regular - unit) / regular) * 100) : 0;
+		var off = block.querySelector('.ss-price-off');
+
+		if (pct > 0 && !off) {
+			off = D.createElement('span');
+			off.className = 'ss-price-off';
+			block.appendChild(off);
+		}
+
+		if (off) {
+			off.hidden = pct < 1;
+			off.textContent = pct > 0 ? (i18n.percentOff || '%d%% off').replace('%d', pct).replace('%%', '%') : '';
+		}
+	}
+
 	on(D, 'click', function (e) {
 		var btn = e.target.closest('.ss-qty-btn');
 		if (!btn) { return; }
@@ -180,9 +415,9 @@
 		e.preventDefault();
 
 		var wrap = btn.closest('.ss-qty, .quantity');
-		var input = wrap && wrap.querySelector('input[type="number"], input.qty');
+		var input = qtyInput(wrap);
 
-		if (!input) { return; }
+		if (!input || btn.disabled) { return; }
 
 		var step = parseFloat(input.getAttribute('step')) || 1;
 		var min = parseFloat(input.getAttribute('min'));
@@ -197,11 +432,59 @@
 
 		input.value = value;
 		input.dispatchEvent(new Event('change', { bubbles: true }));
+
+		syncQty(wrap);
 	});
+
+	// 'input' as well as 'change', so typing a quantity updates the total as
+	// it is typed rather than only on blur.
+	['input', 'change'].forEach(function (ev) {
+		on(D, ev, function (e) {
+			var input = e.target.closest('input[type="number"], input.qty');
+
+			if (input) { syncQty(input.closest('.ss-qty, .quantity')); }
+		});
+	});
+
+	syncAllQty();
+
+	/*
+	 * Woo swaps the min and max attributes as variations are chosen, and
+	 * reveals the buy row it had hidden — both after our first pass.
+	 */
+	if (window.jQuery) {
+		window.jQuery(D).on('found_variation reset_data show_variation hide_variation', function () {
+			setTimeout(syncAllQty, 30);
+		});
+	}
 
 	/* ==================================================================
 	 * 3. Variation swatches mirrored from Woo's <select>s
 	 * ================================================================== */
+	/**
+	 * Point the product gallery at one colour's photos, or back at the
+	 * product's own set when the choice is cleared.
+	 */
+	function showColorGallery(slug) {
+		var gallery = $('[data-gallery]');
+
+		if (!gallery || !gallery.ssSetShots) { return; }
+
+		var raw = gallery.getAttribute('data-color-galleries');
+
+		if (!raw) { return; }
+
+		var map;
+
+		try {
+			map = JSON.parse(raw);
+		} catch (err) {
+			return;
+		}
+
+		gallery.ssSetShots((slug && map[slug]) ? map[slug] : null);
+	}
+
 	function buildSwatches() {
 		$$('.ss-variation-select').forEach(function (select) {
 			if (select.dataset.ssSwatched) { return; }
@@ -226,10 +509,32 @@
 				btn.title = option.textContent;
 
 				if (isColor) {
-					btn.className = 'ss-colorswatch';
 					var hex = host.getAttribute('data-color-' + option.value);
+					var shot = host.getAttribute('data-img-' + option.value);
+
+					btn.className = 'ss-colorswatch';
 					btn.style.backgroundColor = hex || swatchColor(option.textContent);
-					btn.innerHTML = '<span class="screen-reader-text">' + option.textContent + '</span>';
+
+					// A colour with its own photos shows one instead of a circle.
+					if (shot) {
+						btn.className = 'ss-colorswatch ss-colorswatch--img';
+
+						var chip = D.createElement('img');
+						chip.src = shot;
+						chip.alt = '';
+						chip.loading = 'lazy';
+						btn.appendChild(chip);
+
+						var name = D.createElement('span');
+						name.className = 'ss-colorswatch__name';
+						name.textContent = option.textContent;
+						btn.appendChild(name);
+					}
+
+					var sr = D.createElement('span');
+					sr.className = 'screen-reader-text';
+					sr.textContent = option.textContent;
+					btn.appendChild(sr);
 				} else {
 					btn.className = 'ss-size-chip';
 					btn.textContent = option.textContent;
@@ -257,6 +562,8 @@
 					var chosen = select.options[select.selectedIndex];
 					label.textContent = (chosen && chosen.value) ? chosen.textContent : '';
 				}
+
+				if (isColor) { showColorGallery(select.value); }
 			}
 
 			select.addEventListener('change', sync);
@@ -306,31 +613,116 @@
 
 	buildSwatches();
 
-	/* Swap the main gallery image when a variation is picked. */
+	/* Follow the chosen variation: its price, and its image when the colour
+	   has no gallery of its own to take over. */
 	(function () {
 		var form = $('form.variations_form');
 		if (!form || !window.jQuery) { return; }
 
+		/*
+		 * Hand the chosen variation's own figures to the price block and let
+		 * it re-render. Woo's price_html is deliberately not used: it brings
+		 * its own <del>/<ins> markup, which is what made a variable product's
+		 * price look nothing like a simple one's.
+		 */
+		function useVariationPrice(variation) {
+			var state = priceState();
+
+			if (!state) { return; }
+
+			var block = state.block;
+
+			// A range is replaced by this variation's single price.
+			block.removeAttribute('data-price-range');
+			block.setAttribute('data-variation', '');
+			block.setAttribute('data-unit-price', variation.display_price);
+			block.setAttribute('data-unit-regular', variation.display_regular_price);
+
+			repriceSummary();
+		}
+
 		window.jQuery(form).on('found_variation', function (event, variation) {
-			var stage = $('.ss-gallery__frame img');
-			var zoom = $('.ss-gallery__zoom');
+			var gallery = $('[data-gallery]');
 
-			if (stage && variation.image && variation.image.src) {
-				stage.src = variation.image.src;
-				stage.alt = variation.image.alt || '';
+			// A colour gallery has already repainted the stage — leave it be.
+			if (!gallery || !gallery.getAttribute('data-color-galleries')) {
+				var stage = $('.ss-gallery__frame img');
+				var zoom = $('.ss-gallery__zoom');
+
+				if (stage && variation.image && variation.image.src) {
+					stage.src = variation.image.src;
+					stage.alt = variation.image.alt || '';
+					stage.removeAttribute('srcset');
+				}
+
+				if (zoom && variation.image && variation.image.full_src) {
+					zoom.style.backgroundImage = 'url(' + variation.image.full_src + ')';
+				}
 			}
 
-			if (zoom && variation.image && variation.image.full_src) {
-				zoom.style.backgroundImage = 'url(' + variation.image.full_src + ')';
-			}
+			useVariationPrice(variation);
+		});
 
-			var price = $('[data-var-price]');
+		// Clearing the selection puts the product's own price back.
+		window.jQuery(form).on('reset_data', function () {
+			var state = priceState();
 
-			if (price && variation.price_html) {
-				price.innerHTML = variation.price_html;
-			}
+			if (!state) { return; }
+
+			var block = state.block;
+
+			block.innerHTML = state.html;
+			block.removeAttribute('data-variation');
+			block.setAttribute('data-unit-price', state.unit);
+			block.setAttribute('data-unit-regular', state.regular || '');
+
+			if (state.range) { block.setAttribute('data-price-range', ''); }
+
+			repriceSummary();
 		});
 	})();
+
+	/* ==================================================================
+	 * 3b. Colour swatches on product cards
+	 *
+	 * A card has no variation form to drive, so a swatch either repaints the
+	 * card with that colour's photo or, when the colour has no photo of its
+	 * own, opens the product with the colour already chosen.
+	 * ================================================================== */
+	on(D, 'click', function (e) {
+		var swatch = e.target.closest('.ss-pcard__swatches .ss-swatch');
+
+		if (!swatch || swatch.classList.contains('ss-swatch--more')) { return; }
+
+		var card = swatch.closest('.ss-product-card, li.product');
+		var front = card && card.querySelector('.ss-pcard__img--front');
+		var shot = swatch.getAttribute('data-front') || swatch.getAttribute('data-img');
+
+		if (front && shot) {
+			e.preventDefault();
+
+			// srcset would win over the src we are about to set.
+			front.removeAttribute('srcset');
+			front.removeAttribute('sizes');
+			front.src = shot;
+
+			// Keep the chosen colour showing instead of the hover image.
+			card.classList.add('is-colored');
+
+			$$('.ss-swatch', swatch.parentNode).forEach(function (other) {
+				other.classList.toggle('is-active', other === swatch);
+			});
+
+			return;
+		}
+
+		var href = swatch.getAttribute('data-href');
+
+		if (href) {
+			e.preventDefault();
+			window.location.href = href;
+		}
+	});
 
 	/* ==================================================================
 	 * 4. Wishlist & compare

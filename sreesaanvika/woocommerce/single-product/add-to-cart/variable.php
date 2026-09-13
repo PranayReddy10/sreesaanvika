@@ -50,6 +50,13 @@ do_action( 'woocommerce_before_add_to_cart_form' );
 						if ( $ss_term && ! is_wp_error( $ss_term ) ) {
 							$ss_color_attrs .= ' data-color-' . esc_attr( $ss_option ) . '="' . esc_attr( ss_color_hex( $ss_term->name, $ss_term->term_id ) ) . '"';
 						}
+
+						// A colour with its own photos gets an image swatch rather than a circle.
+						$ss_swatch_img = function_exists( 'ss_color_swatch_image' ) ? ss_color_swatch_image( $product, $ss_option ) : '';
+
+						if ( $ss_swatch_img ) {
+							$ss_color_attrs .= ' data-img-' . esc_attr( $ss_option ) . '="' . esc_url( $ss_swatch_img ) . '"';
+						}
 					}
 				}
 				?>

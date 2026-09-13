@@ -430,6 +430,76 @@ function ss_customize_register( $wp_customize ) {
 	$add( 'policy_updated', array( 'label' => __( 'Policies last updated', 'sreesaanvika' ), 'description' => __( 'Shown on every policy page. Leave empty to use each page\'s modified date.', 'sreesaanvika' ), 'section' => 'ss_policy' ) );
 
 	/* -----------------------------------------------------------------
+	 * Preloader
+	 * -------------------------------------------------------------- */
+	$wp_customize->add_section(
+		'ss_preloader',
+		array(
+			'title'       => __( 'Loading Screen', 'sreesaanvika' ),
+			'panel'       => 'ss_panel',
+			'description' => __( 'The gold medallion curtain shown while a page loads. Turn it off here at any time — nothing else changes.', 'sreesaanvika' ),
+		)
+	);
+
+	$add(
+		'preloader_on',
+		array(
+			'label'       => __( 'Show the loading screen', 'sreesaanvika' ),
+			'section'     => 'ss_preloader',
+			'type'        => 'checkbox',
+			'description' => __( 'Off is off everywhere, straight away.', 'sreesaanvika' ),
+		),
+		'ss_sanitize_bool'
+	);
+
+	$add(
+		'preloader_ms',
+		array(
+			'label'       => __( 'How long it stays, in milliseconds', 'sreesaanvika' ),
+			'section'     => 'ss_preloader',
+			'type'        => 'number',
+			'input_attrs' => array(
+				'min'  => 300,
+				'max'  => 6000,
+				'step' => 100,
+			),
+			'description' => __( '2000 is two seconds. Anything past about 2500 starts to feel slow.', 'sreesaanvika' ),
+		),
+		'absint'
+	);
+
+	$add(
+		'preloader_transitions',
+		array(
+			'label'       => __( 'Show it between pages too', 'sreesaanvika' ),
+			'section'     => 'ss_preloader',
+			'type'        => 'checkbox',
+			'description' => __( 'The curtain comes back down when a shopper follows a link, so moving around the shop feels like one piece.', 'sreesaanvika' ),
+		),
+		'ss_sanitize_bool'
+	);
+
+	$add(
+		'preloader_once',
+		array(
+			'label'       => __( 'Only on the first page of a visit', 'sreesaanvika' ),
+			'section'     => 'ss_preloader',
+			'type'        => 'checkbox',
+			'description' => __( 'Kinder to a returning shopper: they see it once and then never again until they come back.', 'sreesaanvika' ),
+		),
+		'ss_sanitize_bool'
+	);
+
+	$add(
+		'preloader_text',
+		array(
+			'label'       => __( 'Name on the loading screen', 'sreesaanvika' ),
+			'section'     => 'ss_preloader',
+			'description' => __( 'Leave empty to use the site title.', 'sreesaanvika' ),
+		)
+	);
+
+	/* -----------------------------------------------------------------
 	 * Typography
 	 * -------------------------------------------------------------- */
 	$wp_customize->add_section(

@@ -18,6 +18,9 @@ marigold throughout: there is no white background anywhere in the theme.
    It never overwrites a page or menu you already have.
 5. Open the **Customizer → Sree Saanvika Options** to set your hero slides,
    banners, colours, contact details and social links.
+6. Optional: install the two companion plugins under **Plugins → Add New →
+   Upload Plugin** — `sreesaanvika-delivery.zip` for courier tracking on every
+   order, and `sreesaanvika-offers.zip` for Buy 2 Get 1 Free.
 
 Requires WordPress 6.0+, PHP 7.4+ and WooCommerce 7.0+.
 
@@ -241,6 +244,245 @@ query is rebuilt and validated server side.
 
 ---
 
+## Logo, site icon and the loading screen
+
+The theme ships its own mark: a gold medallion with the Sree Saanvika **S**,
+drawn as SVG so it stays sharp at any size.
+
+| File | Where it is used |
+| --- | --- |
+| `assets/images/logo.svg` | The full lockup — medallion, name, tagline |
+| `assets/images/mark.svg` | The medallion alone, and the loading screen |
+| `assets/images/favicon.svg` | The browser tab, at a weight that survives 16px |
+| `assets/images/icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon-32.png` | Bookmarks, home screens, older browsers |
+
+The browser-tab icon appears on its own — nothing to set up. Upload your own
+under **Settings → General → Site Icon** and WordPress's takes over. To use the
+lockup in the header instead of the CSS wordmark, set it under **Customizer →
+Site Identity → Logo**.
+
+### The loading screen
+
+A full-screen gold medallion curtain while a page loads. It comes down again
+when a shopper follows a link, so moving around the shop feels like one piece
+rather than a series of white flashes.
+
+**Customizer → Sree Saanvika Options → Loading Screen** turns it off at any
+time, and controls:
+
+- how long it stays (2000ms by default),
+- whether it also shows between pages,
+- whether a returning shopper sees it only once per visit,
+- the name printed on it.
+
+It is built so it can never trap anybody: the fade-out is a CSS animation with
+the duration baked in, so it leaves on its own even with JavaScript off, and
+there is a hard timeout behind that. A visitor who has asked their system for
+reduced motion gets it without the moving parts, and no curtain between pages.
+
+---
+
+## Colour galleries — one saree, two colourways
+
+A saree photographed in green and in red is one product with two sets of
+photos, and WooCommerce on its own only ever swaps a single image. The theme
+handles the whole set.
+
+**On the product page.** Picking a colour replaces the gallery — stage image,
+thumbnails, zoom layer and lightbox strip all switch to that colour's photos.
+Clearing the selection brings the product's own gallery back.
+
+**The swatch itself becomes a photo.** A colour that has images shows the first
+one, with the colour name across the bottom, instead of a flat circle — far
+easier to choose between two similar greens. A colour with no images keeps the
+circle.
+
+**On product cards.** The swatches under a card's price are live. Clicking one
+repaints the card with that colour's photo; a colour with no photo of its own
+opens the product with the colour already selected.
+
+### Where the images come from
+
+**The variation's own photos — nothing to fill in twice.** Each colour's images
+are read straight from that colour's variation: its main image first, then its
+variation gallery. Set them once under Product data → Variations, the way you
+already would, and the shop picks them up.
+
+That covers WooCommerce's own variation gallery and the usual gallery plugins.
+If yours stores its images under some other meta key, add it:
+
+```php
+add_filter( 'ss_variation_gallery_meta_keys', function ( $keys ) {
+    $keys[] = '_my_plugin_variation_images';
+    return $keys;
+} );
+```
+
+**Products → edit a product → Colour galleries** is an override, not a second
+place to do the same work. Each row shows the photos that colour is already
+using and where they came from; you only touch it to make a colour show
+*different* photos on the shop than on its variation. "Go back to the variation
+photos" undoes an override.
+
+The panel appears once the product has a **Color**, **Colour** or **Shade**
+attribute saved. Overrides are stored per colour rather than per variation, so
+a colour that spans six sizes only needs its photos attached once.
+
+---
+
+## Delivery tracking (companion plugin)
+
+`sreesaanvika-delivery.zip` is a separate plugin — install it under **Plugins →
+Add New → Upload Plugin**. It is built for a shop that uses **one courier** and
+already sees every order in that courier's own app; it puts the same
+information on the website so customers stop emailing to ask.
+
+**On each order.** A Delivery panel with the status, consignment number,
+courier, expected date and a running history. A Delivery column and two bulk
+actions on the orders list.
+
+**What the customer sees.** A progress line — Order placed → Packed →
+Dispatched → In transit → Out for delivery → Delivered — on the thank-you page,
+in My Account, and under the theme's Track Your Order form. One WooCommerce
+hook covers all three, so there is nothing to place by hand. `[sreesaanvika_tracking]`
+puts a standalone tracker on any page, which asks for the order number plus the
+email or phone from the order so nobody can read an order by guessing numbers.
+
+**Getting the status in.** Three ways, use whichever fits:
+
+1. **A push from your delivery app** — the website updates the moment the app
+   does. `POST /wp-json/sreesaanvika-delivery/v1/shipment` with an `X-SSD-Key`
+   header:
+
+   ```
+   { "order_number": "1234", "tracking": "ABC123456789",
+     "status": "out", "location": "Falaknuma, Hyderabad" }
+   ```
+
+   Send only what changed — a status push will not wipe a tracking number.
+   `awb`, `waybill` and `tracking_id` are accepted as aliases, `time` takes
+   epoch seconds or an ISO date, and `/shipments` takes a batch. The key is on
+   **WooCommerce → Delivery**, along with a ready-made curl example; a request
+   without it is refused.
+2. **The courier's CSV manifest** — **WooCommerce → Import tracking** takes the
+   two-column file (order number, consignment number) most couriers hand back
+   after a pickup.
+3. **By hand** on the order, for the occasional parcel.
+
+**Settings** (WooCommerce → Delivery): the courier and its tracking link
+(presets for Delhivery, Blue Dart, DTDC, XpressBees, Ecom Express, Shadowfax,
+Ekart, Shiprocket, Trackon and India Post, or type your own with `{tracking}`),
+your support phone and email, the delivery promise shown before a parcel moves,
+and whether to email the customer on dispatch and on delivery.
+
+### Delhivery
+
+Paste a **Delhivery API token** (from their panel, under API setup) and pick a
+checking interval, and the shop asks Delhivery about every parcel still in
+flight by itself — moving the order along with no one touching it. Only orders
+that have a tracking number and have not finished are asked about, so it costs
+very little. **Check Delhivery now** runs it on demand.
+
+Delhivery's wording is mapped onto the plugin's stages: *Manifested* and *Not
+Picked* → Packed, *Dispatched* and *Out for delivery* → Out for delivery, *In
+Transit* and *Pending* → In transit, *Delivered* → Delivered, *RTO* → Returned,
+*Undelivered*, *Lost* and *Damaged* → Delivery attempt failed. Wording the
+plugin does not recognise falls back to Delhivery's status type, and if that is
+unfamiliar too the status is left alone and the scan is recorded as a note —
+never guessed at.
+
+A push from your delivery app is still better where you can set one up: it
+arrives the moment a scan happens rather than on the next check.
+
+Works with WooCommerce's High-Performance Order Storage, and looks right under
+any theme — it takes the theme's colours when they exist and falls back to its
+own dark styling when they do not.
+
+---
+
+## Free shipping meter
+
+The theme knows what a shopper has to spend to stop paying for delivery, and
+says so in the three places the decision gets made: the bag panel, the top of
+the cart, and above checkout. *Add ₹340 more for free shipping*, with a bar
+that fills and turns green on **Free shipping unlocked**.
+
+The figure comes from **WooCommerce's own Free shipping method** where one is
+set up with a minimum order amount — one number to maintain rather than two
+that drift apart — and falls back to **Customizer → Shop → Free shipping
+threshold** otherwise. `ss_free_ship_threshold` filters it if you need
+something cleverer.
+
+---
+
+## Offers without a promo code (companion plugin)
+
+`sreesaanvika-offers.zip` is a separate plugin. It runs **Buy 2 Get 1 Free**
+and offers like it with nothing for the shopper to type — you pick the
+products, and when enough of them are in the cart the cheapest ones come off
+the total on their own.
+
+**WooCommerce → Offers → Add offer.** Each offer has:
+
+- **The kind** — two to choose from:
+  - **Buy some, get some free** — buy *X*, get *Y*, at any percentage off. 100%
+    is free; 50% makes the cheapest half price. A switch decides whether it
+    repeats for every further set in the same cart (six sarees → two free, or
+    still one). Counted **across everything the offer covers**: any three
+    sarees.
+  - **The more you buy, the cheaper** — quantity breaks: 2 for 10% off, 3 for
+    15%, 5 for 20%. Counted **per product**, so it catches the shopper buying a
+    pair of the same saree. Two *different* sarees do not earn it. The breaks
+    show as chips on the product page, and the shopper always gets the best one
+    their quantity earns.
+- **Which products it covers** — pick them by hand with WooCommerce's own
+  product search, or take a whole category, with an exclusion list on top.
+- **What the customer sees** — a headline and a line underneath, shown on
+  every product the offer covers and at the top of the cart.
+- **When it runs** — optional start and end, and an optional countdown.
+
+Which item goes free is never in doubt: **the cheapest of the qualifying
+items**. Three sarees at ₹3,999, ₹2,999 and ₹1,200 → the ₹1,200 one is free.
+
+Add a second offer for jewellery and the two are counted separately, so two
+sarees and two bangles is not three of anything.
+
+In the cart the free line is struck through and marked *Free with this offer*,
+and the banner keeps a live count — *Add 1 more to get one free*, then *1 item
+free — you are saving ₹1,200.00*. The offer is recorded on the order line too,
+so months later it is clear why a saree went out at nothing.
+
+`[ss_offer]` places a banner anywhere; `[ss_offer id="12"]` places one.
+
+### Complete the look
+
+The other half of the plugin, and the one that lifts basket size. On **any
+product**, a *Complete the look* panel lets you pick the pieces that go with
+it by hand — the jhumkas for a saree, the bangles, a matching blouse.
+
+Under the product they appear as **this piece + match + match**, each with a
+tick box, a running total, and one button that puts the whole look in the bag.
+Unticking a piece re-totals immediately. A piece already in the cart is shown
+as such rather than added twice, and a variable product is never added blind —
+it says to choose the options on its own page.
+
+Set a **discount on the matching items** and the pairing becomes a real offer:
+the matches are reduced whenever the product they were chosen for is in the
+same cart. A line an offer has already made free is never cut a second time.
+
+Tick **show this product on the matching products' pages too** and the pairing
+works both ways — pick the jewellery on the saree once, and the saree turns up
+beside the jewellery as well.
+
+In the cart, *Goes with what is in your bag* shows the matches for whatever is
+in there, with an Add button on each.
+
+The discount is worked out on the server during WooCommerce's own totals pass,
+so it holds with JavaScript off, survives a page reload, and cannot be applied
+twice by a recalculation.
+
+---
+
 ## Customizer reference
 
 Everything lives under **Sree Saanvika Options**:
@@ -263,6 +505,7 @@ Everything lives under **Sree Saanvika Options**:
 - **Footer** — about text, address, phone, email, hours, copyright, five
   social URLs and the Instagram handle.
 - **Typography** — heading font, base size, corner rounding, content width.
+- **Loading Screen** — on/off, how long, between pages, once per visit, the name.
 
 ---
 
@@ -276,6 +519,20 @@ Everything lives under **Sree Saanvika Options**:
   exact shade, add a term meta named `ss_color` holding a hex value.
 - Product images look best portrait at 3:4 — 1200 × 1600 or larger keeps the
   zoom sharp.
+- Every variation sends its own price, so the price in the summary updates the
+  moment a colour or size is chosen — even where all the variations cost the
+  same and WooCommerce would normally send nothing.
+- The quantity stepper stops at the chosen variation's stock. At the limit the
+  **+** dims and says why on hover, rather than silently doing nothing.
+- The price on the product page is the price of what is in the box: it
+  multiplies with the quantity and follows the chosen variation, struck-through
+  figure included. The discount percentage stays the same, since it does not
+  depend on how many you buy. Product cards and the structured data keep the
+  unit price.
+- Simple and variable products render the same price shape — the current price
+  in gold, the old one struck through, then the discount chip. A variable
+  product whose variations differ in price shows the range instead, and swaps
+  to a single figure once a variation is chosen.
 - Set a category image under **Products → Categories** to fill the homepage
   mosaic and the round rail.
 - The newsletter form stores addresses in the `ss_newsletter_list` option.
@@ -322,8 +579,8 @@ sreesaanvika/
 ├── screenshot.png
 ├── assets/
 │   ├── css/  main.css, shop.css, editor.css
-│   ├── js/   theme.js, shop.js, customizer.js
-│   └── images/ SVG placeholders
+│   ├── js/   theme.js, shop.js, customizer.js, admin-color-gallery.js
+│   └── images/ logo, mark, favicons, SVG placeholders
 ├── inc/
 │   ├── helpers.php           Options, colour map, small utilities
 │   ├── icons.php             Inline SVG icon set
@@ -334,20 +591,52 @@ sreesaanvika/
 │   ├── ajax.php              Quick view, search, cart, auth, newsletter
 │   ├── compare-wishlist.php  List storage and the compare table data
 │   ├── woocommerce.php       Shop integration and cart fragments
-│   ├── demo-content.php      One-click page + menu setup
+│   ├── branding.php          Logo assets, site icon, the loading screen
+│   ├── color-gallery.php     Per-colour image sets and the editor panel
+│   ├── seo.php               Meta tags, Open Graph and JSON-LD
+│   ├── legal-content.php     The four policy documents
+│   ├── demo-content.php      One-click page + menu setup, template repair
 │   └── tgm-notice.php        Welcome screen and admin notices
 ├── template-parts/
 │   ├── header/  drawer, search overlay, cart panel
 │   ├── home/    the 16 homepage sections
 │   └── shop/    filter sidebar
 ├── page-templates/           compare, wishlist, auth, lookbook, about,
-│                             contact, faq
+│                             contact, faq, track, legal
 └── woocommerce/              Template overrides
 ```
 
 ---
 
 ## Troubleshooting
+
+### A page renders plain, with none of the theme design
+
+Our Story, Contact, Track Your Order and the policy pages each need their theme
+page template. A page that already existed before the theme was installed, or
+one an importer or page builder touched, sits on WordPress's default template
+instead and renders through `page.php` — so a rebuilt template appears to have
+done nothing.
+
+Fix it from **Appearance → Sree Saanvika → Repair page templates**. It finds
+each page by its address or its title (it knows the usual variants —
+`about-us`, `our-story`, `track-order` and so on) and puts it back on the theme
+template without touching what you have written. Or set it by hand: edit the
+page, then Page Attributes → Template.
+
+---
+
+### A plugin's product-page output does not appear
+
+The theme lays out the product summary itself, so for a long time it never
+fired `woocommerce_single_product_summary` and nothing hooked there could
+appear. It fires now, with WooCommerce's own callbacks removed from it so the
+title, price, excerpt, add-to-cart and meta are not printed twice.
+
+If you are writing a plugin, hook `woocommerce_single_product_summary` as
+usual; output lands under the short description, above the add-to-cart form.
+
+---
 
 ### The homepage sections show in the Customizer but not on the live site
 

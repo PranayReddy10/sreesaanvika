@@ -47,33 +47,42 @@ if ( ! $ss_shots ) {
 
 $ss_first = $ss_shots[0];
 $ss_count = count( $ss_shots );
-?>
-<div class="ss-gallery" data-gallery>
 
-	<?php if ( $ss_count > 1 ) : ?>
-		<div class="ss-gallery__thumbs" role="tablist" aria-label="<?php esc_attr_e( 'Product images', 'sreesaanvika' ); ?>">
-			<?php foreach ( $ss_shots as $ss_n => $ss_shot ) : ?>
-				<button type="button"
-					class="ss-gallery__thumb<?php echo 0 === $ss_n ? ' is-active' : ''; ?>"
-					role="tab"
-					aria-current="<?php echo 0 === $ss_n ? 'true' : 'false'; ?>"
-					data-full="<?php echo esc_url( $ss_shot['full'] ); ?>"
-					data-large="<?php echo esc_url( $ss_shot['large'] ); ?>"
-					data-alt="<?php echo esc_attr( $ss_shot['alt'] ); ?>">
-					<img src="<?php echo esc_url( $ss_shot['thumb'] ); ?>" alt="" loading="lazy" width="90" height="120" />
-					<span class="screen-reader-text">
-						<?php
-						printf(
-							/* translators: %d: image number */
-							esc_html__( 'View image %d', 'sreesaanvika' ),
-							absint( $ss_n + 1 )
-						);
-						?>
-					</span>
-				</button>
-			<?php endforeach; ?>
-		</div>
-	<?php endif; ?>
+/*
+ * Per-colour image sets, if the shop owner attached any. The chrome below is
+ * rendered even for a one-image product, because picking a colour can swap in
+ * a set of four — is-single just hides it until then.
+ */
+$ss_colorsets = function_exists( 'ss_color_galleries' ) ? ss_color_galleries( $product ) : array();
+$ss_single    = $ss_count < 2 && ! $ss_colorsets;
+?>
+<div class="ss-gallery<?php echo $ss_single ? ' is-single' : ''; ?>" data-gallery
+	<?php if ( $ss_colorsets ) : ?>
+		data-color-galleries="<?php echo esc_attr( wp_json_encode( $ss_colorsets ) ); ?>"
+	<?php endif; ?>>
+
+	<div class="ss-gallery__thumbs" role="tablist" aria-label="<?php esc_attr_e( 'Product images', 'sreesaanvika' ); ?>">
+		<?php foreach ( $ss_shots as $ss_n => $ss_shot ) : ?>
+			<button type="button"
+				class="ss-gallery__thumb<?php echo 0 === $ss_n ? ' is-active' : ''; ?>"
+				role="tab"
+				aria-current="<?php echo 0 === $ss_n ? 'true' : 'false'; ?>"
+				data-full="<?php echo esc_url( $ss_shot['full'] ); ?>"
+				data-large="<?php echo esc_url( $ss_shot['large'] ); ?>"
+				data-alt="<?php echo esc_attr( $ss_shot['alt'] ); ?>">
+				<img src="<?php echo esc_url( $ss_shot['thumb'] ); ?>" alt="" loading="lazy" width="90" height="120" />
+				<span class="screen-reader-text">
+					<?php
+					printf(
+						/* translators: %d: image number */
+						esc_html__( 'View image %d', 'sreesaanvika' ),
+						absint( $ss_n + 1 )
+					);
+					?>
+				</span>
+			</button>
+		<?php endforeach; ?>
+	</div>
 
 	<div class="ss-gallery__stage">
 		<div class="ss-gallery__frame">
@@ -99,19 +108,17 @@ $ss_count = count( $ss_shots );
 			<?php endif; ?>
 		</div>
 
-		<?php if ( $ss_count > 1 ) : ?>
-			<button type="button" class="ss-icon-btn ss-gallery__arrow ss-gallery__arrow--prev"
-				aria-label="<?php esc_attr_e( 'Previous image', 'sreesaanvika' ); ?>">
-				<?php ss_the_icon( 'chevron-left', 18 ); ?>
-			</button>
+		<button type="button" class="ss-icon-btn ss-gallery__arrow ss-gallery__arrow--prev"
+			aria-label="<?php esc_attr_e( 'Previous image', 'sreesaanvika' ); ?>">
+			<?php ss_the_icon( 'chevron-left', 18 ); ?>
+		</button>
 
-			<button type="button" class="ss-icon-btn ss-gallery__arrow ss-gallery__arrow--next"
-				aria-label="<?php esc_attr_e( 'Next image', 'sreesaanvika' ); ?>">
-				<?php ss_the_icon( 'chevron-right', 18 ); ?>
-			</button>
+		<button type="button" class="ss-icon-btn ss-gallery__arrow ss-gallery__arrow--next"
+			aria-label="<?php esc_attr_e( 'Next image', 'sreesaanvika' ); ?>">
+			<?php ss_the_icon( 'chevron-right', 18 ); ?>
+		</button>
 
-			<span class="ss-gallery__counter">1 / <?php echo esc_html( $ss_count ); ?></span>
-		<?php endif; ?>
+		<span class="ss-gallery__counter">1 / <?php echo esc_html( $ss_count ); ?></span>
 
 		<span class="ss-gallery__hint">
 			<?php ss_the_icon( 'zoom', 14 ); ?>
@@ -120,26 +127,22 @@ $ss_count = count( $ss_shots );
 	</div>
 </div>
 
-<div class="ss-lightbox" aria-hidden="true" role="dialog" aria-modal="true"
+<div class="ss-lightbox<?php echo $ss_single ? ' is-single' : ''; ?>" aria-hidden="true" role="dialog" aria-modal="true"
 	aria-label="<?php esc_attr_e( 'Product image viewer', 'sreesaanvika' ); ?>">
 
 	<button type="button" class="ss-icon-btn ss-lightbox__close" aria-label="<?php esc_attr_e( 'Close', 'sreesaanvika' ); ?>">
 		<?php ss_the_icon( 'close', 20 ); ?>
 	</button>
 
-	<?php if ( $ss_count > 1 ) : ?>
-		<button type="button" class="ss-icon-btn ss-lightbox__prev" aria-label="<?php esc_attr_e( 'Previous image', 'sreesaanvika' ); ?>">
-			<?php ss_the_icon( 'chevron-left', 20 ); ?>
-		</button>
+	<button type="button" class="ss-icon-btn ss-lightbox__prev" aria-label="<?php esc_attr_e( 'Previous image', 'sreesaanvika' ); ?>">
+		<?php ss_the_icon( 'chevron-left', 20 ); ?>
+	</button>
 
-		<button type="button" class="ss-icon-btn ss-lightbox__next" aria-label="<?php esc_attr_e( 'Next image', 'sreesaanvika' ); ?>">
-			<?php ss_the_icon( 'chevron-right', 20 ); ?>
-		</button>
-	<?php endif; ?>
+	<button type="button" class="ss-icon-btn ss-lightbox__next" aria-label="<?php esc_attr_e( 'Next image', 'sreesaanvika' ); ?>">
+		<?php ss_the_icon( 'chevron-right', 20 ); ?>
+	</button>
 
 	<img class="ss-lightbox__img" src="" alt="" />
 
-	<?php if ( $ss_count > 1 ) : ?>
-		<div class="ss-lightbox__strip"></div>
-	<?php endif; ?>
+	<div class="ss-lightbox__strip"></div>
 </div>

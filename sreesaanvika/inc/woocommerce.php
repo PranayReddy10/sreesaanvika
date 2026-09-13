@@ -230,15 +230,44 @@ function ss_price_block( $product, $class = 'ss-pcard__price' ) {
 
 	$pct = ss_discount_pct( $product );
 
-	echo '<div class="' . esc_attr( $class ) . '">';
-
+	/*
+	 * A variable product used to print Woo's own get_price_html() here, which
+	 * carries its own <del>/<ins> and so came out looking nothing like a
+	 * simple product's price. Work in numbers instead and render one shape for
+	 * both, which also gives shop.js something to recalculate.
+	 */
 	if ( $product->is_type( 'variable' ) ) {
-		echo '<span class="ss-price-now">' . wp_kses_post( $product->get_price_html() ) . '</span>';
+		$now     = (float) $product->get_variation_price( 'min', true );
+		$high    = (float) $product->get_variation_price( 'max', true );
+		$regular = (float) $product->get_variation_regular_price( 'min', true );
+		$range   = $high > $now;
 	} else {
-		echo '<span class="ss-price-now">' . wp_kses_post( wc_price( wc_get_price_to_display( $product ) ) ) . '</span>';
+		$now     = (float) wc_get_price_to_display( $product );
+		$high    = $now;
+		$regular = $product->get_regular_price()
+			? (float) wc_get_price_to_display( $product, array( 'price' => $product->get_regular_price() ) )
+			: 0.0;
+		$range   = false;
+	}
 
-		if ( $product->is_on_sale() && $product->get_regular_price() ) {
-			echo '<span class="ss-price-was">' . wp_kses_post( wc_price( wc_get_price_to_display( $product, array( 'price' => $product->get_regular_price() ) ) ) ) . '</span>';
+	printf(
+		'<div class="%1$s" data-price-block data-unit-price="%2$s" data-unit-regular="%3$s"%4$s>',
+		esc_attr( $class ),
+		esc_attr( $now ),
+		esc_attr( $regular > $now ? $regular : '' ),
+		// A "from — to" range has no single figure for shop.js to multiply.
+		$range ? ' data-price-range' : ''
+	);
+
+	if ( $range ) {
+		echo '<span class="ss-price-now">'
+			. wp_kses_post( wc_price( $now ) ) . ' &ndash; ' . wp_kses_post( wc_price( $high ) )
+			. '</span>';
+	} else {
+		echo '<span class="ss-price-now">' . wp_kses_post( wc_price( $now ) ) . '</span>';
+
+		if ( $regular > $now ) {
+			echo '<span class="ss-price-was">' . wp_kses_post( wc_price( $regular ) ) . '</span>';
 		}
 	}
 
@@ -270,12 +299,30 @@ function ss_card_swatches( $product, $limit = 5 ) {
 	echo '<div class="ss-pcard__swatches">';
 
 	$shown = array_slice( $terms, 0, $limit );
+	$link  = get_permalink( $product->get_id() );
 
 	foreach ( $shown as $term ) {
+		/*
+		 * A colour with its own photos swaps the card image where it stands;
+		 * one without can only be chosen on the product page, so the swatch
+		 * links there with the colour pre-selected. Either way it does
+		 * something when clicked.
+		 */
+		$chip  = function_exists( 'ss_color_swatch_image' ) ? ss_color_swatch_image( $product, $term->slug ) : '';
+		$front = function_exists( 'ss_color_swatch_image' ) ? ss_color_swatch_image( $product, $term->slug, 'ss-product' ) : '';
+
 		printf(
-			'<span class="ss-swatch" style="background-color:%1$s" title="%2$s"><span class="screen-reader-text">%2$s</span></span>',
+			'<button type="button" class="ss-swatch%1$s" style="background-color:%2$s" title="%3$s"'
+			. ' data-color="%4$s" data-img="%5$s" data-front="%6$s" data-href="%7$s">'
+			. '%8$s<span class="screen-reader-text">%3$s</span></button>',
+			$chip ? ' ss-swatch--img' : '',
 			esc_attr( ss_color_hex( $term->name, $term->term_id ) ),
-			esc_attr( $term->name )
+			esc_attr( $term->name ),
+			esc_attr( $term->slug ),
+			esc_url( $chip ),
+			esc_url( $front ),
+			esc_url( add_query_arg( 'attribute_' . sanitize_title( $term->taxonomy ), $term->slug, $link ) ),
+			$chip ? '<img src="' . esc_url( $chip ) . '" alt="" loading="lazy" />' : ''
 		);
 	}
 
@@ -287,6 +334,14 @@ function ss_card_swatches( $product, $limit = 5 ) {
 
 	echo '</div>';
 }
+
+/*
+ * WooCommerce only sends a variation's price to the browser when the
+ * variations differ in price, so on a product where every colour costs the
+ * same the price simply never moves when you choose one — which reads as a
+ * broken page rather than as "same price". Always send it.
+ */
+add_filter( 'woocommerce_show_variation_price', '__return_true' );
 
 /**
  * The colour attribute terms attached to a product.
@@ -448,6 +503,134 @@ function ss_cart_count_badge() {
 }
 
 /**
+ * What a shopper has to spend to stop paying for delivery.
+ *
+ * WooCommerce's own Free shipping method carries the real number, so that is
+ * read first — one figure to keep up to date rather than two that can drift
+ * apart. The Customizer setting is the fallback, and what a shop that has not
+ * configured a shipping zone yet still shows on the product page.
+ *
+ * @return float Zero when nothing qualifies for free shipping.
+ */
+function ss_free_ship_threshold() {
+	static $cache = null;
+
+	if ( null !== $cache ) {
+		return $cache;
+	}
+
+	$cache = (float) ss_option( 'free_ship_threshold', 2999 );
+
+	if ( ! function_exists( 'WC' ) || ! WC()->cart || ! WC()->shipping() ) {
+		return $cache;
+	}
+
+	$packages = WC()->cart->get_shipping_packages();
+
+	if ( ! $packages ) {
+		return $cache;
+	}
+
+	$zone = function_exists( 'wc_get_shipping_zone' ) ? wc_get_shipping_zone( reset( $packages ) ) : null;
+
+	if ( ! $zone ) {
+		return $cache;
+	}
+
+	foreach ( $zone->get_shipping_methods( true ) as $method ) {
+		if ( 'free_shipping' !== $method->id ) {
+			continue;
+		}
+
+		// "A minimum order amount" and "…or a coupon" both carry a figure.
+		if ( in_array( $method->get_option( 'requires' ), array( 'min_amount', 'either', 'both' ), true ) ) {
+			$minimum = (float) $method->get_option( 'min_amount' );
+
+			if ( $minimum > 0 ) {
+				$cache = $minimum;
+				break;
+			}
+		}
+	}
+
+	/**
+	 * The spend that earns free shipping.
+	 *
+	 * @param float $threshold Amount, or zero for none.
+	 */
+	$cache = (float) apply_filters( 'ss_free_ship_threshold', $cache );
+
+	return $cache;
+}
+
+/**
+ * The free-shipping progress meter.
+ *
+ * Shown in the bag panel, at the top of the cart and above checkout — the
+ * three places a shopper is deciding whether to add one more thing.
+ *
+ * @param string $where minicart|cart|checkout.
+ */
+function ss_ship_meter( $where = 'minicart' ) {
+	if ( ! function_exists( 'WC' ) || ! WC()->cart || WC()->cart->is_empty() ) {
+		return;
+	}
+
+	$threshold = ss_free_ship_threshold();
+
+	if ( $threshold <= 0 ) {
+		return;
+	}
+
+	// The figure the shopper recognises: what the goods cost, before delivery.
+	$subtotal = (float) WC()->cart->get_displayed_subtotal();
+	$left     = max( 0, $threshold - $subtotal );
+	$pct      = $threshold > 0 ? min( 100, ( $subtotal / $threshold ) * 100 ) : 100;
+	$done     = $left <= 0;
+
+	printf(
+		'<div class="ss-ship-meter ss-ship-meter--%1$s%2$s" aria-live="polite">',
+		esc_attr( $where ),
+		$done ? ' is-done' : ''
+	);
+
+	if ( $done ) {
+		echo '<p>' . ss_icon( 'truck', 16 ) . '<strong>' . esc_html__( 'Free shipping unlocked', 'sreesaanvika' ) . '</strong></p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	} else {
+		echo '<p>' . ss_icon( 'truck', 16 ) . wp_kses_post( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			sprintf(
+				/* translators: %s: formatted amount remaining */
+				__( 'Add %s more for <strong>free shipping</strong>', 'sreesaanvika' ),
+				wc_price( $left )
+			)
+		) . '</p>';
+	}
+
+	printf(
+		'<div class="ss-ship-meter__bar"><div class="ss-ship-meter__fill" style="width:%s%%"></div></div>',
+		esc_attr( round( $pct, 2 ) )
+	);
+
+	echo '</div>';
+}
+
+/**
+ * Put the meter where the decision is being made.
+ */
+function ss_ship_meter_cart() {
+	ss_ship_meter( 'cart' );
+}
+add_action( 'woocommerce_before_cart_table', 'ss_ship_meter_cart', 5 );
+
+/**
+ * And once more above checkout.
+ */
+function ss_ship_meter_checkout() {
+	ss_ship_meter( 'checkout' );
+}
+add_action( 'woocommerce_before_checkout_form', 'ss_ship_meter_checkout', 8 );
+
+/**
  * Mini-cart line items.
  */
 function ss_minicart_body() {
@@ -462,34 +645,7 @@ function ss_minicart_body() {
 		return;
 	}
 
-	// Free-shipping progress meter.
-	$threshold = (float) ss_option( 'free_ship_threshold', 2999 );
-
-	if ( $threshold > 0 ) {
-		$subtotal = (float) WC()->cart->get_displayed_subtotal();
-		$pct      = min( 100, ( $subtotal / $threshold ) * 100 );
-		$left     = max( 0, $threshold - $subtotal );
-
-		echo '<div class="ss-ship-meter">';
-
-		if ( $left > 0 ) {
-			printf(
-				'<p>%s</p>',
-				wp_kses_post(
-					sprintf(
-						/* translators: %s: formatted amount remaining */
-						__( 'Add %s more for <strong>free shipping</strong>', 'sreesaanvika' ),
-						wc_price( $left )
-					)
-				)
-			);
-		} else {
-			echo '<p><strong>' . esc_html__( 'Free shipping unlocked', 'sreesaanvika' ) . '</strong></p>';
-		}
-
-		echo '<div class="ss-ship-meter__bar"><div class="ss-ship-meter__fill" style="width:' . esc_attr( $pct ) . '%"></div></div>';
-		echo '</div>';
-	}
+	ss_ship_meter();
 
 	echo '<ul class="ss-minicart__list">';
 
@@ -650,6 +806,34 @@ function ss_single_share() {
 
 	echo '</div>';
 }
+
+/**
+ * Take WooCommerce's own callbacks off the single-product summary hook.
+ *
+ * The theme's summary template lays out the title, rating, price, excerpt,
+ * add-to-cart and meta itself, but it still fires
+ * woocommerce_single_product_summary so that plugins hooking there — offer
+ * banners, size charts, trust badges — actually appear. Without this the
+ * default callbacks would print all of it twice.
+ */
+function ss_unhook_woo_summary() {
+	$defaults = array(
+		5  => 'woocommerce_template_single_title',
+		10 => 'woocommerce_template_single_price',
+		20 => 'woocommerce_template_single_excerpt',
+		30 => 'woocommerce_template_single_add_to_cart',
+		40 => 'woocommerce_template_single_meta',
+		50 => 'woocommerce_template_single_sharing',
+	);
+
+	foreach ( $defaults as $priority => $callback ) {
+		remove_action( 'woocommerce_single_product_summary', $callback, $priority );
+	}
+
+	// The rating shares priority 10 with the price.
+	remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_rating', 10 );
+}
+add_action( 'wp', 'ss_unhook_woo_summary' );
 
 /**
  * A "Buy it now" button that adds to the cart and jumps to checkout.

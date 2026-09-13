@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.2.0' );
+define( 'SS_VERSION', '1.5.0' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -196,7 +196,19 @@ function ss_assets() {
 			'cartUrl'     => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
 			'maxCompare'  => (int) ss_option( 'compare_max', 4 ),
 			'freeShip'    => (float) ss_option( 'free_ship_threshold', 2999 ),
-			'currency'    => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '₹',
+			/*
+			 * Decoded, because WooCommerce returns the symbol as an HTML
+			 * entity (&#8377;) and these are written to the page as text.
+			 */
+			'currency'    => function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : '₹',
+			// Enough of WooCommerce's price settings to reprice in JS.
+			'price'       => function_exists( 'wc_get_price_decimals' ) ? array(
+				'symbol'   => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
+				'decimals' => wc_get_price_decimals(),
+				'thousand' => wc_get_price_thousand_separator(),
+				'decimal'  => wc_get_price_decimal_separator(),
+				'position' => get_option( 'woocommerce_currency_pos', 'left' ),
+			) : array(),
 			'i18n'        => array(
 				'added'          => __( 'Added to your bag', 'sreesaanvika' ),
 				'wishAdded'      => __( 'Saved to wishlist', 'sreesaanvika' ),
@@ -209,6 +221,11 @@ function ss_assets() {
 				'selectOptions'  => __( 'Please choose the available options first', 'sreesaanvika' ),
 				'deliverTo'      => __( 'Delivery to %s in 3–6 business days', 'sreesaanvika' ),
 				'badPin'         => __( 'Enter a valid 6-digit PIN code', 'sreesaanvika' ),
+				'viewImage'      => __( 'View image', 'sreesaanvika' ),
+				'maxQty'         => __( 'That is all we have in stock', 'sreesaanvika' ),
+				'minQty'         => __( 'Minimum quantity', 'sreesaanvika' ),
+				/* translators: %d: discount percentage */
+				'percentOff'     => __( '%d%% off', 'sreesaanvika' ),
 			),
 		)
 	);
@@ -349,6 +366,7 @@ require_once SS_DIR . '/inc/defaults.php';
 require_once SS_DIR . '/inc/legal-content.php';
 require_once SS_DIR . '/inc/helpers.php';
 require_once SS_DIR . '/inc/icons.php';
+require_once SS_DIR . '/inc/branding.php';
 require_once SS_DIR . '/inc/nav-walker.php';
 require_once SS_DIR . '/inc/customizer.php';
 require_once SS_DIR . '/inc/dynamic-css.php';
@@ -364,4 +382,5 @@ require_once SS_DIR . '/inc/elementor-import.php';
 if ( class_exists( 'WooCommerce' ) ) {
 	require_once SS_DIR . '/inc/woocommerce.php';
 	require_once SS_DIR . '/inc/woo-page-mode.php';
+	require_once SS_DIR . '/inc/color-gallery.php';
 }

@@ -1,0 +1,57 @@
+/**
+ * Order screen: the delivery panel and the orders-list pill.
+ */
+
+.ssd-box p { margin: 0 0 14px; }
+.ssd-box label { display: block; margin-bottom: 4px; }
+.ssd-box .description { font-size: 11px; color: #787c82; }
+
+.ssd-track-link {
+	display: inline-block;
+	margin-top: 6px;
+	font-size: 12px;
+}
+
+.ssd-history {
+	margin: 0;
+	max-height: 220px;
+	overflow-y: auto;
+	border: 1px solid #e0e0e0;
+	border-radius: 3px;
+	padding: 8px 10px;
+	background: #fbfbfb;
+}
+
+.ssd-history li {
+	margin: 0 0 9px;
+	padding-bottom: 9px;
+	border-bottom: 1px solid #f0f0f0;
+	font-size: 12px;
+	line-height: 1.45;
+}
+
+.ssd-history li:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+.ssd-history__when { display: block; color: #787c82; font-size: 11px; }
+.ssd-history__what { display: block; font-weight: 600; }
+.ssd-history__note { display: block; color: #50575e; }
+
+/* Orders list */
+.ssd-pill {
+	display: inline-block;
+	padding: 2px 9px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.7;
+	background: #f0f0f1;
+	color: #50575e;
+	white-space: nowrap;
+}
+
+.ssd-pill--dispatched,
+.ssd-pill--transit { background: #e6f0fb; color: #1c4e80; }
+.ssd-pill--out { background: #fff3d6; color: #8a5b00; }
+.ssd-pill--delivered { background: #e3f4ea; color: #14663c; }
+.ssd-pill--failed,
+.ssd-pill--returned,
+.ssd-pill--cancelled { background: #fbeaea; color: #8a1f1f; }

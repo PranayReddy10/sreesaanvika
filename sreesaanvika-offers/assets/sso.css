@@ -1,0 +1,473 @@
+/**
+ * Offer banner, countdown and the free-line markers.
+ *
+ * Colours come from the theme's custom properties where they exist, with the
+ * maroon-and-cream ticket look baked in as the fallback.
+ */
+
+.sso-banner {
+	--sso-deep: var(--ss-maroon, #7b1e3b);
+	--sso-gold: var(--ss-gold, #d9a441);
+	--sso-cream: #fdf6ef;
+	--sso-ink: var(--ss-text, #f4eaee);
+	--sso-mute: var(--ss-muted, #a8909c);
+
+	position: relative;
+	display: flex;
+	align-items: stretch;
+	margin: 22px 0;
+	border-radius: var(--ss-radius, 14px);
+	overflow: hidden;
+	background: linear-gradient(180deg, rgba(123, 30, 59, 0.16), rgba(123, 30, 59, 0.06));
+	border: 1px solid rgba(217, 164, 65, 0.34);
+}
+
+/* The stub on the left, like the torn edge of a ticket. */
+.sso-banner__tab {
+	flex: 0 0 68px;
+	display: grid;
+	place-items: center;
+	background: var(--sso-deep);
+}
+
+.sso-banner__pct {
+	width: 38px;
+	height: 38px;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	background: linear-gradient(140deg, #f6e3b4, var(--sso-gold) 45%, #a9732a);
+	color: #4b1224;
+	font-weight: 700;
+	font-size: 1.05rem;
+	line-height: 1;
+}
+
+.sso-banner__body {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 16px 20px;
+	text-align: center;
+}
+
+.sso-banner__head {
+	margin: 0;
+	font-size: clamp(1.05rem, 3.4vw, 1.55rem);
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--sso-gold);
+	line-height: 1.15;
+}
+
+.sso-banner__sub {
+	margin: 6px 0 0;
+	font-size: 0.9rem;
+	color: var(--sso-mute);
+}
+
+.sso-banner__progress {
+	margin: 10px 0 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--ss-success, #3f9d7c);
+}
+
+/* Under a product price the banner is quieter. */
+.sso-banner--product { margin: 16px 0 20px; }
+.sso-banner--product .sso-banner__body { text-align: left; padding: 13px 18px; }
+.sso-banner--product .sso-banner__head { font-size: 1rem; }
+.sso-banner--product .sso-banner__tab { flex-basis: 54px; }
+
+/* --- Countdown --- */
+.sso-countdown {
+	flex: 0 0 auto;
+	padding: 14px 20px;
+	border-left: 1px dashed rgba(217, 164, 65, 0.34);
+	text-align: center;
+}
+
+.sso-countdown__label {
+	margin: 0 0 8px;
+	font-size: 0.66rem;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--sso-mute);
+}
+
+.sso-countdown__clock {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 6px;
+}
+
+.sso-unit { display: block; }
+.sso-unit__digits { display: flex; gap: 4px; }
+
+.sso-digit {
+	display: grid;
+	place-items: center;
+	min-width: 30px;
+	padding: 6px 4px;
+	border-radius: 6px;
+	background: var(--sso-deep);
+	color: #f7e6c8;
+	font-size: 1.15rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+.sso-unit__label {
+	display: block;
+	margin-top: 6px;
+	font-size: 0.56rem;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--sso-mute);
+}
+
+.sso-colon {
+	color: var(--sso-gold);
+	font-weight: 700;
+	line-height: 1;
+	padding-top: 8px;
+}
+
+/* --- Product card flag --- */
+.sso-flag {
+	position: absolute;
+	left: 12px;
+	bottom: 12px;
+	z-index: 3;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: var(--ss-maroon, #7b1e3b);
+	color: #f7e6c8;
+	font-size: 0.6rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	pointer-events: none;
+}
+
+/* --- The discounted cart line --- */
+.sso-line-flag {
+	display: inline-block;
+	margin-top: 5px;
+	padding: 3px 9px;
+	border-radius: 999px;
+	background: rgba(63, 157, 124, 0.14);
+	border: 1px solid rgba(63, 157, 124, 0.4);
+	color: var(--ss-success, #3f9d7c);
+	font-size: 0.64rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.woocommerce td.product-subtotal del,
+.sso-line-now { display: inline-block; }
+
+td.product-subtotal del { opacity: 0.55; margin-right: 6px; }
+.sso-line-now { text-decoration: none; font-weight: 600; }
+
+@media (max-width: 780px) {
+	.sso-banner {
+		flex-wrap: wrap;
+	}
+
+	.sso-banner__tab {
+		flex: 1 0 100%;
+		padding: 10px 0;
+	}
+
+	.sso-banner__body { flex: 1 0 100%; }
+
+	.sso-countdown {
+		flex: 1 0 100%;
+		border-left: 0;
+		border-top: 1px dashed rgba(217, 164, 65, 0.34);
+	}
+
+	.sso-digit { min-width: 26px; font-size: 1rem; }
+}
+
+/* --------------------------------------------------------------------------
+   Complete the look
+   -------------------------------------------------------------------------- */
+
+.sso-look,
+.sso-goeswith {
+	--sso-line: var(--ss-line, rgba(244, 234, 238, 0.09));
+	--sso-surface: var(--ss-surface, #21121d);
+	--sso-text: var(--ss-text, #f4eaee);
+	--sso-mute: var(--ss-muted, #a8909c);
+	--sso-gold2: var(--ss-gold, #d9a441);
+
+	margin: 40px 0;
+	padding: 26px 28px;
+	border: 1px solid var(--sso-line);
+	border-radius: var(--ss-radius, 14px);
+	background: var(--sso-surface);
+	color: var(--sso-text);
+}
+
+.sso-look__head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin-bottom: 22px;
+}
+
+.sso-look__head h2,
+.sso-goeswith h2 {
+	margin: 0;
+	font-size: 1.25rem;
+	letter-spacing: 0.01em;
+}
+
+.sso-look__deal {
+	padding: 5px 13px;
+	border-radius: 999px;
+	background: rgba(63, 157, 124, 0.14);
+	border: 1px solid rgba(63, 157, 124, 0.4);
+	color: var(--ss-success, #3f9d7c);
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+}
+
+.sso-look__body {
+	display: flex;
+	gap: 26px;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+
+.sso-look__items {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	flex: 1 1 380px;
+	min-width: 0;
+	flex-wrap: wrap;
+}
+
+.sso-look__plus {
+	align-self: center;
+	color: var(--sso-gold2);
+	font-size: 1.3rem;
+	font-weight: 300;
+	padding-bottom: 26px;
+}
+
+.sso-look__item { flex: 0 1 148px; min-width: 0; }
+.sso-look__item label { display: block; cursor: pointer; position: relative; }
+.sso-look__item.is-lead label { cursor: default; }
+
+/* The tick sits over the corner of the picture. */
+.sso-look__tick {
+	position: absolute;
+	margin: 9px 0 0 9px;
+	z-index: 2;
+	width: 18px;
+	height: 18px;
+	accent-color: var(--sso-gold2);
+}
+
+.sso-look__card { display: block; }
+
+.sso-look__thumb {
+	position: relative;
+	display: block;
+	border-radius: var(--ss-radius-sm, 10px);
+	overflow: hidden;
+	background: var(--ss-surface-2, #2b1826);
+	aspect-ratio: 3 / 4;
+}
+
+.sso-look__thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: opacity var(--ss-fast, 0.2s) ease;
+}
+
+.sso-look__tick:not(:checked) ~ .sso-look__card .sso-look__thumb img { opacity: 0.38; }
+
+.sso-look__badge {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 4px 6px;
+	background: rgba(20, 10, 18, 0.82);
+	color: var(--sso-gold2);
+	font-size: 0.56rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	text-align: center;
+}
+
+.sso-look__name {
+	display: block;
+	margin-top: 9px;
+	font-size: 0.82rem;
+	line-height: 1.35;
+	color: var(--sso-text);
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.sso-look__price {
+	display: block;
+	margin-top: 5px;
+	font-size: 0.86rem;
+	color: var(--sso-gold2);
+	font-weight: 600;
+}
+
+.sso-look__price del {
+	color: var(--sso-mute);
+	font-weight: 400;
+	font-size: 0.78rem;
+	margin-right: 5px;
+}
+
+.sso-look__price ins { text-decoration: none; }
+
+.sso-look__total {
+	flex: 0 0 220px;
+	padding: 18px 20px;
+	border-radius: var(--ss-radius-sm, 10px);
+	border: 1px solid var(--sso-line);
+	background: var(--ss-surface-2, #2b1826);
+	text-align: center;
+}
+
+.sso-look__count {
+	margin: 0 0 4px;
+	font-size: 0.68rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--sso-mute);
+}
+
+.sso-look__sum {
+	margin: 0;
+	font-size: 1.4rem;
+	font-weight: 700;
+	color: var(--sso-gold2);
+	font-variant-numeric: tabular-nums;
+}
+
+.sso-look__save {
+	margin: 4px 0 0;
+	font-size: 0.8rem;
+	color: var(--ss-success, #3f9d7c);
+	font-weight: 600;
+}
+
+.sso-look__add { margin-top: 14px; width: 100%; }
+.sso-look__add[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+.sso-look__note {
+	margin: 10px 0 0;
+	font-size: 0.78rem;
+	color: var(--sso-mute);
+}
+
+/* --- The cart rail --- */
+.sso-goeswith h2 { margin-bottom: 18px; }
+
+.sso-goeswith__items {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	gap: 18px;
+}
+
+.sso-goeswith__item { min-width: 0; }
+
+.sso-goeswith__thumb {
+	display: block;
+	border-radius: var(--ss-radius-sm, 10px);
+	overflow: hidden;
+	aspect-ratio: 3 / 4;
+	background: var(--ss-surface-2, #2b1826);
+}
+
+.sso-goeswith__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.sso-goeswith__name {
+	display: block;
+	margin: 9px 0 4px;
+	font-size: 0.82rem;
+	line-height: 1.35;
+	color: var(--sso-text);
+	text-decoration: none;
+}
+
+.sso-goeswith__price {
+	display: block;
+	font-size: 0.85rem;
+	color: var(--sso-gold2);
+	font-weight: 600;
+}
+
+.sso-goeswith__price del { color: var(--sso-mute); font-weight: 400; margin-right: 5px; }
+.sso-goeswith__price ins { text-decoration: none; }
+.sso-goeswith__add { margin-top: 9px; width: 100%; }
+
+.sso-line-flag--look {
+	background: rgba(217, 164, 65, 0.14);
+	border-color: rgba(217, 164, 65, 0.4);
+	color: var(--ss-gold, #d9a441);
+}
+
+@media (max-width: 780px) {
+	.sso-look, .sso-goeswith { padding: 20px 16px; }
+	.sso-look__body { gap: 18px; }
+	.sso-look__total { flex: 1 1 100%; }
+	.sso-look__item { flex: 0 1 118px; }
+	.sso-look__plus { padding-bottom: 22px; }
+}
+
+/* --- Quantity breaks --- */
+.sso-tiers {
+	list-style: none;
+	margin: 12px 0 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+}
+
+.sso-banner--product .sso-tiers { justify-content: flex-start; }
+
+.sso-tiers li {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	padding: 5px 12px;
+	border-radius: 999px;
+	border: 1px solid rgba(217, 164, 65, 0.3);
+	background: rgba(217, 164, 65, 0.08);
+	font-size: 0.76rem;
+}
+
+.sso-tiers__qty { color: var(--sso-mute); letter-spacing: 0.04em; }
+.sso-tiers__off { color: var(--sso-gold); font-weight: 700; }
