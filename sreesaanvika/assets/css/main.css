@@ -3033,3 +3033,322 @@ input[type="reset"] {
 	.ss-legal__foot-actions .ss-btn { width: 100%; }
 	.ss-footer__legal { justify-content: center; text-align: center; }
 }
+
+/* --------------------------------------------------------------------------
+   34. About / our story
+   Every colour here comes from the palette tokens, so the page follows the
+   Customizer instead of drifting from it the way inline styles did.
+   -------------------------------------------------------------------------- */
+.ss-about__lede {
+	max-width: 780px;
+	margin: 0 auto clamp(40px, 6vw, 72px);
+	text-align: center;
+}
+
+.ss-about__lede p {
+	font-family: var(--ss-font-display);
+	font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+	line-height: 1.6;
+	color: var(--ss-text);
+	font-style: italic;
+}
+
+.ss-about__lede p + p {
+	font-family: var(--ss-font-body);
+	font-size: 1rem;
+	font-style: normal;
+	line-height: 1.8;
+	color: var(--ss-muted);
+	margin-top: 20px;
+}
+
+/* -- Stats band -- */
+.ss-about__stats {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 1px;
+	background: var(--ss-line-soft);
+	border: 1px solid var(--ss-line);
+	border-radius: var(--ss-radius-lg);
+	overflow: hidden;
+	margin-bottom: clamp(46px, 7vw, 88px);
+}
+
+.ss-about__stat {
+	background: var(--ss-surface);
+	padding: clamp(24px, 3vw, 34px) 20px;
+	text-align: center;
+	min-width: 0;
+}
+
+.ss-about__stat b {
+	display: block;
+	font-family: var(--ss-font-head);
+	font-size: clamp(2rem, 4.4vw, 2.9rem);
+	line-height: 1;
+	font-weight: 500;
+	background: var(--ss-gold-grad);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.ss-about__stat span {
+	display: block;
+	margin-top: 10px;
+	font-size: 0.74rem;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--ss-muted);
+	line-height: 1.5;
+}
+
+/* -- Story split -- */
+.ss-about__split {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: clamp(28px, 5vw, 68px);
+	align-items: center;
+	margin-bottom: clamp(46px, 7vw, 88px);
+}
+
+.ss-about__split--flip .ss-about__media { order: 2; }
+
+.ss-about__media {
+	position: relative;
+	border-radius: var(--ss-radius-lg);
+	overflow: hidden;
+	aspect-ratio: 4 / 5;
+	border: 1px solid var(--ss-line);
+	background:
+		radial-gradient(600px 400px at 70% 20%, rgba(123, 30, 59, 0.5), transparent 65%),
+		radial-gradient(500px 380px at 20% 80%, rgba(23, 86, 95, 0.42), transparent 62%),
+		var(--ss-surface-2);
+}
+
+.ss-about__media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* A gold rule that sits behind the image, like a mount. */
+.ss-about__media::after {
+	content: "";
+	position: absolute;
+	inset: 14px;
+	border: 1px solid rgba(217, 164, 65, 0.28);
+	border-radius: calc(var(--ss-radius-lg) - 6px);
+	pointer-events: none;
+}
+
+.ss-about__text h2 {
+	font-size: clamp(1.5rem, 3vw, 2.2rem);
+	margin-bottom: 18px;
+}
+
+.ss-about__text h2 em {
+	font-style: italic;
+	font-family: var(--ss-font-display);
+	background: var(--ss-gold-grad);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.ss-about__text p {
+	color: var(--ss-text-soft);
+	line-height: 1.85;
+}
+
+.ss-about__signature {
+	margin-top: 24px;
+	padding-top: 20px;
+	border-top: 1px solid var(--ss-line-soft);
+	font-family: var(--ss-font-display);
+	font-size: 1.1rem;
+	font-style: italic;
+	color: var(--ss-gold);
+}
+
+.ss-about__signature span {
+	display: block;
+	font-family: var(--ss-font-body);
+	font-style: normal;
+	font-size: 0.74rem;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--ss-muted);
+	margin-top: 6px;
+}
+
+/* -- Weaving clusters -- */
+/* Fixed three across so six clusters make two clean rows rather than five
+   and an orphan, which is what auto-fit produced at this container width. */
+.ss-about__clusters {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.ss-cluster {
+	background: var(--ss-surface);
+	border: 1px solid var(--ss-line-soft);
+	border-radius: var(--ss-radius-lg);
+	padding: 26px 24px;
+	transition: transform var(--ss-fast), border-color var(--ss-fast);
+	min-width: 0;
+}
+
+.ss-cluster:hover { transform: translateY(-4px); border-color: var(--ss-line); }
+
+.ss-cluster__place {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	font-size: 0.7rem;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--ss-gold);
+	margin-bottom: 10px;
+}
+
+.ss-cluster__place svg { width: 15px; height: 15px; flex: none; }
+
+.ss-cluster h3 {
+	font-size: 1.15rem;
+	margin-bottom: 8px;
+}
+
+.ss-cluster p {
+	color: var(--ss-muted);
+	font-size: 0.92rem;
+	margin: 0;
+	line-height: 1.7;
+}
+
+/* -- Values -- */
+.ss-about__values {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.ss-value {
+	background: var(--ss-surface);
+	border: 1px solid var(--ss-line-soft);
+	border-radius: var(--ss-radius-lg);
+	padding: 30px 28px;
+	min-width: 0;
+}
+
+.ss-value__icon {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--ss-line);
+	background: rgba(217, 164, 65, 0.08);
+	color: var(--ss-gold);
+	margin-bottom: 18px;
+}
+
+.ss-value h3 { font-size: 1.18rem; margin-bottom: 10px; }
+.ss-value p { color: var(--ss-muted); margin: 0; line-height: 1.75; font-size: 0.95rem; }
+
+/* -- How a piece reaches you -- */
+.ss-about__steps {
+	counter-reset: ss-step;
+	display: grid;
+	gap: 0;
+	max-width: 780px;
+	margin-inline: auto;
+}
+
+.ss-step-row {
+	counter-increment: ss-step;
+	display: grid;
+	grid-template-columns: 62px minmax(0, 1fr);
+	gap: 22px;
+	padding-bottom: 34px;
+	position: relative;
+}
+
+.ss-step-row:last-child { padding-bottom: 0; }
+
+/* The line joining the markers. */
+.ss-step-row:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	left: 30px;
+	top: 54px;
+	bottom: 6px;
+	width: 1px;
+	background: linear-gradient(180deg, var(--ss-line), transparent);
+}
+
+.ss-step-row__num {
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+	background: var(--ss-surface);
+	border: 1px solid var(--ss-line);
+	font-family: var(--ss-font-head);
+	font-size: 1.3rem;
+	color: var(--ss-gold);
+	position: relative;
+	z-index: 1;
+}
+
+.ss-step-row__num::before { content: counter(ss-step, decimal-leading-zero); }
+
+.ss-step-row h3 { font-size: 1.15rem; margin: 14px 0 8px; }
+.ss-step-row p { color: var(--ss-muted); margin: 0; line-height: 1.75; }
+
+/* -- Closing call to action -- */
+.ss-about__cta {
+	text-align: center;
+	background:
+		radial-gradient(700px 320px at 50% 0%, rgba(217, 164, 65, 0.14), transparent 70%),
+		var(--ss-surface);
+	border: 1px solid var(--ss-line);
+	border-radius: var(--ss-radius-lg);
+	padding: clamp(34px, 6vw, 62px) clamp(20px, 4vw, 48px);
+}
+
+.ss-about__cta h2 { font-size: clamp(1.4rem, 3vw, 2.1rem); margin-bottom: 12px; }
+.ss-about__cta p { color: var(--ss-muted); max-width: 540px; margin: 0 auto 26px; }
+
+.ss-about__cta-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+@media (max-width: 1024px) {
+	.ss-about__values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+	.ss-about__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.ss-about__clusters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 782px) {
+	.ss-about__split { grid-template-columns: minmax(0, 1fr); }
+	.ss-about__split--flip .ss-about__media { order: 0; }
+	.ss-about__media { aspect-ratio: 3 / 2; }
+}
+
+@media (max-width: 600px) {
+	.ss-about__clusters,
+	.ss-about__values { grid-template-columns: minmax(0, 1fr); }
+	.ss-step-row { grid-template-columns: 46px minmax(0, 1fr); gap: 16px; }
+	.ss-step-row__num { width: 44px; height: 44px; font-size: 1.05rem; }
+	.ss-step-row:not(:last-child)::before { left: 22px; top: 40px; }
+	.ss-about__cta-actions .ss-btn { width: 100%; }
+}

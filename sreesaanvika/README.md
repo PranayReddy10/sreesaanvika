@@ -216,6 +216,31 @@ like, and the template keeps working.
 
 ---
 
+## Homepage categories and Load more
+
+**Choosing categories.** The mosaic and the round rail pick the busiest
+categories automatically, which is right on a fresh install and wrong once you
+have a proper catalogue. Both now take a list of slugs in
+**Customizer → Homepage — Sections** — comma separated, in the order you want
+them shown. Leave it empty for automatic, and set the count separately.
+
+The mosaic tiles any number of categories: it leads with the tall hero tile and
+then fills whole rows, so a row is never left with a hole beside it. Verified
+for 1 through 20 tiles.
+
+**Load more.** Product sections show a "Load more" button when there are more
+products than the section displays, appending the next batch in place rather
+than sending shoppers to another page. Turn it off, or change how many each
+click loads, in the same Customizer section. The Elementor Product Grid widget
+has its own switch for it.
+
+The browser never sends query arguments — the button carries a whitelisted
+section key (or the source and category a widget was configured with) and the
+query is rebuilt and validated server side.
+
+
+---
+
 ## Customizer reference
 
 Everything lives under **Sree Saanvika Options**:

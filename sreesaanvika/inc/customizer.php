@@ -232,6 +232,36 @@ function ss_customize_register( $wp_customize ) {
 		);
 	}
 
+	$add(
+		'cats_slugs',
+		array(
+			'label'       => __( 'Category mosaic — which categories', 'sreesaanvika' ),
+			'description' => __( 'Category slugs, comma separated, in the order you want them. Leave empty to use the busiest categories automatically.', 'sreesaanvika' ),
+			'section'     => 'ss_home',
+			'type'        => 'textarea',
+		),
+		'sanitize_textarea_field'
+	);
+
+	$add( 'cats_count', array( 'label' => __( 'Category mosaic — how many (automatic)', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 1, 'max' => 20 ) ), 'absint' );
+
+	$add(
+		'catrail_slugs',
+		array(
+			'label'       => __( 'Category rail — which categories', 'sreesaanvika' ),
+			'description' => __( 'Same idea: slugs in order, or empty for automatic.', 'sreesaanvika' ),
+			'section'     => 'ss_home',
+			'type'        => 'textarea',
+		),
+		'sanitize_textarea_field'
+	);
+
+	$add( 'catrail_count', array( 'label' => __( 'Category rail — how many (automatic)', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 30 ) ), 'absint' );
+	$add( 'catrail_top_level', array( 'label' => __( 'Category rail — top-level categories only', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+
+	$add( 'loadmore', array( 'label' => __( 'Show a "Load more" button under product sections', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'loadmore_step', array( 'label' => __( 'How many more each click loads', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 24 ) ), 'absint' );
+
 	$add( 'products_per_section', array( 'label' => __( 'Products shown per section', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 12 ) ), 'absint' );
 
 	/* -----------------------------------------------------------------

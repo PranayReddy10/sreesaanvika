@@ -344,3 +344,60 @@ function ss_ajax_login() {
 	);
 }
 add_action( 'wp_ajax_nopriv_ss_login', 'ss_ajax_login' );
+
+/**
+ * Return the next page of a product grid.
+ *
+ * The browser never sends query arguments — only a whitelisted section key, or
+ * the source and category a Product Grid widget was configured with, both
+ * validated here before any query runs.
+ */
+function ss_ajax_load_more() {
+	ss_check_nonce();
+
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		wp_send_json_error( array( 'message' => __( 'Products are unavailable right now.', 'sreesaanvika' ) ), 400 );
+	}
+
+	$page    = isset( $_POST['page'] ) ? max( 2, absint( $_POST['page'] ) ) : 2;
+	$per     = isset( $_POST['per'] ) ? min( 48, max( 1, absint( $_POST['per'] ) ) ) : 8;
+	$section = isset( $_POST['section'] ) ? sanitize_key( wp_unslash( $_POST['section'] ) ) : '';
+
+	$sections = ss_product_sections();
+
+	if ( $section ) {
+		if ( ! isset( $sections[ $section ] ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unknown section.', 'sreesaanvika' ) ), 400 );
+		}
+
+		$args = $sections[ $section ];
+	} else {
+		$allowed  = array( 'latest', 'best', 'sale', 'featured', 'rated', 'random' );
+		$source   = isset( $_POST['source'] ) ? sanitize_key( wp_unslash( $_POST['source'] ) ) : 'latest';
+		$source   = in_array( $source, $allowed, true ) ? $source : 'latest';
+		$category = isset( $_POST['category'] ) ? sanitize_title( wp_unslash( $_POST['category'] ) ) : '';
+
+		$args = ss_product_source_args( $source, $category );
+	}
+
+	// A random order cannot be paged without repeats, so page it by date.
+	if ( isset( $args['orderby'] ) && 'rand' === $args['orderby'] ) {
+		$args['orderby'] = 'date';
+		$args['order']   = 'DESC';
+	}
+
+	$result = ss_product_items( $args, $page, $per );
+
+	if ( '' === $result['html'] ) {
+		wp_send_json_success( array( 'html' => '', 'more' => false ) );
+	}
+
+	wp_send_json_success(
+		array(
+			'html' => $result['html'],
+			'more' => $result['more'],
+		)
+	);
+}
+add_action( 'wp_ajax_ss_load_more', 'ss_ajax_load_more' );
+add_action( 'wp_ajax_nopriv_ss_load_more', 'ss_ajax_load_more' );

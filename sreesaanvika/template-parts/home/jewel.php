@@ -12,7 +12,7 @@ if ( ! class_exists( 'WooCommerce' ) ) {
 }
 
 ob_start();
-$ss_has = ss_product_loop( array_merge( ss_cat_query( array( 'jewellery', 'jewelry', 'temple-jewellery' ) ), array( 'orderby' => 'date' ) ) );
+$ss_has = ss_product_loop( array_merge( ss_cat_query( array( 'jewellery', 'jewelry', 'temple-jewellery' ) ), array( 'orderby' => 'date' ) ), 0, array( 'section' => 'jewel' ) );
 $ss_loop = ob_get_clean();
 
 if ( ! $ss_has ) {

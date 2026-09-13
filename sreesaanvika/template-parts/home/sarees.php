@@ -12,7 +12,7 @@ if ( ! class_exists( 'WooCommerce' ) ) {
 }
 
 ob_start();
-$ss_has = ss_product_loop( array_merge( ss_cat_query( array( 'sarees', 'saree', 'silk-sarees' ) ), array( 'orderby' => 'popularity' ) ) );
+$ss_has = ss_product_loop( array_merge( ss_cat_query( array( 'sarees', 'saree', 'silk-sarees' ) ), array( 'orderby' => 'popularity' ) ), 0, array( 'section' => 'sarees' ) );
 $ss_loop = ob_get_clean();
 
 if ( ! $ss_has ) {

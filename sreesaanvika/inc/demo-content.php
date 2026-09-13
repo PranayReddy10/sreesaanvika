@@ -92,22 +92,42 @@ function ss_create_pages() {
 
 	$pages = array_merge( ss_setup_pages(), ss_setup_legal_pages() );
 
-	foreach ( $pages as $slug => $page ) {
-		// Skip if a page already uses this template.
-		$existing = get_posts(
-			array(
-				'post_type'      => 'page',
-				'post_status'    => array( 'publish', 'draft', 'pending' ),
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
-				'meta_key'       => '_wp_page_template', // phpcs:ignore WordPress.DB.SlowDBQuery
-				'meta_value'     => $page['template'], // phpcs:ignore WordPress.DB.SlowDBQuery
-				'no_found_rows'  => true,
-			)
-		);
+	// How many of the pages we create use each template.
+	$template_use = array();
 
-		if ( $existing ) {
+	foreach ( $pages as $page ) {
+		$key                  = $page['template'];
+		$template_use[ $key ] = isset( $template_use[ $key ] ) ? $template_use[ $key ] + 1 : 1;
+	}
+
+	foreach ( $pages as $slug => $page ) {
+		// A page with this slug already exists — leave it alone.
+		if ( get_page_by_path( $slug ) ) {
 			continue;
+		}
+
+		/*
+		 * Only fall back to a template check for templates used by exactly one
+		 * page. The four policy pages all share template-legal.php, so a
+		 * template check would find Privacy Policy and then skip Terms,
+		 * Shipping and Returns.
+		 */
+		if ( 1 === $template_use[ $page['template'] ] ) {
+			$existing = get_posts(
+				array(
+					'post_type'      => 'page',
+					'post_status'    => array( 'publish', 'draft', 'pending' ),
+					'posts_per_page' => 1,
+					'fields'         => 'ids',
+					'meta_key'       => '_wp_page_template', // phpcs:ignore WordPress.DB.SlowDBQuery
+					'meta_value'     => $page['template'], // phpcs:ignore WordPress.DB.SlowDBQuery
+					'no_found_rows'  => true,
+				)
+			);
+
+			if ( $existing ) {
+				continue;
+			}
 		}
 
 		$id = wp_insert_post(

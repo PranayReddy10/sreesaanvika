@@ -11,37 +11,17 @@ if ( ! class_exists( 'WooCommerce' ) ) {
 	return;
 }
 
-$ss_terms = get_terms(
-	array(
-		'taxonomy'   => 'product_cat',
-		'hide_empty' => false,
-		'number'     => 6,
-		'parent'     => 0,
-		'orderby'    => 'count',
-		'order'      => 'DESC',
-		'exclude'    => array( get_option( 'default_product_cat' ) ),
-	)
+$ss_terms = ss_category_terms(
+	ss_option( 'cats_slugs' ),
+	absint( ss_option( 'cats_count' ) ),
+	true
 );
 
-if ( ! $ss_terms || is_wp_error( $ss_terms ) ) {
+if ( ! $ss_terms ) {
 	return;
 }
 
-/**
- * Tile patterns chosen so every row of the 6-column grid fills exactly,
- * whatever number of categories came back.
- */
-$ss_patterns = array(
-	1 => array( 'w6 ss-cat--h2' ),
-	2 => array( 'w3', 'w3' ),
-	3 => array( 'w4 ss-cat--h2', 'w2', 'w2' ),
-	4 => array( 'w3', 'w3', 'w3', 'w3' ),
-	5 => array( 'w4 ss-cat--h2', 'w2', 'w2', 'w3', 'w3' ),
-	6 => array( 'w4 ss-cat--h2', 'w2', 'w2', 'w2', 'w2', 'w2' ),
-);
-
-$ss_count = count( $ss_terms );
-$ss_sizes = isset( $ss_patterns[ $ss_count ] ) ? $ss_patterns[ $ss_count ] : $ss_patterns[6];
+$ss_sizes = ss_category_tile_sizes( count( $ss_terms ) );
 ?>
 <section class="ss-section ss-reveal">
 	<div class="ss-container">

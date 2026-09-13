@@ -11,18 +11,13 @@ if ( ! class_exists( 'WooCommerce' ) ) {
 	return;
 }
 
-$ss_terms = get_terms(
-	array(
-		'taxonomy'   => 'product_cat',
-		'hide_empty' => false,
-		'number'     => 10,
-		'orderby'    => 'count',
-		'order'      => 'DESC',
-		'exclude'    => array( get_option( 'default_product_cat' ) ),
-	)
+$ss_terms = ss_category_terms(
+	ss_option( 'catrail_slugs' ),
+	absint( ss_option( 'catrail_count' ) ),
+	(bool) ss_option( 'catrail_top_level' )
 );
 
-if ( ! $ss_terms || is_wp_error( $ss_terms ) ) {
+if ( ! $ss_terms ) {
 	return;
 }
 ?>

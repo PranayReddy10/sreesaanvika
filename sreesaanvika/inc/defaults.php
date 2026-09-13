@@ -100,6 +100,13 @@ function ss_defaults() {
 		'sec_gram'             => true,
 		'sec_newsletter'       => true,
 		'products_per_section' => 8,
+		'cats_count'           => 5,
+		'cats_slugs'           => '',
+		'catrail_count'        => 10,
+		'catrail_slugs'        => '',
+		'catrail_top_level'    => false,
+		'loadmore'             => true,
+		'loadmore_step'        => 4,
 
 		/* Offer banners ---------------------------------------------- */
 		'promo1_off'           => '40% OFF',
