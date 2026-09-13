@@ -18,9 +18,9 @@ marigold throughout: there is no white background anywhere in the theme.
    It never overwrites a page or menu you already have.
 5. Open the **Customizer → Sree Saanvika Options** to set your hero slides,
    banners, colours, contact details and social links.
-6. Optional: install `sreesaanvika-delivery.zip` under **Plugins → Add New →
-   Upload Plugin** for courier tracking on every order. See
-   [Delivery tracking](#delivery-tracking-companion-plugin).
+6. Optional: install the two companion plugins under **Plugins → Add New →
+   Upload Plugin** — `sreesaanvika-delivery.zip` for courier tracking on every
+   order, and `sreesaanvika-offers.zip` for Buy 2 Get 1 Free.
 
 Requires WordPress 6.0+, PHP 7.4+ and WooCommerce 7.0+.
 
@@ -375,9 +375,65 @@ Ekart, Shiprocket, Trackon and India Post, or type your own with `{tracking}`),
 your support phone and email, the delivery promise shown before a parcel moves,
 and whether to email the customer on dispatch and on delivery.
 
+### Delhivery
+
+Paste a **Delhivery API token** (from their panel, under API setup) and pick a
+checking interval, and the shop asks Delhivery about every parcel still in
+flight by itself — moving the order along with no one touching it. Only orders
+that have a tracking number and have not finished are asked about, so it costs
+very little. **Check Delhivery now** runs it on demand.
+
+Delhivery's wording is mapped onto the plugin's stages: *Manifested* and *Not
+Picked* → Packed, *Dispatched* and *Out for delivery* → Out for delivery, *In
+Transit* and *Pending* → In transit, *Delivered* → Delivered, *RTO* → Returned,
+*Undelivered*, *Lost* and *Damaged* → Delivery attempt failed. Wording the
+plugin does not recognise falls back to Delhivery's status type, and if that is
+unfamiliar too the status is left alone and the scan is recorded as a note —
+never guessed at.
+
+A push from your delivery app is still better where you can set one up: it
+arrives the moment a scan happens rather than on the next check.
+
 Works with WooCommerce's High-Performance Order Storage, and looks right under
 any theme — it takes the theme's colours when they exist and falls back to its
 own dark styling when they do not.
+
+---
+
+## Offers without a promo code (companion plugin)
+
+`sreesaanvika-offers.zip` is a separate plugin. It runs **Buy 2 Get 1 Free**
+and offers like it with nothing for the shopper to type — you pick the
+products, and when enough of them are in the cart the cheapest ones come off
+the total on their own.
+
+**WooCommerce → Offers → Add offer.** Each offer has:
+
+- **The deal** — buy *X*, get *Y*, at any percentage off. 100% is free; 50%
+  makes the cheapest half price. A switch decides whether it repeats for every
+  further set in the same cart (six sarees → two free, or still one).
+- **Which products it covers** — pick them by hand with WooCommerce's own
+  product search, or take a whole category, with an exclusion list on top.
+- **What the customer sees** — a headline and a line underneath, shown on
+  every product the offer covers and at the top of the cart.
+- **When it runs** — optional start and end, and an optional countdown.
+
+Which item goes free is never in doubt: **the cheapest of the qualifying
+items**. Three sarees at ₹3,999, ₹2,999 and ₹1,200 → the ₹1,200 one is free.
+
+Add a second offer for jewellery and the two are counted separately, so two
+sarees and two bangles is not three of anything.
+
+In the cart the free line is struck through and marked *Free with this offer*,
+and the banner keeps a live count — *Add 1 more to get one free*, then *1 item
+free — you are saving ₹1,200.00*. The offer is recorded on the order line too,
+so months later it is clear why a saree went out at nothing.
+
+`[ss_offer]` places a banner anywhere; `[ss_offer id="12"]` places one.
+
+The discount is worked out on the server during WooCommerce's own totals pass,
+so it holds with JavaScript off, survives a page reload, and cannot be applied
+twice by a recalculation.
 
 ---
 

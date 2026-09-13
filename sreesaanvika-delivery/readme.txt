@@ -4,7 +4,7 @@ Tags: woocommerce, shipping, tracking, delivery, india
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,8 @@ customer can see it without emailing to ask.
   appears on the website the moment it appears in the app.
 * A CSV import for the manifest the courier hands back after a pickup, for
   when there is no app to push from.
+* Delhivery: with an API token the shop checks on parcels itself, on a
+  schedule, and moves the order along with nobody touching it.
 * Optional emails to the customer on dispatch and on delivery.
 * A Delivery column and two bulk actions on the orders list.
 
@@ -59,6 +61,10 @@ Yes. The panel picks up the theme's colours when they exist and falls back to
 its own dark styling when they do not.
 
 == Changelog ==
+
+= 1.1.0 =
+* Delhivery: paste an API token and the shop asks them where every parcel is on
+  a schedule, with a Check now button.
 
 = 1.0.0 =
 * First release.

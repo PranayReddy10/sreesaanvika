@@ -51,6 +51,8 @@ class SSD_Settings {
 			'ssd_email_dispatch'       => 'sanitize_key',
 			'ssd_email_delivered'      => 'sanitize_key',
 			'ssd_promise'              => 'sanitize_text_field',
+			'ssd_delhivery_token'      => 'sanitize_text_field',
+			'ssd_poll_minutes'         => 'sanitize_key',
 		);
 	}
 
@@ -207,6 +209,73 @@ class SSD_Settings {
 				</table>
 
 				<?php submit_button(); ?>
+			</form>
+
+			<hr />
+
+			<h2 class="title"><?php esc_html_e( 'Delhivery — ask them automatically', 'sreesaanvika-delivery' ); ?></h2>
+
+			<p style="max-width:720px">
+				<?php esc_html_e( 'With a Delhivery API token the shop can check on every parcel still in flight by itself, and move the order along without anyone touching it. A push from your delivery app is still better where you can set one up — it arrives the moment a scan happens rather than on the next check.', 'sreesaanvika-delivery' ); ?>
+			</p>
+
+			<?php if ( isset( $_GET['ssd-polled'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<?php $ssd_polled = get_transient( 'ssd_poll_result' ); ?>
+				<?php if ( $ssd_polled ) : ?>
+					<?php delete_transient( 'ssd_poll_result' ); ?>
+					<div class="notice notice-<?php echo empty( $ssd_polled['error'] ) ? 'success' : 'error'; ?>">
+						<p>
+							<?php
+							printf(
+								/* translators: 1: parcels checked, 2: orders updated */
+								esc_html__( 'Checked %1$d parcels, updated %2$d.', 'sreesaanvika-delivery' ),
+								(int) $ssd_polled['checked'],
+								(int) $ssd_polled['updated']
+							);
+
+							if ( ! empty( $ssd_polled['error'] ) ) {
+								echo ' ' . esc_html( $ssd_polled['error'] );
+							}
+							?>
+						</p>
+					</div>
+				<?php endif; ?>
+			<?php endif; ?>
+
+			<form method="post" action="options.php">
+				<?php settings_fields( 'ssd_settings' ); ?>
+
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="ssd_delhivery_token"><?php esc_html_e( 'Delhivery API token', 'sreesaanvika-delivery' ); ?></label></th>
+						<td>
+							<input type="text" class="large-text code" name="ssd_delhivery_token" id="ssd_delhivery_token"
+								value="<?php echo esc_attr( get_option( 'ssd_delhivery_token', '' ) ); ?>" autocomplete="off" />
+							<p class="description"><?php esc_html_e( 'From your Delhivery panel, under API setup. Leave empty to turn the checking off.', 'sreesaanvika-delivery' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="ssd_poll_minutes"><?php esc_html_e( 'Check how often', 'sreesaanvika-delivery' ); ?></label></th>
+						<td>
+							<?php $ssd_every = (string) get_option( 'ssd_poll_minutes', 'off' ); ?>
+							<select name="ssd_poll_minutes" id="ssd_poll_minutes">
+								<option value="off" <?php selected( $ssd_every, 'off' ); ?>><?php esc_html_e( 'Never — I will push updates instead', 'sreesaanvika-delivery' ); ?></option>
+								<option value="15" <?php selected( $ssd_every, '15' ); ?>><?php esc_html_e( 'Every 15 minutes', 'sreesaanvika-delivery' ); ?></option>
+								<option value="30" <?php selected( $ssd_every, '30' ); ?>><?php esc_html_e( 'Every 30 minutes', 'sreesaanvika-delivery' ); ?></option>
+								<option value="hourly" <?php selected( $ssd_every, 'hourly' ); ?>><?php esc_html_e( 'Hourly', 'sreesaanvika-delivery' ); ?></option>
+							</select>
+							<p class="description"><?php esc_html_e( 'Only parcels that have a tracking number and have not finished are asked about, so this costs very little.', 'sreesaanvika-delivery' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
+				<?php submit_button( __( 'Save Delhivery settings', 'sreesaanvika-delivery' ) ); ?>
+			</form>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="ssd_poll_now" />
+				<?php wp_nonce_field( 'ssd_poll_now' ); ?>
+				<button type="submit" class="button"><?php esc_html_e( 'Check Delhivery now', 'sreesaanvika-delivery' ); ?></button>
 			</form>
 
 			<hr />

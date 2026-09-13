@@ -3,7 +3,7 @@
  * Plugin Name:       Sree Saanvika Delivery
  * Plugin URI:        https://sreesaanvika.in/
  * Description:       One courier, tracked end to end. Records the tracking number and delivery status against each WooCommerce order, shows the shopper where their parcel is, and takes status pushes from your delivery app over a REST endpoint.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Sree Saanvika
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SSD_VERSION', '1.0.0' );
+define( 'SSD_VERSION', '1.1.0' );
 define( 'SSD_FILE', __FILE__ );
 define( 'SSD_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SSD_URI', plugin_dir_url( __FILE__ ) );
@@ -45,12 +45,14 @@ function ssd_boot() {
 	require_once SSD_DIR . 'includes/class-ssd-rest.php';
 	require_once SSD_DIR . 'includes/class-ssd-frontend.php';
 	require_once SSD_DIR . 'includes/class-ssd-emails.php';
+	require_once SSD_DIR . 'includes/class-ssd-delhivery.php';
 
 	SSD_Settings::init();
 	SSD_Admin::init();
 	SSD_REST::init();
 	SSD_Frontend::init();
 	SSD_Emails::init();
+	SSD_Delhivery::init();
 
 	load_plugin_textdomain( 'sreesaanvika-delivery', false, dirname( plugin_basename( SSD_FILE ) ) . '/languages' );
 }

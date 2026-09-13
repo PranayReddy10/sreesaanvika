@@ -352,6 +352,30 @@ function ss_welcome_screen() {
 		</div>
 
 		<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">
+			<h2><?php esc_html_e( 'Offers without a promo code', 'sreesaanvika' ); ?></h2>
+
+			<?php if ( class_exists( 'SSO_Offer' ) ) : ?>
+				<p style="color:#1a7f5a">✓ <?php esc_html_e( 'Sree Saanvika Offers is active.', 'sreesaanvika' ); ?></p>
+				<p>
+					<a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=ss_offer' ) ); ?>">
+						<?php esc_html_e( 'Your offers', 'sreesaanvika' ); ?>
+					</a>
+					<a class="button" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=ss_offer' ) ); ?>">
+						<?php esc_html_e( 'Add an offer', 'sreesaanvika' ); ?>
+					</a>
+				</p>
+			<?php else : ?>
+				<p>
+					<?php esc_html_e( 'Sree Saanvika Offers runs Buy 2 Get 1 Free and offers like it with no code to type. You pick the products; when a shopper has enough of them in the cart the cheapest one goes free by itself. Run one for sarees and another for jewellery — they are counted separately.', 'sreesaanvika' ); ?>
+				</p>
+				<p><?php esc_html_e( 'Install sreesaanvika-offers.zip under Plugins → Add New → Upload Plugin.', 'sreesaanvika' ); ?></p>
+				<a class="button" href="<?php echo esc_url( admin_url( 'plugin-install.php?tab=upload' ) ); ?>">
+					<?php esc_html_e( 'Upload the plugin', 'sreesaanvika' ); ?>
+				</a>
+			<?php endif; ?>
+		</div>
+
+		<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">
 			<h2><?php esc_html_e( 'Editing the homepage', 'sreesaanvika' ); ?></h2>
 
 			<p>

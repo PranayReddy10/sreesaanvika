@@ -1,0 +1,195 @@
+/**
+ * Offer banner, countdown and the free-line markers.
+ *
+ * Colours come from the theme's custom properties where they exist, with the
+ * maroon-and-cream ticket look baked in as the fallback.
+ */
+
+.sso-banner {
+	--sso-deep: var(--ss-maroon, #7b1e3b);
+	--sso-gold: var(--ss-gold, #d9a441);
+	--sso-cream: #fdf6ef;
+	--sso-ink: var(--ss-text, #f4eaee);
+	--sso-mute: var(--ss-muted, #a8909c);
+
+	position: relative;
+	display: flex;
+	align-items: stretch;
+	margin: 22px 0;
+	border-radius: var(--ss-radius, 14px);
+	overflow: hidden;
+	background: linear-gradient(180deg, rgba(123, 30, 59, 0.16), rgba(123, 30, 59, 0.06));
+	border: 1px solid rgba(217, 164, 65, 0.34);
+}
+
+/* The stub on the left, like the torn edge of a ticket. */
+.sso-banner__tab {
+	flex: 0 0 68px;
+	display: grid;
+	place-items: center;
+	background: var(--sso-deep);
+}
+
+.sso-banner__pct {
+	width: 38px;
+	height: 38px;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	background: linear-gradient(140deg, #f6e3b4, var(--sso-gold) 45%, #a9732a);
+	color: #4b1224;
+	font-weight: 700;
+	font-size: 1.05rem;
+	line-height: 1;
+}
+
+.sso-banner__body {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 16px 20px;
+	text-align: center;
+}
+
+.sso-banner__head {
+	margin: 0;
+	font-size: clamp(1.05rem, 3.4vw, 1.55rem);
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--sso-gold);
+	line-height: 1.15;
+}
+
+.sso-banner__sub {
+	margin: 6px 0 0;
+	font-size: 0.9rem;
+	color: var(--sso-mute);
+}
+
+.sso-banner__progress {
+	margin: 10px 0 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--ss-success, #3f9d7c);
+}
+
+/* Under a product price the banner is quieter. */
+.sso-banner--product { margin: 16px 0 20px; }
+.sso-banner--product .sso-banner__body { text-align: left; padding: 13px 18px; }
+.sso-banner--product .sso-banner__head { font-size: 1rem; }
+.sso-banner--product .sso-banner__tab { flex-basis: 54px; }
+
+/* --- Countdown --- */
+.sso-countdown {
+	flex: 0 0 auto;
+	padding: 14px 20px;
+	border-left: 1px dashed rgba(217, 164, 65, 0.34);
+	text-align: center;
+}
+
+.sso-countdown__label {
+	margin: 0 0 8px;
+	font-size: 0.66rem;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--sso-mute);
+}
+
+.sso-countdown__clock {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 6px;
+}
+
+.sso-unit { display: block; }
+.sso-unit__digits { display: flex; gap: 4px; }
+
+.sso-digit {
+	display: grid;
+	place-items: center;
+	min-width: 30px;
+	padding: 6px 4px;
+	border-radius: 6px;
+	background: var(--sso-deep);
+	color: #f7e6c8;
+	font-size: 1.15rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+.sso-unit__label {
+	display: block;
+	margin-top: 6px;
+	font-size: 0.56rem;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--sso-mute);
+}
+
+.sso-colon {
+	color: var(--sso-gold);
+	font-weight: 700;
+	line-height: 1;
+	padding-top: 8px;
+}
+
+/* --- Product card flag --- */
+.sso-flag {
+	position: absolute;
+	left: 12px;
+	bottom: 12px;
+	z-index: 3;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: var(--ss-maroon, #7b1e3b);
+	color: #f7e6c8;
+	font-size: 0.6rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	pointer-events: none;
+}
+
+/* --- The discounted cart line --- */
+.sso-line-flag {
+	display: inline-block;
+	margin-top: 5px;
+	padding: 3px 9px;
+	border-radius: 999px;
+	background: rgba(63, 157, 124, 0.14);
+	border: 1px solid rgba(63, 157, 124, 0.4);
+	color: var(--ss-success, #3f9d7c);
+	font-size: 0.64rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.woocommerce td.product-subtotal del,
+.sso-line-now { display: inline-block; }
+
+td.product-subtotal del { opacity: 0.55; margin-right: 6px; }
+.sso-line-now { text-decoration: none; font-weight: 600; }
+
+@media (max-width: 780px) {
+	.sso-banner {
+		flex-wrap: wrap;
+	}
+
+	.sso-banner__tab {
+		flex: 1 0 100%;
+		padding: 10px 0;
+	}
+
+	.sso-banner__body { flex: 1 0 100%; }
+
+	.sso-countdown {
+		flex: 1 0 100%;
+		border-left: 0;
+		border-top: 1px dashed rgba(217, 164, 65, 0.34);
+	}
+
+	.sso-digit { min-width: 26px; font-size: 1rem; }
+}

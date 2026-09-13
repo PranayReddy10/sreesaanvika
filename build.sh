@@ -8,11 +8,10 @@
 set -euo pipefail
 
 THEME="sreesaanvika"
-PLUGIN="sreesaanvika-delivery"
+PLUGINS=("sreesaanvika-delivery" "sreesaanvika-offers")
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${1:-$ROOT}"
 OUT="$OUT_DIR/$THEME.zip"
-PLUGIN_OUT="$OUT_DIR/$PLUGIN.zip"
 
 cd "$ROOT"
 
@@ -25,7 +24,7 @@ fi
 if command -v php >/dev/null 2>&1; then
 	while IFS= read -r file; do
 		php -l "$file" >/dev/null || { echo "error: syntax error in $file" >&2; exit 1; }
-	done < <(find "$THEME" "$PLUGIN" -name '*.php' 2>/dev/null)
+	done < <(find "$THEME" "${PLUGINS[@]}" -name '*.php' 2>/dev/null)
 	echo "PHP syntax OK"
 fi
 
@@ -41,16 +40,19 @@ zip -r -q -9 "$OUT" "$THEME" \
 
 echo "Built $OUT ($(du -h "$OUT" | cut -f1))"
 
-# The delivery plugin ships as its own ZIP, installed like any other plugin.
-if [ -f "$PLUGIN/$PLUGIN.php" ]; then
-	rm -f "$PLUGIN_OUT"
+# Each companion plugin ships as its own ZIP, installed like any other.
+for plugin in "${PLUGINS[@]}"; do
+	[ -f "$plugin/$plugin.php" ] || continue
 
-	zip -r -q -9 "$PLUGIN_OUT" "$PLUGIN" \
+	plugin_out="$OUT_DIR/$plugin.zip"
+	rm -f "$plugin_out"
+
+	zip -r -q -9 "$plugin_out" "$plugin" \
 		-x '*.DS_Store' \
 		-x '*__MACOSX*' \
 		-x '*/.git/*' \
 		-x '*/node_modules/*' \
 		-x '*.map'
 
-	echo "Built $PLUGIN_OUT ($(du -h "$PLUGIN_OUT" | cut -f1))"
-fi
+	echo "Built $plugin_out ($(du -h "$plugin_out" | cut -f1))"
+done
