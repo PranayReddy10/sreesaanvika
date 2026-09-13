@@ -1292,8 +1292,35 @@ select:-webkit-autofill {
 	transition: width 0.6s var(--ss-ease);
 }
 
-.ss-ship-meter p { font-size: 0.82rem; color: var(--ss-muted); margin: 0; }
+.ss-ship-meter p {
+	font-size: 0.82rem;
+	color: var(--ss-muted);
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ss-ship-meter p svg { flex: none; color: var(--ss-gold); }
 .ss-ship-meter strong { color: var(--ss-gold); }
+
+/* On the cart and checkout it is a panel of its own rather than a line in a
+   list, and it earns a little more room. */
+.ss-ship-meter--cart,
+.ss-ship-meter--checkout {
+	margin: 0 0 20px;
+	padding: 15px 20px;
+	border: 1px solid var(--ss-line);
+	border-radius: var(--ss-radius);
+	background: var(--ss-surface);
+}
+
+.ss-ship-meter--cart p,
+.ss-ship-meter--checkout p { font-size: 0.9rem; }
+
+.ss-ship-meter.is-done .ss-ship-meter__fill { background: var(--ss-success); }
+.ss-ship-meter.is-done p svg,
+.ss-ship-meter.is-done strong { color: var(--ss-success); }
 
 /* --------------------------------------------------------------------------
    14. Hero slider

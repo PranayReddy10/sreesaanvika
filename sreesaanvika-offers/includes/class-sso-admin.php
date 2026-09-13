@@ -90,8 +90,66 @@ class SSO_Admin {
 		wp_nonce_field( 'sso_offer', 'sso_nonce' );
 		?>
 		<p class="description" style="margin-bottom:16px">
-			<?php esc_html_e( 'No promo code. When a shopper has enough of the products below in their cart, the cheapest ones come off the total on their own.', 'sreesaanvika-offers' ); ?>
+			<?php esc_html_e( 'No promo code. When a shopper has enough of the products below in their cart, the discount comes off the total on its own.', 'sreesaanvika-offers' ); ?>
 		</p>
+
+		<p class="sso-kind">
+			<label>
+				<input type="radio" name="sso_kind" value="bogo" <?php checked( 'bogo', $offer->kind() ); ?> />
+				<strong><?php esc_html_e( 'Buy some, get some free', 'sreesaanvika-offers' ); ?></strong>
+				<span><?php esc_html_e( 'Any three sarees, the cheapest is free. Counted across everything the offer covers.', 'sreesaanvika-offers' ); ?></span>
+			</label>
+
+			<label>
+				<input type="radio" name="sso_kind" value="tiers" <?php checked( 'tiers', $offer->kind() ); ?> />
+				<strong><?php esc_html_e( 'The more you buy, the cheaper', 'sreesaanvika-offers' ); ?></strong>
+				<span><?php esc_html_e( 'Two of the same saree, 10% off. Counted per product, so it catches the shopper buying a pair.', 'sreesaanvika-offers' ); ?></span>
+			</label>
+		</p>
+
+		<div class="sso-when-tiers">
+			<p><strong><?php esc_html_e( 'Quantity breaks', 'sreesaanvika-offers' ); ?></strong></p>
+
+			<table class="widefat striped" style="max-width:420px">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'From this many', 'sreesaanvika-offers' ); ?></th>
+						<th><?php esc_html_e( 'Take off', 'sreesaanvika-offers' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					$rows = $offer->tiers();
+
+					// Smallest first for editing, with spare rows to fill in.
+					usort(
+						$rows,
+						function ( $a, $b ) {
+							return $a['qty'] <=> $b['qty'];
+						}
+					);
+
+					$rows = array_pad( $rows, max( 4, count( $rows ) + 2 ), array( 'qty' => '', 'percent' => '' ) );
+					?>
+					<?php foreach ( $rows as $row ) : ?>
+						<tr>
+							<td>
+								<input type="number" min="2" max="99" name="sso_tier_qty[]" style="width:90px"
+									value="<?php echo esc_attr( $row['qty'] ); ?>" placeholder="2" />
+							</td>
+							<td>
+								<input type="number" min="1" max="90" step="1" name="sso_tier_percent[]" style="width:90px"
+									value="<?php echo esc_attr( $row['percent'] ); ?>" placeholder="10" /> %
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+
+			<p class="description">
+				<?php esc_html_e( 'Fill in as many as you need and leave the rest empty — 2 for 10%, 3 for 15%. A shopper always gets the best one their quantity earns.', 'sreesaanvika-offers' ); ?>
+			</p>
+		</div>
 
 		<p class="sso-deal">
 			<label>
@@ -111,7 +169,7 @@ class SSO_Admin {
 			</label>
 		</p>
 
-		<p class="description">
+		<p class="description sso-when-bogo">
 			<?php
 			printf(
 				/* translators: 1: buy count, 2: get count, 3: total in the cart */
@@ -123,7 +181,7 @@ class SSO_Admin {
 			?>
 		</p>
 
-		<p>
+		<p class="sso-when-bogo">
 			<label>
 				<input type="checkbox" name="sso_repeat" value="yes" <?php checked( $offer->repeats() ); ?> />
 				<?php esc_html_e( 'Apply it again for every further set in the same cart', 'sreesaanvika-offers' ); ?>
@@ -133,6 +191,29 @@ class SSO_Admin {
 				<?php esc_html_e( 'On: six sarees get two free. Off: six sarees still get one.', 'sreesaanvika-offers' ); ?>
 			</span>
 		</p>
+
+		<script>
+			// Show only the half of this panel that belongs to the chosen kind.
+			( function () {
+				var panel = document.getElementById( 'sso-deal' );
+
+				if ( ! panel ) { return; }
+
+				function paint() {
+					var chosen = panel.querySelector( 'input[name="sso_kind"]:checked' );
+					var tiers = chosen && 'tiers' === chosen.value;
+
+					panel.querySelectorAll( '.sso-when-tiers' ).forEach( function ( el ) { el.hidden = ! tiers; } );
+					panel.querySelectorAll( '.sso-when-bogo, .sso-deal' ).forEach( function ( el ) { el.hidden = tiers; } );
+				}
+
+				panel.addEventListener( 'change', function ( e ) {
+					if ( 'sso_kind' === e.target.name ) { paint(); }
+				} );
+
+				paint();
+			}() );
+		</script>
 		<?php
 	}
 
@@ -302,6 +383,31 @@ class SSO_Admin {
 			update_post_meta( $post_id, '_sso_' . $key, $value );
 		}
 
+		$kind = isset( $_POST['sso_kind'] ) ? sanitize_key( wp_unslash( $_POST['sso_kind'] ) ) : 'bogo';
+		update_post_meta( $post_id, '_sso_kind', in_array( $kind, array( 'bogo', 'tiers' ), true ) ? $kind : 'bogo' );
+
+		$quantities = isset( $_POST['sso_tier_qty'] ) ? (array) wp_unslash( $_POST['sso_tier_qty'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$percents   = isset( $_POST['sso_tier_percent'] ) ? (array) wp_unslash( $_POST['sso_tier_percent'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$tiers      = array();
+
+		foreach ( $quantities as $row => $quantity ) {
+			$quantity = absint( $quantity );
+			$percent  = isset( $percents[ $row ] ) ? (float) $percents[ $row ] : 0;
+
+			// An empty row is how a break is left out.
+			if ( $quantity < 2 || $percent <= 0 ) {
+				continue;
+			}
+
+			$tiers[ $quantity ] = array(
+				'qty'     => $quantity,
+				'percent' => min( 90, $percent ),
+			);
+		}
+
+		ksort( $tiers );
+		update_post_meta( $post_id, '_sso_tiers', array_values( $tiers ) );
+
 		foreach ( array( 'repeat', 'countdown' ) as $key ) {
 			update_post_meta( $post_id, '_sso_' . $key, isset( $_POST[ 'sso_' . $key ] ) ? 'yes' : 'no' );
 		}
@@ -346,13 +452,24 @@ class SSO_Admin {
 		$offer = new SSO_Offer( $post_id );
 
 		if ( 'sso_deal' === $column ) {
-			printf(
-				/* translators: 1: buy count, 2: get count, 3: percentage */
-				esc_html__( 'Buy %1$d, get %2$d at %3$d%% off', 'sreesaanvika-offers' ),
-				(int) $offer->buy(),
-				(int) $offer->get(),
-				(int) $offer->percent()
-			);
+			if ( 'tiers' === $offer->kind() ) {
+				$bits = array();
+
+				foreach ( array_reverse( $offer->tiers() ) as $tier ) {
+					/* translators: 1: quantity, 2: percentage off */
+					$bits[] = sprintf( esc_html__( '%1$d+ → %2$d%% off', 'sreesaanvika-offers' ), (int) $tier['qty'], (int) $tier['percent'] );
+				}
+
+				echo $bits ? esc_html( implode( ', ', $bits ) ) : '—';
+			} else {
+				printf(
+					/* translators: 1: buy count, 2: get count, 3: percentage */
+					esc_html__( 'Buy %1$d, get %2$d at %3$d%% off', 'sreesaanvika-offers' ),
+					(int) $offer->buy(),
+					(int) $offer->get(),
+					(int) $offer->percent()
+				);
+			}
 		}
 
 		if ( 'sso_covers' === $column ) {
@@ -406,6 +523,11 @@ class SSO_Admin {
 			'.sso-deal{display:flex;gap:26px;align-items:center;font-size:15px}'
 			. '.sso-deal input{width:70px}'
 			. '.sso-deal label{display:flex;gap:8px;align-items:center}'
+			. '.sso-kind{display:grid;gap:12px;margin-bottom:20px}'
+			. '.sso-kind label{display:grid;grid-template-columns:22px 1fr;gap:2px 4px;align-items:start}'
+			. '.sso-kind input{grid-row:span 2;margin-top:3px}'
+			. '.sso-kind span{grid-column:2;color:#787c82;font-size:12px}'
+			. '.sso-when-tiers{margin-bottom:20px}'
 		);
 	}
 }

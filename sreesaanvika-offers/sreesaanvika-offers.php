@@ -3,7 +3,7 @@
  * Plugin Name:       Sree Saanvika Offers
  * Plugin URI:        https://sreesaanvika.in/
  * Description:       Buy 2 get 1 free, and offers like it, without a promo code. Pick the products an offer covers; when enough of them are in the cart the cheapest ones go free on their own.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Sree Saanvika
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SSO_VERSION', '1.1.0' );
+define( 'SSO_VERSION', '1.2.0' );
 define( 'SSO_FILE', __FILE__ );
 define( 'SSO_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SSO_URI', plugin_dir_url( __FILE__ ) );

@@ -183,7 +183,14 @@ class SSO_Display {
 		$qty  = (int) $item['quantity'];
 		$free = (int) $applied['free'];
 
+		// A quantity break has no free unit — it discounts the whole line.
 		if ( $free < 1 ) {
+			if ( empty( $applied['look'] ) && $applied['saved'] > 0 ) {
+				return $name . '<span class="sso-line-flag">'
+					. esc_html__( 'Quantity discount applied', 'sreesaanvika-offers' )
+					. '</span>';
+			}
+
 			return $name;
 		}
 
@@ -274,10 +281,45 @@ class SSO_Display {
 					<p class="sso-banner__sub"><?php echo esc_html( $offer->subline() ); ?></p>
 				<?php endif; ?>
 
+				<?php if ( 'tiers' === $offer->kind() && $offer->tiers() ) : ?>
+					<ul class="sso-tiers">
+						<?php foreach ( array_reverse( $offer->tiers() ) as $tier ) : ?>
+							<li>
+								<span class="sso-tiers__qty">
+									<?php
+									printf(
+										/* translators: %d: quantity */
+										esc_html__( 'Buy %d', 'sreesaanvika-offers' ),
+										(int) $tier['qty']
+									);
+									?>
+								</span>
+								<span class="sso-tiers__off">
+									<?php
+									printf(
+										/* translators: %d: percentage off */
+										esc_html__( 'save %d%%', 'sreesaanvika-offers' ),
+										(int) $tier['percent']
+									);
+									?>
+								</span>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+
 				<?php if ( $state ) : ?>
 					<p class="sso-banner__progress">
 						<?php
-						if ( $state['free'] > 0 && $state['saved'] > 0 ) {
+						if ( 'tiers' === $offer->kind() ) {
+							if ( $state['saved'] > 0 ) {
+								printf(
+									/* translators: %s: the amount saved */
+									esc_html__( 'You are saving %s', 'sreesaanvika-offers' ),
+									wp_kses_post( wc_price( $state['saved'] ) )
+								);
+							}
+						} elseif ( $state['free'] > 0 && $state['saved'] > 0 ) {
 							printf(
 								/* translators: 1: how many are free, 2: the amount saved */
 								esc_html( _n( '%1$d item free — you are saving %2$s', '%1$d items free — you are saving %2$s', (int) $state['free'], 'sreesaanvika-offers' ) ),

@@ -4,7 +4,7 @@ Tags: woocommerce, bogo, offers, discount, india
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,6 +18,8 @@ nothing for them to claim.
 
 * Buy X get Y, at any percentage off. 100% is free; 50% makes the cheapest half
   price.
+* Or quantity breaks — 2 for 10% off, 3 for 15% — counted per product, for the
+  shopper buying a pair of the same thing.
 * Choose products by hand, or by whole category, with an exclusion list.
 * As many offers as you like — one for sarees, another for jewellery, each with
   its own products.
@@ -50,6 +52,13 @@ out on the server, so it applies with JavaScript switched off.
 
 The cheapest of the qualifying items. With three sarees at ₹3,999, ₹2,999 and
 ₹1,200, the ₹1,200 one is free.
+
+= What is the difference between the two kinds of offer? =
+
+"Buy some, get some free" counts across everything the offer covers: any three
+sarees, cheapest free. "The more you buy, the cheaper" counts per product: two
+of the *same* saree, 10% off. Two different sarees do not earn a quantity
+break — that is what the first kind is for.
 
 = What happens with six? =
 

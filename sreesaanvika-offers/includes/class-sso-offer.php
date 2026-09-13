@@ -175,6 +175,70 @@ class SSO_Offer {
 	}
 
 	/**
+	 * Which sort of offer this is.
+	 *
+	 * bogo  — buy X, get Y of the cheapest at a discount, counted across the
+	 *         whole eligible set.
+	 * tiers — the more of one product you take, the cheaper each one is.
+	 *
+	 * @return string
+	 */
+	public function kind() {
+		$kind = (string) $this->meta( 'kind', 'bogo' );
+
+		return in_array( $kind, array( 'bogo', 'tiers' ), true ) ? $kind : 'bogo';
+	}
+
+	/**
+	 * The quantity breaks, biggest first so the best one is found first.
+	 *
+	 * @return array<int,array{qty:int,percent:float}>
+	 */
+	public function tiers() {
+		$rows = (array) $this->meta( 'tiers', array() );
+		$out  = array();
+
+		foreach ( $rows as $row ) {
+			$qty     = isset( $row['qty'] ) ? absint( $row['qty'] ) : 0;
+			$percent = isset( $row['percent'] ) ? (float) $row['percent'] : 0;
+
+			if ( $qty < 2 || $percent <= 0 ) {
+				continue;
+			}
+
+			$out[] = array(
+				'qty'     => $qty,
+				'percent' => min( 90, $percent ),
+			);
+		}
+
+		usort(
+			$out,
+			function ( $a, $b ) {
+				return $b['qty'] <=> $a['qty'];
+			}
+		);
+
+		return $out;
+	}
+
+	/**
+	 * The best break a given quantity earns.
+	 *
+	 * @param int $quantity How many of the product are in the cart.
+	 * @return float Percentage off, or zero.
+	 */
+	public function tier_for( $quantity ) {
+		foreach ( $this->tiers() as $tier ) {
+			if ( $quantity >= $tier['qty'] ) {
+				return $tier['percent'];
+			}
+		}
+
+		return 0.0;
+	}
+
+	/**
 	 * How many the customer has to buy.
 	 *
 	 * @return int
@@ -260,6 +324,20 @@ class SSO_Offer {
 			return $headline;
 		}
 
+		if ( 'tiers' === $this->kind() ) {
+			$tiers = $this->tiers();
+			$best  = end( $tiers );
+
+			if ( $best ) {
+				return sprintf(
+					/* translators: 1: quantity, 2: percentage off */
+					__( 'Buy %1$d, save %2$d%%', 'sreesaanvika-offers' ),
+					(int) $best['qty'],
+					(int) $best['percent']
+				);
+			}
+		}
+
 		return sprintf(
 			/* translators: 1: number to buy, 2: number free */
 			__( 'Buy %1$d get %2$d free', 'sreesaanvika-offers' ),
@@ -331,6 +409,11 @@ class SSO_Offer {
 		}
 
 		if ( ! $this->product_ids() && ! $this->category_ids() ) {
+			return false;
+		}
+
+		// A quantity offer with no breaks set does nothing at all.
+		if ( 'tiers' === $this->kind() && ! $this->tiers() ) {
 			return false;
 		}
 

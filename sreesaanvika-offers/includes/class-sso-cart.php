@@ -139,6 +139,11 @@ class SSO_Cart {
 		 * early on an empty offer list.
 		 */
 		foreach ( SSO_Offer::live() as $offer ) {
+			if ( 'tiers' === $offer->kind() ) {
+				self::apply_tiers( $offer, $contents, $free );
+				continue;
+			}
+
 			$units = array();
 
 			foreach ( $contents as $key => $item ) {
@@ -249,6 +254,82 @@ class SSO_Cart {
 				'look'  => ! empty( $grant['look'] ),
 			);
 		}
+	}
+
+	/**
+	 * A quantity offer: the more of one product in the cart, the cheaper each.
+	 *
+	 * Counted per product rather than across the set, which is what makes it
+	 * different from buy-two-get-one — two of the same saree earns it, two
+	 * different sarees do not.
+	 *
+	 * @param SSO_Offer $offer    The offer.
+	 * @param array     $contents Cart contents.
+	 * @param array     $free     Discounts gathered so far, by cart item key.
+	 */
+	protected static function apply_tiers( $offer, array $contents, array &$free ) {
+		// Quantities of the same product can be spread over several lines.
+		$totals = array();
+
+		foreach ( $contents as $key => $item ) {
+			$id = ! empty( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
+
+			if ( ! $offer->covers( $id ) ) {
+				continue;
+			}
+
+			$product = (int) $item['product_id'];
+
+			if ( ! isset( $totals[ $product ] ) ) {
+				$totals[ $product ] = array(
+					'qty'  => 0,
+					'keys' => array(),
+				);
+			}
+
+			$totals[ $product ]['qty']   += (int) $item['quantity'];
+			$totals[ $product ]['keys'][] = $key;
+		}
+
+		$saved = 0.0;
+		$hit   = 0;
+
+		foreach ( $totals as $group ) {
+			$percent = $offer->tier_for( $group['qty'] );
+
+			if ( $percent <= 0 ) {
+				continue;
+			}
+
+			foreach ( $group['keys'] as $key ) {
+				// An earlier offer already handled this line.
+				if ( isset( $free[ $key ] ) ) {
+					continue;
+				}
+
+				$base = self::base_price( $contents[ $key ] );
+				$qty  = (int) $contents[ $key ]['quantity'];
+				$off  = $base * $qty * ( $percent / 100 );
+
+				$free[ $key ] = array(
+					'units'   => 0,
+					'off'     => $off,
+					'offer'   => $offer->id(),
+					'percent' => $percent / 100,
+				);
+
+				$saved += $off;
+				$hit   += $qty;
+			}
+		}
+
+		self::$progress[ $offer->id() ] = array(
+			'offer' => $offer,
+			'have'  => $hit,
+			'need'  => 0,
+			'free'  => 0,
+			'saved' => $saved,
+		);
 	}
 
 	/**

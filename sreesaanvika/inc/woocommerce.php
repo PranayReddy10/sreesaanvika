@@ -503,6 +503,134 @@ function ss_cart_count_badge() {
 }
 
 /**
+ * What a shopper has to spend to stop paying for delivery.
+ *
+ * WooCommerce's own Free shipping method carries the real number, so that is
+ * read first — one figure to keep up to date rather than two that can drift
+ * apart. The Customizer setting is the fallback, and what a shop that has not
+ * configured a shipping zone yet still shows on the product page.
+ *
+ * @return float Zero when nothing qualifies for free shipping.
+ */
+function ss_free_ship_threshold() {
+	static $cache = null;
+
+	if ( null !== $cache ) {
+		return $cache;
+	}
+
+	$cache = (float) ss_option( 'free_ship_threshold', 2999 );
+
+	if ( ! function_exists( 'WC' ) || ! WC()->cart || ! WC()->shipping() ) {
+		return $cache;
+	}
+
+	$packages = WC()->cart->get_shipping_packages();
+
+	if ( ! $packages ) {
+		return $cache;
+	}
+
+	$zone = function_exists( 'wc_get_shipping_zone' ) ? wc_get_shipping_zone( reset( $packages ) ) : null;
+
+	if ( ! $zone ) {
+		return $cache;
+	}
+
+	foreach ( $zone->get_shipping_methods( true ) as $method ) {
+		if ( 'free_shipping' !== $method->id ) {
+			continue;
+		}
+
+		// "A minimum order amount" and "…or a coupon" both carry a figure.
+		if ( in_array( $method->get_option( 'requires' ), array( 'min_amount', 'either', 'both' ), true ) ) {
+			$minimum = (float) $method->get_option( 'min_amount' );
+
+			if ( $minimum > 0 ) {
+				$cache = $minimum;
+				break;
+			}
+		}
+	}
+
+	/**
+	 * The spend that earns free shipping.
+	 *
+	 * @param float $threshold Amount, or zero for none.
+	 */
+	$cache = (float) apply_filters( 'ss_free_ship_threshold', $cache );
+
+	return $cache;
+}
+
+/**
+ * The free-shipping progress meter.
+ *
+ * Shown in the bag panel, at the top of the cart and above checkout — the
+ * three places a shopper is deciding whether to add one more thing.
+ *
+ * @param string $where minicart|cart|checkout.
+ */
+function ss_ship_meter( $where = 'minicart' ) {
+	if ( ! function_exists( 'WC' ) || ! WC()->cart || WC()->cart->is_empty() ) {
+		return;
+	}
+
+	$threshold = ss_free_ship_threshold();
+
+	if ( $threshold <= 0 ) {
+		return;
+	}
+
+	// The figure the shopper recognises: what the goods cost, before delivery.
+	$subtotal = (float) WC()->cart->get_displayed_subtotal();
+	$left     = max( 0, $threshold - $subtotal );
+	$pct      = $threshold > 0 ? min( 100, ( $subtotal / $threshold ) * 100 ) : 100;
+	$done     = $left <= 0;
+
+	printf(
+		'<div class="ss-ship-meter ss-ship-meter--%1$s%2$s" aria-live="polite">',
+		esc_attr( $where ),
+		$done ? ' is-done' : ''
+	);
+
+	if ( $done ) {
+		echo '<p>' . ss_icon( 'truck', 16 ) . '<strong>' . esc_html__( 'Free shipping unlocked', 'sreesaanvika' ) . '</strong></p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	} else {
+		echo '<p>' . ss_icon( 'truck', 16 ) . wp_kses_post( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			sprintf(
+				/* translators: %s: formatted amount remaining */
+				__( 'Add %s more for <strong>free shipping</strong>', 'sreesaanvika' ),
+				wc_price( $left )
+			)
+		) . '</p>';
+	}
+
+	printf(
+		'<div class="ss-ship-meter__bar"><div class="ss-ship-meter__fill" style="width:%s%%"></div></div>',
+		esc_attr( round( $pct, 2 ) )
+	);
+
+	echo '</div>';
+}
+
+/**
+ * Put the meter where the decision is being made.
+ */
+function ss_ship_meter_cart() {
+	ss_ship_meter( 'cart' );
+}
+add_action( 'woocommerce_before_cart_table', 'ss_ship_meter_cart', 5 );
+
+/**
+ * And once more above checkout.
+ */
+function ss_ship_meter_checkout() {
+	ss_ship_meter( 'checkout' );
+}
+add_action( 'woocommerce_before_checkout_form', 'ss_ship_meter_checkout', 8 );
+
+/**
  * Mini-cart line items.
  */
 function ss_minicart_body() {
@@ -517,34 +645,7 @@ function ss_minicart_body() {
 		return;
 	}
 
-	// Free-shipping progress meter.
-	$threshold = (float) ss_option( 'free_ship_threshold', 2999 );
-
-	if ( $threshold > 0 ) {
-		$subtotal = (float) WC()->cart->get_displayed_subtotal();
-		$pct      = min( 100, ( $subtotal / $threshold ) * 100 );
-		$left     = max( 0, $threshold - $subtotal );
-
-		echo '<div class="ss-ship-meter">';
-
-		if ( $left > 0 ) {
-			printf(
-				'<p>%s</p>',
-				wp_kses_post(
-					sprintf(
-						/* translators: %s: formatted amount remaining */
-						__( 'Add %s more for <strong>free shipping</strong>', 'sreesaanvika' ),
-						wc_price( $left )
-					)
-				)
-			);
-		} else {
-			echo '<p><strong>' . esc_html__( 'Free shipping unlocked', 'sreesaanvika' ) . '</strong></p>';
-		}
-
-		echo '<div class="ss-ship-meter__bar"><div class="ss-ship-meter__fill" style="width:' . esc_attr( $pct ) . '%"></div></div>';
-		echo '</div>';
-	}
+	ss_ship_meter();
 
 	echo '<ul class="ss-minicart__list">';
 

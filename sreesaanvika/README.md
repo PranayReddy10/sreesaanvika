@@ -400,6 +400,21 @@ own dark styling when they do not.
 
 ---
 
+## Free shipping meter
+
+The theme knows what a shopper has to spend to stop paying for delivery, and
+says so in the three places the decision gets made: the bag panel, the top of
+the cart, and above checkout. *Add ₹340 more for free shipping*, with a bar
+that fills and turns green on **Free shipping unlocked**.
+
+The figure comes from **WooCommerce's own Free shipping method** where one is
+set up with a minimum order amount — one number to maintain rather than two
+that drift apart — and falls back to **Customizer → Shop → Free shipping
+threshold** otherwise. `ss_free_ship_threshold` filters it if you need
+something cleverer.
+
+---
+
 ## Offers without a promo code (companion plugin)
 
 `sreesaanvika-offers.zip` is a separate plugin. It runs **Buy 2 Get 1 Free**
@@ -409,9 +424,17 @@ the total on their own.
 
 **WooCommerce → Offers → Add offer.** Each offer has:
 
-- **The deal** — buy *X*, get *Y*, at any percentage off. 100% is free; 50%
-  makes the cheapest half price. A switch decides whether it repeats for every
-  further set in the same cart (six sarees → two free, or still one).
+- **The kind** — two to choose from:
+  - **Buy some, get some free** — buy *X*, get *Y*, at any percentage off. 100%
+    is free; 50% makes the cheapest half price. A switch decides whether it
+    repeats for every further set in the same cart (six sarees → two free, or
+    still one). Counted **across everything the offer covers**: any three
+    sarees.
+  - **The more you buy, the cheaper** — quantity breaks: 2 for 10% off, 3 for
+    15%, 5 for 20%. Counted **per product**, so it catches the shopper buying a
+    pair of the same saree. Two *different* sarees do not earn it. The breaks
+    show as chips on the product page, and the shopper always gets the best one
+    their quantity earns.
 - **Which products it covers** — pick them by hand with WooCommerce's own
   product search, or take a whole category, with an exclusion list on top.
 - **What the customer sees** — a headline and a line underneath, shown on

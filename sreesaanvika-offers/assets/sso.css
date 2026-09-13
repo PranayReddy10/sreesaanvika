@@ -444,3 +444,30 @@ td.product-subtotal del { opacity: 0.55; margin-right: 6px; }
 	.sso-look__item { flex: 0 1 118px; }
 	.sso-look__plus { padding-bottom: 22px; }
 }
+
+/* --- Quantity breaks --- */
+.sso-tiers {
+	list-style: none;
+	margin: 12px 0 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+}
+
+.sso-banner--product .sso-tiers { justify-content: flex-start; }
+
+.sso-tiers li {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	padding: 5px 12px;
+	border-radius: 999px;
+	border: 1px solid rgba(217, 164, 65, 0.3);
+	background: rgba(217, 164, 65, 0.08);
+	font-size: 0.76rem;
+}
+
+.sso-tiers__qty { color: var(--sso-mute); letter-spacing: 0.04em; }
+.sso-tiers__off { color: var(--sso-gold); font-weight: 700; }
