@@ -593,3 +593,111 @@
 	headings.forEach(function (h) { io.observe(h); });
 	mark(headings[0].id);
 })();
+
+/* ==========================================================================
+ * Preloader
+ *
+ * The curtain is already on screen and already has a CSS animation that takes
+ * it away, so a visitor without JavaScript is never stuck behind it. All this
+ * does is take it away sooner once the page is genuinely ready, and put it
+ * back on the way to the next page.
+ * ========================================================================== */
+(function () {
+	'use strict';
+
+	var curtain = document.getElementById('ss-preloader');
+
+	if (!curtain) { return; }
+
+	var hold = parseInt(curtain.getAttribute('data-ms'), 10) || 2000;
+	var transitions = curtain.getAttribute('data-transitions') === '1';
+	var oncePerVisit = curtain.getAttribute('data-once') === '1';
+	var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	function seen() {
+		try {
+			return window.sessionStorage.getItem('ssSeenPreloader') === '1';
+		} catch (e) {
+			return false;
+		}
+	}
+
+	function remember() {
+		try {
+			window.sessionStorage.setItem('ssSeenPreloader', '1');
+		} catch (e) { /* private window — show it again, no harm done. */ }
+	}
+
+	function lift() {
+		curtain.classList.remove('is-back');
+		curtain.classList.add('is-done');
+		document.documentElement.classList.remove('ss-loading');
+	}
+
+	// Already shown this visit, and the shop owner only wants it once.
+	if (oncePerVisit && seen()) {
+		curtain.style.animation = 'none';
+		curtain.style.display = 'none';
+		document.documentElement.classList.remove('ss-loading');
+		return;
+	}
+
+	remember();
+	document.documentElement.classList.add('ss-loading');
+
+	var started = Date.now();
+
+	function done() {
+		// Serve the full hold even on a fast load, so it reads as deliberate
+		// rather than as a flicker.
+		setTimeout(lift, Math.max(0, hold - (Date.now() - started)));
+	}
+
+	if (document.readyState === 'complete') {
+		done();
+	} else {
+		window.addEventListener('load', done);
+	}
+
+	// A hard safety net: never leave the curtain up because something stalled.
+	setTimeout(lift, hold + 4000);
+
+	/* --- Between pages --- */
+	if (!transitions || calm) { return; }
+
+	function sameSite(link) {
+		return link.protocol === window.location.protocol && link.host === window.location.host;
+	}
+
+	document.addEventListener('click', function (e) {
+		if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) { return; }
+
+		var link = e.target.closest('a[href]');
+
+		if (!link || link.target === '_blank' || link.hasAttribute('download') || !sameSite(link)) { return; }
+
+		var href = link.getAttribute('href') || '';
+
+		// An anchor, a mailto/tel, or a control that only looks like a link.
+		if (href.charAt(0) === '#' || /^(mailto|tel|javascript|#)/i.test(href)) { return; }
+
+		// Same page, different hash.
+		if (link.pathname === window.location.pathname && link.search === window.location.search && link.hash) { return; }
+
+		// Add to cart and the like navigate but should not feel like a page load.
+		if (link.classList.contains('add_to_cart_button') || link.hasAttribute('data-no-curtain')) { return; }
+
+		curtain.classList.remove('is-done');
+		curtain.classList.add('is-back');
+		document.documentElement.classList.add('ss-loading');
+
+		// If the navigation never happens — a cancelled download, a blocked
+		// popup — do not strand the visitor behind the curtain.
+		setTimeout(lift, 6000);
+	});
+
+	// Coming back through the browser's cache, the curtain must not stay down.
+	window.addEventListener('pageshow', function (e) {
+		if (e.persisted) { lift(); }
+	});
+}());

@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SS_VERSION', '1.3.3' );
+define( 'SS_VERSION', '1.4.0' );
 define( 'SS_DIR', get_template_directory() );
 define( 'SS_URI', get_template_directory_uri() );
 
@@ -366,6 +366,7 @@ require_once SS_DIR . '/inc/defaults.php';
 require_once SS_DIR . '/inc/legal-content.php';
 require_once SS_DIR . '/inc/helpers.php';
 require_once SS_DIR . '/inc/icons.php';
+require_once SS_DIR . '/inc/branding.php';
 require_once SS_DIR . '/inc/nav-walker.php';
 require_once SS_DIR . '/inc/customizer.php';
 require_once SS_DIR . '/inc/dynamic-css.php';

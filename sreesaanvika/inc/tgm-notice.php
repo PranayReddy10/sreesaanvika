@@ -326,6 +326,32 @@ function ss_welcome_screen() {
 		<?php endif; ?>
 
 		<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">
+			<h2><?php esc_html_e( 'Delivery tracking', 'sreesaanvika' ); ?></h2>
+
+			<?php if ( class_exists( 'SSD_Shipment' ) ) : ?>
+				<p style="color:#1a7f5a">✓ <?php esc_html_e( 'Sree Saanvika Delivery is active.', 'sreesaanvika' ); ?></p>
+				<p>
+					<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=ssd-settings' ) ); ?>">
+						<?php esc_html_e( 'Delivery settings', 'sreesaanvika' ); ?>
+					</a>
+					<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=ssd-import' ) ); ?>">
+						<?php esc_html_e( 'Import tracking numbers', 'sreesaanvika' ); ?>
+					</a>
+				</p>
+			<?php else : ?>
+				<p>
+					<?php esc_html_e( 'The theme ships with a companion plugin, Sree Saanvika Delivery. It records the courier\'s tracking number and delivery status on each order, shows the shopper a progress line on the order page and under Track Your Order, and takes status pushes straight from your delivery app.', 'sreesaanvika' ); ?>
+				</p>
+				<p>
+					<?php esc_html_e( 'Install sreesaanvika-delivery.zip under Plugins → Add New → Upload Plugin.', 'sreesaanvika' ); ?>
+				</p>
+				<a class="button" href="<?php echo esc_url( admin_url( 'plugin-install.php?tab=upload' ) ); ?>">
+					<?php esc_html_e( 'Upload the plugin', 'sreesaanvika' ); ?>
+				</a>
+			<?php endif; ?>
+		</div>
+
+		<div class="card" style="max-width:820px;padding:8px 22px 22px;margin-top:20px">
 			<h2><?php esc_html_e( 'Editing the homepage', 'sreesaanvika' ); ?></h2>
 
 			<p>

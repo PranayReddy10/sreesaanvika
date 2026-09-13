@@ -18,6 +18,9 @@ marigold throughout: there is no white background anywhere in the theme.
    It never overwrites a page or menu you already have.
 5. Open the **Customizer → Sree Saanvika Options** to set your hero slides,
    banners, colours, contact details and social links.
+6. Optional: install `sreesaanvika-delivery.zip` under **Plugins → Add New →
+   Upload Plugin** for courier tracking on every order. See
+   [Delivery tracking](#delivery-tracking-companion-plugin).
 
 Requires WordPress 6.0+, PHP 7.4+ and WooCommerce 7.0+.
 
@@ -241,6 +244,44 @@ query is rebuilt and validated server side.
 
 ---
 
+## Logo, site icon and the loading screen
+
+The theme ships its own mark: a gold medallion with the Sree Saanvika **S**,
+drawn as SVG so it stays sharp at any size.
+
+| File | Where it is used |
+| --- | --- |
+| `assets/images/logo.svg` | The full lockup — medallion, name, tagline |
+| `assets/images/mark.svg` | The medallion alone, and the loading screen |
+| `assets/images/favicon.svg` | The browser tab, at a weight that survives 16px |
+| `assets/images/icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon-32.png` | Bookmarks, home screens, older browsers |
+
+The browser-tab icon appears on its own — nothing to set up. Upload your own
+under **Settings → General → Site Icon** and WordPress's takes over. To use the
+lockup in the header instead of the CSS wordmark, set it under **Customizer →
+Site Identity → Logo**.
+
+### The loading screen
+
+A full-screen gold medallion curtain while a page loads. It comes down again
+when a shopper follows a link, so moving around the shop feels like one piece
+rather than a series of white flashes.
+
+**Customizer → Sree Saanvika Options → Loading Screen** turns it off at any
+time, and controls:
+
+- how long it stays (2000ms by default),
+- whether it also shows between pages,
+- whether a returning shopper sees it only once per visit,
+- the name printed on it.
+
+It is built so it can never trap anybody: the fade-out is a CSS animation with
+the duration baked in, so it leaves on its own even with JavaScript off, and
+there is a hard timeout behind that. A visitor who has asked their system for
+reduced motion gets it without the moving parts, and no curtain between pages.
+
+---
+
 ## Colour galleries — one saree, two colourways
 
 A saree photographed in green and in red is one product with two sets of
@@ -289,6 +330,57 @@ a colour that spans six sizes only needs its photos attached once.
 
 ---
 
+## Delivery tracking (companion plugin)
+
+`sreesaanvika-delivery.zip` is a separate plugin — install it under **Plugins →
+Add New → Upload Plugin**. It is built for a shop that uses **one courier** and
+already sees every order in that courier's own app; it puts the same
+information on the website so customers stop emailing to ask.
+
+**On each order.** A Delivery panel with the status, consignment number,
+courier, expected date and a running history. A Delivery column and two bulk
+actions on the orders list.
+
+**What the customer sees.** A progress line — Order placed → Packed →
+Dispatched → In transit → Out for delivery → Delivered — on the thank-you page,
+in My Account, and under the theme's Track Your Order form. One WooCommerce
+hook covers all three, so there is nothing to place by hand. `[sreesaanvika_tracking]`
+puts a standalone tracker on any page, which asks for the order number plus the
+email or phone from the order so nobody can read an order by guessing numbers.
+
+**Getting the status in.** Three ways, use whichever fits:
+
+1. **A push from your delivery app** — the website updates the moment the app
+   does. `POST /wp-json/sreesaanvika-delivery/v1/shipment` with an `X-SSD-Key`
+   header:
+
+   ```
+   { "order_number": "1234", "tracking": "ABC123456789",
+     "status": "out", "location": "Falaknuma, Hyderabad" }
+   ```
+
+   Send only what changed — a status push will not wipe a tracking number.
+   `awb`, `waybill` and `tracking_id` are accepted as aliases, `time` takes
+   epoch seconds or an ISO date, and `/shipments` takes a batch. The key is on
+   **WooCommerce → Delivery**, along with a ready-made curl example; a request
+   without it is refused.
+2. **The courier's CSV manifest** — **WooCommerce → Import tracking** takes the
+   two-column file (order number, consignment number) most couriers hand back
+   after a pickup.
+3. **By hand** on the order, for the occasional parcel.
+
+**Settings** (WooCommerce → Delivery): the courier and its tracking link
+(presets for Delhivery, Blue Dart, DTDC, XpressBees, Ecom Express, Shadowfax,
+Ekart, Shiprocket, Trackon and India Post, or type your own with `{tracking}`),
+your support phone and email, the delivery promise shown before a parcel moves,
+and whether to email the customer on dispatch and on delivery.
+
+Works with WooCommerce's High-Performance Order Storage, and looks right under
+any theme — it takes the theme's colours when they exist and falls back to its
+own dark styling when they do not.
+
+---
+
 ## Customizer reference
 
 Everything lives under **Sree Saanvika Options**:
@@ -311,6 +403,7 @@ Everything lives under **Sree Saanvika Options**:
 - **Footer** — about text, address, phone, email, hours, copyright, five
   social URLs and the Instagram handle.
 - **Typography** — heading font, base size, corner rounding, content width.
+- **Loading Screen** — on/off, how long, between pages, once per visit, the name.
 
 ---
 
@@ -385,7 +478,7 @@ sreesaanvika/
 ├── assets/
 │   ├── css/  main.css, shop.css, editor.css
 │   ├── js/   theme.js, shop.js, customizer.js, admin-color-gallery.js
-│   └── images/ SVG placeholders
+│   └── images/ logo, mark, favicons, SVG placeholders
 ├── inc/
 │   ├── helpers.php           Options, colour map, small utilities
 │   ├── icons.php             Inline SVG icon set
@@ -396,6 +489,7 @@ sreesaanvika/
 │   ├── ajax.php              Quick view, search, cart, auth, newsletter
 │   ├── compare-wishlist.php  List storage and the compare table data
 │   ├── woocommerce.php       Shop integration and cart fragments
+│   ├── branding.php          Logo assets, site icon, the loading screen
 │   ├── color-gallery.php     Per-colour image sets and the editor panel
 │   ├── seo.php               Meta tags, Open Graph and JSON-LD
 │   ├── legal-content.php     The four policy documents
