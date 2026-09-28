@@ -102,6 +102,8 @@ function ss_defaults() {
 		'products_per_section' => 8,
 		'cats_count'           => 5,
 		'cats_slugs'           => '',
+		'cats_source'          => 'categories',
+		'cats_products'        => '',
 		'catrail_count'        => 10,
 		'catrail_slugs'        => '',
 		'catrail_top_level'    => false,

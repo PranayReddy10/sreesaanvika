@@ -240,7 +240,20 @@ class SSO_Bundle_Display {
 		$suggest = array_slice( $suggest, 0, 4, true );
 		?>
 		<section class="sso-goeswith">
-			<h2><?php esc_html_e( 'Goes with what is in your bag', 'sreesaanvika-offers' ); ?></h2>
+			<h2>
+				<?php
+				echo esc_html(
+					/**
+					 * The heading over the cart's matching pieces.
+					 *
+					 * @param string $heading Heading text.
+					 */
+					apply_filters( 'sso_cart_matches_heading', __( 'Complete your look', 'sreesaanvika-offers' ) )
+				);
+				?>
+			</h2>
+
+			<p class="sso-goeswith__sub"><?php esc_html_e( 'Chosen to go with the pieces in your bag', 'sreesaanvika-offers' ); ?></p>
 
 			<ul class="sso-goeswith__items">
 				<?php foreach ( $suggest as $match_id => $lead_id ) : ?>

@@ -319,6 +319,7 @@ td.product-subtotal del { opacity: 0.55; margin-right: 6px; }
 
 .sso-look__name {
 	display: block;
+	text-transform: none;
 	margin-top: 9px;
 	font-size: 0.82rem;
 	line-height: 1.35;
@@ -388,7 +389,13 @@ td.product-subtotal del { opacity: 0.55; margin-right: 6px; }
 }
 
 /* --- The cart rail --- */
-.sso-goeswith h2 { margin-bottom: 18px; }
+.sso-goeswith h2 { margin-bottom: 4px; }
+
+.sso-goeswith__sub {
+	margin: 0 0 18px;
+	font-size: 0.86rem;
+	color: var(--sso-mute);
+}
 
 .sso-goeswith__items {
 	list-style: none;
@@ -413,6 +420,7 @@ td.product-subtotal del { opacity: 0.55; margin-right: 6px; }
 
 .sso-goeswith__name {
 	display: block;
+	text-transform: none;
 	margin: 9px 0 4px;
 	font-size: 0.82rem;
 	line-height: 1.35;
@@ -443,6 +451,83 @@ td.product-subtotal del { opacity: 0.55; margin-right: 6px; }
 	.sso-look__total { flex: 1 1 100%; }
 	.sso-look__item { flex: 0 1 118px; }
 	.sso-look__plus { padding-bottom: 22px; }
+}
+
+/*
+ * The + between the pieces only reads while they sit on one line. Once they
+ * wrap it lands at the start of a row pointing at nothing, so below this width
+ * the pieces become an even grid and the + signs go.
+ */
+@media (max-width: 600px) {
+	.sso-look__items {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+		gap: 10px;
+	}
+
+	.sso-look__plus { display: none; }
+	.sso-look__item { flex: none; }
+	.sso-look__name { font-size: 0.76rem; }
+	.sso-look__price { font-size: 0.8rem; }
+	.sso-look__badge { font-size: 0.5rem; letter-spacing: 0.06em; }
+}
+
+/*
+ * On a phone the cart's matching pieces become a list rather than a grid of
+ * tiles. Four 3:4 tiles two-across is most of a screen of suggestions under a
+ * cart the shopper is trying to get through.
+ */
+@media (max-width: 600px) {
+	.sso-goeswith__items {
+		display: block;
+		gap: 0;
+	}
+
+	.sso-goeswith__item {
+		display: grid;
+		grid-template-columns: 58px minmax(0, 1fr) auto;
+		grid-template-areas:
+			"thumb name  add"
+			"thumb price add";
+		align-items: center;
+		column-gap: 12px;
+		padding: 12px 0;
+		border-bottom: 1px solid var(--sso-line);
+	}
+
+	.sso-goeswith__item:last-child { border-bottom: 0; padding-bottom: 0; }
+	.sso-goeswith__item:first-child { padding-top: 0; }
+
+	.sso-goeswith__thumb {
+		grid-area: thumb;
+		width: 58px;
+		align-self: start;
+	}
+
+	.sso-goeswith__name {
+		grid-area: name;
+		margin: 0;
+		align-self: end;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.sso-goeswith__price {
+		grid-area: price;
+		align-self: start;
+		margin-top: 2px;
+	}
+
+	.sso-goeswith__add {
+		grid-area: add;
+		width: auto;
+		margin: 0;
+		white-space: nowrap;
+		padding-left: 18px;
+		padding-right: 18px;
+	}
 }
 
 /* --- Quantity breaks --- */

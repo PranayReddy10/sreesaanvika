@@ -70,6 +70,12 @@ function ss_customize_register( $wp_customize ) {
 			$wp_customize->add_control(
 				new WP_Customize_Image_Control( $wp_customize, 'ss_' . $id, $args )
 			);
+		} elseif ( 'picker' === $type && class_exists( 'SS_Customize_Picker' ) ) {
+			unset( $args['type'] );
+
+			$wp_customize->add_control(
+				new SS_Customize_Picker( $wp_customize, 'ss_' . $id, $args )
+			);
 		} else {
 			$wp_customize->add_control( 'ss_' . $id, $args );
 		}
@@ -232,32 +238,63 @@ function ss_customize_register( $wp_customize ) {
 		);
 	}
 
+	/* -- The collections mosaic -- */
+	$add(
+		'cats_source',
+		array(
+			'label'       => __( 'The collections — show', 'sreesaanvika' ),
+			'description' => __( 'The big mosaic under the hero. Categories send a shopper browsing; products send them straight to one piece.', 'sreesaanvika' ),
+			'section'     => 'ss_home',
+			'type'        => 'select',
+			'choices'     => array(
+				'categories' => __( 'Categories', 'sreesaanvika' ),
+				'products'   => __( 'Chosen products', 'sreesaanvika' ),
+			),
+		),
+		'ss_sanitize_choice'
+	);
+
 	$add(
 		'cats_slugs',
 		array(
-			'label'       => __( 'Category mosaic — which categories', 'sreesaanvika' ),
-			'description' => __( 'Category slugs, comma separated, in the order you want them. Leave empty to use the busiest categories automatically.', 'sreesaanvika' ),
+			'label'       => __( 'The collections — which categories', 'sreesaanvika' ),
+			'description' => __( 'Search, tick, and drag into the order they should appear. Leave empty to use the busiest categories automatically.', 'sreesaanvika' ),
 			'section'     => 'ss_home',
-			'type'        => 'textarea',
+			'type'        => 'picker',
+			'entity'      => 'product_cat',
 		),
 		'sanitize_textarea_field'
 	);
 
-	$add( 'cats_count', array( 'label' => __( 'Category mosaic — how many (automatic)', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 1, 'max' => 20 ) ), 'absint' );
+	$add(
+		'cats_products',
+		array(
+			'label'       => __( 'The collections — which products', 'sreesaanvika' ),
+			'description' => __( 'Used when the mosaic is set to products. Search, choose, and drag into order.', 'sreesaanvika' ),
+			'section'     => 'ss_home',
+			'type'        => 'picker',
+			'entity'      => 'product',
+		),
+		'sanitize_textarea_field'
+	);
 
+	$add( 'cats_count', array( 'label' => __( 'The collections — how many (automatic)', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 1, 'max' => 20 ) ), 'absint' );
+
+	/* -- Shop by category rail -- */
 	$add(
 		'catrail_slugs',
 		array(
-			'label'       => __( 'Category rail — which categories', 'sreesaanvika' ),
-			'description' => __( 'Same idea: slugs in order, or empty for automatic.', 'sreesaanvika' ),
+			'label'       => __( 'Shop by category — which categories', 'sreesaanvika' ),
+			'description' => __( 'The round rail. Search, tick, and drag into order. Leave empty for the busiest categories.', 'sreesaanvika' ),
 			'section'     => 'ss_home',
-			'type'        => 'textarea',
+			'type'        => 'picker',
+			'entity'      => 'product_cat',
 		),
 		'sanitize_textarea_field'
 	);
 
-	$add( 'catrail_count', array( 'label' => __( 'Category rail — how many (automatic)', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 30 ) ), 'absint' );
-	$add( 'catrail_top_level', array( 'label' => __( 'Category rail — top-level categories only', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
+	$add( 'catrail_count', array( 'label' => __( 'Shop by category — how many (automatic)', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 30 ) ), 'absint' );
+	$add( 'catrail_top_level', array( 'label' => __( 'Shop by category — top-level categories only', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
 
 	$add( 'loadmore', array( 'label' => __( 'Show a "Load more" button under product sections', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'checkbox' ), 'ss_sanitize_bool' );
 	$add( 'loadmore_step', array( 'label' => __( 'How many more each click loads', 'sreesaanvika' ), 'section' => 'ss_home', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 24 ) ), 'absint' );

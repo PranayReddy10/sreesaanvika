@@ -4,7 +4,7 @@ Tags: woocommerce, bogo, offers, discount, india
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,8 +33,9 @@ nothing for them to claim.
 the pieces that go with it — the jhumkas for a saree, the bangles, a matching
 blouse. They appear under the product with tick boxes, a running total and one
 button that puts the whole look in the bag, and again in the cart as a
-reminder. Give the pairing a percentage and the matching pieces are discounted
-when they are bought with the product they were chosen for.
+reminder under **Complete your look**. Give the pairing a percentage and the
+matching pieces are discounted when they are bought with the product they were
+chosen for.
 
 Works with WooCommerce's High-Performance Order Storage. The discount is worked
 out on the server, so it applies with JavaScript switched off.

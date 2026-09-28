@@ -282,6 +282,30 @@ reduced motion gets it without the moving parts, and no curtain between pages.
 
 ---
 
+## Choosing what the homepage shows
+
+Two sections read from the category list, and both are picked the same way in
+**Customizer → Sree Saanvika Options → Homepage Sections**: type a few letters,
+tick the ones you want, and drag them into the order they should appear.
+Nothing chosen means the busiest categories, automatically.
+
+| Section | Setting |
+| --- | --- |
+| **The collections** — the big mosaic under the hero | *The collections — which categories* |
+| **Shop by category** — the round rail | *Shop by category — which categories* |
+
+### The collections can show products instead
+
+Set **The collections — show** to *Chosen products* and the mosaic switches from
+categories to a hand-picked set of products, with the price under each name and
+a link straight to the piece rather than to a listing. Same picker, same
+dragging, same tiles — useful for a festival edit or a handful of new arrivals
+you want on the front page by name.
+
+Leave it on *Categories* and nothing changes.
+
+---
+
 ## Colour galleries — one saree, two colourways
 
 A saree photographed in green and in red is one product with two sets of
@@ -474,8 +498,10 @@ Tick **show this product on the matching products' pages too** and the pairing
 works both ways — pick the jewellery on the saree once, and the saree turns up
 beside the jewellery as well.
 
-In the cart, *Goes with what is in your bag* shows the matches for whatever is
-in there, with an Add button on each.
+In the cart, **Complete your look** shows the matches for whatever is in there,
+with an Add button on each — a tile grid on a desktop, and a compact list with
+small thumbnails on a phone, where four 3:4 tiles would be most of a screen.
+`sso_cart_matches_heading` filters the wording.
 
 The discount is worked out on the server during WooCommerce's own totals pass,
 so it holds with JavaScript off, survives a page reload, and cannot be applied
