@@ -2,13 +2,13 @@
 #
 # Package the theme into an importable WordPress ZIP.
 #
-#   ./build.sh            → sreesaanvika.zip
-#   ./build.sh dist/      → dist/sreesaanvika.zip
+#   ./build.sh            → ojasvidrapes.zip
+#   ./build.sh dist/      → dist/ojasvidrapes.zip
 #
 set -euo pipefail
 
-THEME="sreesaanvika"
-PLUGINS=("sreesaanvika-delivery" "sreesaanvika-offers")
+THEME="ojasvidrapes"
+PLUGINS=("ojasvidrapes-delivery" "ojasvidrapes-offers")
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${1:-$ROOT}"
 OUT="$OUT_DIR/$THEME.zip"

@@ -1,0 +1,815 @@
+# Ojasvi Drapes
+
+A dark-luxe WordPress + WooCommerce theme built for **ojasvidrapes.in** — handloom
+sarees, temple jewellery and festive dresses. Deep aubergine, antique gold and
+marigold throughout: there is no white background anywhere in the theme.
+
+---
+
+## Installing
+
+1. In WordPress go to **Appearance → Themes → Add New → Upload Theme**.
+2. Choose `ojasvidrapes.zip` and press **Install Now**, then **Activate**.
+3. Install and activate **WooCommerce** if you have not already — the shop,
+   cart, product pages, compare and wishlist all depend on it.
+4. Go to **Appearance → Ojasvi Drapes** and press **Run one-click setup**.
+   That creates the Compare, Wishlist, Sign In, Lookbook, Our Story, Contact
+   and FAQs pages and builds a primary menu from your product categories.
+   It never overwrites a page or menu you already have.
+5. Open the **Customizer → Ojasvi Drapes Options** to set your hero slides,
+   banners, colours, contact details and social links.
+6. Optional: install the two companion plugins under **Plugins → Add New →
+   Upload Plugin** — `ojasvidrapes-delivery.zip` for courier tracking on every
+   order, and `ojasvidrapes-offers.zip` for Buy 2 Get 1 Free.
+
+Requires WordPress 6.0+, PHP 7.4+ and WooCommerce 7.0+.
+
+---
+
+## What's in it
+
+### Homepage
+Sixteen sections, each of which can be switched off individually in
+**Customizer → Ojasvi Drapes Options → Homepage — Sections**:
+
+| Section | What it shows |
+| --- | --- |
+| Hero slider | Up to 3 slides, Ken Burns backgrounds, swipe on touch |
+| Trust strip | Shipping, certification, returns, support |
+| Category rail | Round gold-ringed category circles |
+| Category mosaic | Asymmetric tile grid from your product categories |
+| New arrivals | Newest products |
+| Offer banners | Two configurable promo panels |
+| Best sellers | Ordered by `total_sales` |
+| Deal of the day | On-sale products with a live countdown |
+| Saree spotlight | Products in the `sarees` category |
+| Jewellery spotlight | Products in the `jewellery` category |
+| Lookbook strip | Editorial image grid |
+| Story band | Full-bleed parallax band |
+| Reviews | Real WooCommerce reviews, with a curated fallback |
+| Journal | Latest blog posts |
+| Instagram grid | Recent media |
+| Newsletter | AJAX sign-up, stored in an option or piped to your list plugin |
+
+### Product detail page
+- Custom gallery: vertical thumbnail rail, hover magnifier, full-screen
+  lightbox with a filmstrip, keyboard arrows and swipe.
+- Colour swatches and size chips generated from the product's attributes.
+  The native WooCommerce `<select>` stays in the DOM (visually hidden) so
+  validation, price updates and the no-JS fallback all keep working.
+- Price block with the saving spelled out, an offers panel, a low-stock
+  meter, a PIN-code delivery checker, trust badges and a share row.
+- Tabs for Description, Specifications, Care & Handling, Shipping & Returns
+  and Reviews (with a star-distribution breakdown).
+- Sticky add-to-cart bar on mobile, and a slide-in size guide.
+
+### Shop
+- Grid and list views, remembered per visitor.
+- Filter sidebar: categories, a dual-handle price slider, colour swatches,
+  size chips, any other attribute and a rating filter. Registered widgets in
+  the *Shop Filters Sidebar* replace the built-in set when present.
+- Product cards: second-image hover swap, badges (sale %, new, bestseller,
+  trending, sold out), swatches, stock meter, AJAX add to bag, and hover
+  buttons for wishlist, compare and quick view.
+
+### Other pages
+- **Cart** — card-based rows, live quantity updates, coupon box, savings
+  line, free-shipping meter and a sticky summary. Empty state shows your
+  wishlist.
+- **Checkout** — three-step indicator, two-column layout, dark payment box.
+- **Sign in / Sign up** — split-screen page template with tabbed panes,
+  password reveal, a strength meter and AJAX submission. The WooCommerce
+  My Account login is styled to match.
+- **Compare** — sticky-header table across price, rating, availability,
+  fabric, colours, occasion, work, blouse, length, weight and wash care,
+  plus a floating compare bar.
+- **Wishlist** — cookie-backed for guests, user meta for members, merged
+  automatically on login.
+- **Track Order** (WooCommerce's order lookup, styled, with support details
+  beside it), Lookbook, Our Story, Contact, FAQs, 404, search, blog, archive
+  and single-post templates.
+
+---
+
+## Editing the homepage
+
+There are two ways, and you pick one.
+
+### A — keep the theme homepage (fastest)
+
+The storefront homepage is assembled in PHP from Customizer options. Edit it at
+**Appearance → Customize → Ojasvi Drapes Options**:
+
+| What you want to change | Where |
+| --- | --- |
+| Hero slides — text, buttons, images, alignment | Homepage — Hero Slider |
+| Which sections show, and how many products each | Homepage — Sections |
+| The two offer banners, countdown, story band | Homepage — Offer Banners |
+| Colours, fonts, corner rounding, page width | Colours & Palette, Typography |
+| Announcement bar, brand tagline | Header & Top Bar |
+| Address, phone, socials, Instagram handle | Footer |
+
+Section order is fixed in this mode. Nothing extra loads, so it stays fast.
+
+### B — rebuild it in Elementor (drag and drop)
+
+**Appearance → Ojasvi Drapes → Build an Elementor copy of the homepage.**
+
+That creates a real Elementor page holding the same sections in the same
+order, seeded with your current Customizer values, so it looks identical the
+moment you open it — then you can drag, drop, restyle and reorder freely.
+
+A new page is always created; your current homepage is never overwritten. Tick
+the box on that screen to make it the homepage straight away, or leave it
+unticked, review the page, and switch later under **Settings → Reading**. To go
+back to the theme homepage, set Settings → Reading back to your old page.
+
+Every section is also available on its own, under the **Ojasvi Drapes**
+category in the Elementor widget panel:
+
+| Widget | What it is |
+| --- | --- |
+| Hero Slider | Full-bleed slides with eyebrow, gilded title, two buttons |
+| Product Grid | Newest / best sellers / on sale / featured / top rated / random, optionally filtered to one category |
+| Category Rail | Round gold-ringed category circles |
+| Category Mosaic | The asymmetric tile grid |
+| Offer Banner | One promo panel, with an optional countdown |
+| Lookbook Strip | Editorial image grid, from a gallery or your products |
+| Story Band | Full-bleed band with a centred message |
+| Trust Strip | Shipping / returns / support icons |
+| Testimonials | Written by hand, or pulled from WooCommerce reviews |
+| Instagram Grid | From a gallery or your newest media |
+| Newsletter | The AJAX sign-up form |
+| Section Heading | The eyebrow + gilded title + lotus ornament block |
+
+Two notes on using them:
+
+- Put the **Hero Slider** and the **Story Band** in a section set to
+  *Full Width* with *no gap* — both are designed to bleed edge to edge.
+- Widgets output the bare component with no width wrapper of their own, so
+  Elementor's section controls own the width and vertical spacing.
+
+---
+
+## SEO
+
+The theme handles metadata itself, and gets out of the way the moment a
+dedicated plugin appears. It checks for Yoast, Rank Math, SEOPress, All in One
+SEO and The SEO Framework; if any is active it stops emitting meta, Open Graph
+and schema so nothing is ever duplicated.
+
+What it outputs on its own:
+
+- Meta description, drawn from the product short description, the excerpt, the
+  term description or the homepage default, trimmed on a word boundary to 155
+  characters.
+- Canonical URL, skipped on paged archives.
+- Open Graph and X/Twitter cards, including `product:price:amount` and
+  `product:availability` on product pages. The card upgrades to
+  `summary_large_image` once a share image exists.
+- JSON-LD: your organisation (with contact point, address and social profiles),
+  the site with a `SearchAction`, a `BreadcrumbList`, and `BlogPosting` on
+  articles. Products are deliberately left to WooCommerce, which already emits
+  them — the theme enriches that output instead through
+  `woocommerce_structured_data_product`, adding brand, material,
+  `hasMerchantReturnPolicy` and `shippingDetails` built from your policy
+  settings. Those two are what Google's shopping surfaces look for.
+
+What it does **regardless** of any SEO plugin, because a plugin cannot know
+which of the theme's templates are transactional:
+
+- `noindex, follow` on cart, checkout, account, compare, wishlist, sign-in,
+  search results and 404.
+- The same pages excluded from the core WordPress sitemap.
+- Your search-console verification codes.
+
+Settings live in **Customizer → SEO & Social Sharing**. Useful filters:
+`od_seo_description`, `od_seo_image`, `od_seo_noindex`, `od_seo_schema_graph`,
+`od_seo_plugin_active`.
+
+---
+
+## Policy pages
+
+Privacy Policy, Terms & Conditions, Shipping Policy and Return & Refund Policy
+are created by the one-click setup with a full draft written for an Indian
+direct-to-consumer store — GST-inclusive pricing, COD, DPDP Act 2023 rights, a
+named grievance officer, and Consumer Protection (E-Commerce) Rules 2020
+redressal timelines.
+
+> **These are drafts, not legal advice.** They have not been reviewed by a
+> lawyer and cannot know the specifics of your business. Have someone qualified
+> read them before you take real orders.
+
+They share one template that gives you a highlights strip, a contents rail
+built automatically from the `<h2>` headings (with a scroll-spy), a
+last-updated stamp and cross-links to the other policies. Add or remove
+headings in the editor and the contents rail follows.
+
+The numbers in the text come from **Customizer → Policies & Legal** — return
+window, free-shipping threshold, flat rate, COD limit, business name, GSTIN,
+jurisdiction and grievance officer. Change a figure there and it updates in the
+copy *and* in the product structured data Google reads. Placeholders available
+to the default copy: `{business}`, `{site}`, `{domain}`, `{email}`, `{phone}`,
+`{address}`, `{hours}`, `{days}`, `{threshold}`, `{flat}`, `{cod}`,
+`{jurisdiction}`, `{officer}`, `{gstin}`.
+
+Once created the pages are ordinary WordPress pages — edit the text however you
+like, and the template keeps working.
+
+---
+
+## Homepage categories and Load more
+
+**Choosing categories.** The mosaic and the round rail pick the busiest
+categories automatically, which is right on a fresh install and wrong once you
+have a proper catalogue. Both now take a list of slugs in
+**Customizer → Homepage — Sections** — comma separated, in the order you want
+them shown. Leave it empty for automatic, and set the count separately.
+
+The mosaic tiles any number of categories: it leads with the tall hero tile and
+then fills whole rows, so a row is never left with a hole beside it. Verified
+for 1 through 20 tiles.
+
+**Load more.** Product sections show a "Load more" button when there are more
+products than the section displays, appending the next batch in place rather
+than sending shoppers to another page. Turn it off, or change how many each
+click loads, in the same Customizer section. The Elementor Product Grid widget
+has its own switch for it.
+
+The browser never sends query arguments — the button carries a whitelisted
+section key (or the source and category a widget was configured with) and the
+query is rebuilt and validated server side.
+
+
+---
+
+## Logo, site icon and the loading screen
+
+The theme ships its own mark: a gold medallion with the Ojasvi Drapes **S**,
+drawn as SVG so it stays sharp at any size.
+
+| File | Where it is used |
+| --- | --- |
+| `assets/images/logo.svg` | The full lockup — medallion, name, tagline |
+| `assets/images/mark.svg` | The medallion alone, and the loading screen |
+| `assets/images/favicon.svg` | The browser tab, at a weight that survives 16px |
+| `assets/images/icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon-32.png` | Bookmarks, home screens, older browsers |
+
+The browser-tab icon appears on its own — nothing to set up. Upload your own
+under **Settings → General → Site Icon** and WordPress's takes over. To use the
+lockup in the header instead of the CSS wordmark, set it under **Customizer →
+Site Identity → Logo**.
+
+### The loading screen
+
+A full-screen gold medallion curtain while a page loads. It comes down again
+when a shopper follows a link, so moving around the shop feels like one piece
+rather than a series of white flashes.
+
+**Customizer → Ojasvi Drapes Options → Loading Screen** turns it off at any
+time, and controls:
+
+- how long it stays (2000ms by default),
+- whether it also shows between pages,
+- whether a returning shopper sees it only once per visit,
+- the name printed on it.
+
+It is built so it can never trap anybody: the fade-out is a CSS animation with
+the duration baked in, so it leaves on its own even with JavaScript off, and
+there is a hard timeout behind that. A visitor who has asked their system for
+reduced motion gets it without the moving parts, and no curtain between pages.
+
+---
+
+## Choosing what the homepage shows
+
+Two sections read from the category list, and both are picked the same way in
+**Customizer → Ojasvi Drapes Options → Homepage Sections**: type a few letters,
+tick the ones you want, and drag them into the order they should appear.
+Nothing chosen means the busiest categories, automatically.
+
+| Section | Setting |
+| --- | --- |
+| **The collections** — the big mosaic under the hero | *The collections — which categories* |
+| **Shop by category** — the round rail | *Shop by category — which categories* |
+
+### The collections can show products instead
+
+Set **The collections — show** to *Chosen products* and the mosaic switches from
+categories to a hand-picked set of products, with the price under each name and
+a link straight to the piece rather than to a listing. Same picker, same
+dragging, same tiles — useful for a festival edit or a handful of new arrivals
+you want on the front page by name.
+
+Leave it on *Categories* and nothing changes.
+
+---
+
+## Colour galleries — one saree, two colourways
+
+A saree photographed in green and in red is one product with two sets of
+photos, and WooCommerce on its own only ever swaps a single image. The theme
+handles the whole set.
+
+**On the product page.** Picking a colour replaces the gallery — stage image,
+thumbnails, zoom layer and lightbox strip all switch to that colour's photos.
+Clearing the selection brings the product's own gallery back.
+
+**The swatch itself becomes a photo.** A colour that has images shows the first
+one, with the colour name across the bottom, instead of a flat circle — far
+easier to choose between two similar greens. A colour with no images keeps the
+circle.
+
+**On product cards.** The swatches under a card's price are live. Clicking one
+repaints the card with that colour's photo; a colour with no photo of its own
+opens the product with the colour already selected.
+
+### Where the images come from
+
+**The variation's own photos — nothing to fill in twice.** Each colour's images
+are read straight from that colour's variation: its main image first, then its
+variation gallery. Set them once under Product data → Variations, the way you
+already would, and the shop picks them up.
+
+That covers WooCommerce's own variation gallery and the usual gallery plugins.
+If yours stores its images under some other meta key, add it:
+
+```php
+add_filter( 'od_variation_gallery_meta_keys', function ( $keys ) {
+    $keys[] = '_my_plugin_variation_images';
+    return $keys;
+} );
+```
+
+**Products → edit a product → Colour galleries** is an override, not a second
+place to do the same work. Each row shows the photos that colour is already
+using and where they came from; you only touch it to make a colour show
+*different* photos on the shop than on its variation. "Go back to the variation
+photos" undoes an override.
+
+The panel appears once the product has a **Color**, **Colour** or **Shade**
+attribute saved. Overrides are stored per colour rather than per variation, so
+a colour that spans six sizes only needs its photos attached once.
+
+---
+
+## Delivery tracking (companion plugin)
+
+`ojasvidrapes-delivery.zip` is a separate plugin — install it under **Plugins →
+Add New → Upload Plugin**. It is built for a shop that uses **one courier** and
+already sees every order in that courier's own app; it puts the same
+information on the website so customers stop emailing to ask.
+
+**On each order.** A Delivery panel with the status, consignment number,
+courier, expected date and a running history. A Delivery column and two bulk
+actions on the orders list.
+
+**What the customer sees.** A progress line — Order placed → Packed →
+Dispatched → In transit → Out for delivery → Delivered — on the thank-you page,
+in My Account, and under the theme's Track Your Order form. One WooCommerce
+hook covers all three, so there is nothing to place by hand. `[ojasvidrapes_tracking]`
+puts a standalone tracker on any page, which asks for the order number plus the
+email or phone from the order so nobody can read an order by guessing numbers.
+
+**Getting the status in.** Three ways, use whichever fits:
+
+1. **A push from your delivery app** — the website updates the moment the app
+   does. `POST /wp-json/ojasvidrapes-delivery/v1/shipment` with an `X-ODD-Key`
+   header:
+
+   ```
+   { "order_number": "1234", "tracking": "ABC123456789",
+     "status": "out", "location": "Falaknuma, Hyderabad" }
+   ```
+
+   Send only what changed — a status push will not wipe a tracking number.
+   `awb`, `waybill` and `tracking_id` are accepted as aliases, `time` takes
+   epoch seconds or an ISO date, and `/shipments` takes a batch. The key is on
+   **WooCommerce → Delivery**, along with a ready-made curl example; a request
+   without it is refused.
+2. **The courier's CSV manifest** — **WooCommerce → Import tracking** takes the
+   two-column file (order number, consignment number) most couriers hand back
+   after a pickup.
+3. **By hand** on the order, for the occasional parcel.
+
+**Settings** (WooCommerce → Delivery): the courier and its tracking link
+(presets for Delhivery, Blue Dart, DTDC, XpressBees, Ecom Express, Shadowfax,
+Ekart, Shiprocket, Trackon and India Post, or type your own with `{tracking}`),
+your support phone and email, the delivery promise shown before a parcel moves,
+and whether to email the customer on dispatch and on delivery.
+
+### Delhivery
+
+Paste a **Delhivery API token** (from their panel, under API setup) and pick a
+checking interval, and the shop asks Delhivery about every parcel still in
+flight by itself — moving the order along with no one touching it. Only orders
+that have a tracking number and have not finished are asked about, so it costs
+very little. **Check Delhivery now** runs it on demand.
+
+Delhivery's wording is mapped onto the plugin's stages: *Manifested* and *Not
+Picked* → Packed, *Dispatched* and *Out for delivery* → Out for delivery, *In
+Transit* and *Pending* → In transit, *Delivered* → Delivered, *RTO* → Returned,
+*Undelivered*, *Lost* and *Damaged* → Delivery attempt failed. Wording the
+plugin does not recognise falls back to Delhivery's status type, and if that is
+unfamiliar too the status is left alone and the scan is recorded as a note —
+never guessed at.
+
+A push from your delivery app is still better where you can set one up: it
+arrives the moment a scan happens rather than on the next check.
+
+Works with WooCommerce's High-Performance Order Storage, and looks right under
+any theme — it takes the theme's colours when they exist and falls back to its
+own dark styling when they do not.
+
+---
+
+## Free shipping meter
+
+The theme knows what a shopper has to spend to stop paying for delivery, and
+says so in the three places the decision gets made: the bag panel, the top of
+the cart, and above checkout. *Add ₹340 more for free shipping*, with a bar
+that fills and turns green on **Free shipping unlocked**.
+
+The figure comes from **WooCommerce's own Free shipping method** where one is
+set up with a minimum order amount — one number to maintain rather than two
+that drift apart — and falls back to **Customizer → Shop → Free shipping
+threshold** otherwise. `od_free_ship_threshold` filters it if you need
+something cleverer.
+
+---
+
+## Offers without a promo code (companion plugin)
+
+`ojasvidrapes-offers.zip` is a separate plugin. It runs **Buy 2 Get 1 Free**
+and offers like it with nothing for the shopper to type — you pick the
+products, and when enough of them are in the cart the cheapest ones come off
+the total on their own.
+
+**WooCommerce → Offers → Add offer.** Each offer has:
+
+- **The kind** — two to choose from:
+  - **Buy some, get some free** — buy *X*, get *Y*, at any percentage off. 100%
+    is free; 50% makes the cheapest half price. A switch decides whether it
+    repeats for every further set in the same cart (six sarees → two free, or
+    still one). Counted **across everything the offer covers**: any three
+    sarees.
+  - **The more you buy, the cheaper** — quantity breaks: 2 for 10% off, 3 for
+    15%, 5 for 20%. Counted **per product**, so it catches the shopper buying a
+    pair of the same saree. Two *different* sarees do not earn it. The breaks
+    show as chips on the product page, and the shopper always gets the best one
+    their quantity earns.
+- **Which products it covers** — pick them by hand with WooCommerce's own
+  product search, or take a whole category, with an exclusion list on top.
+- **What the customer sees** — a headline and a line underneath, shown on
+  every product the offer covers and at the top of the cart.
+- **When it runs** — optional start and end, and an optional countdown.
+
+Which item goes free is never in doubt: **the cheapest of the qualifying
+items**. Three sarees at ₹3,999, ₹2,999 and ₹1,200 → the ₹1,200 one is free.
+
+Add a second offer for jewellery and the two are counted separately, so two
+sarees and two bangles is not three of anything.
+
+In the cart the free line is struck through and marked *Free with this offer*,
+and the banner keeps a live count — *Add 1 more to get one free*, then *1 item
+free — you are saving ₹1,200.00*. The offer is recorded on the order line too,
+so months later it is clear why a saree went out at nothing.
+
+`[od_offer]` places a banner anywhere; `[od_offer id="12"]` places one.
+
+### Complete the look
+
+The other half of the plugin, and the one that lifts basket size. On **any
+product**, a *Complete the look* panel lets you pick the pieces that go with
+it by hand — the jhumkas for a saree, the bangles, a matching blouse.
+
+Under the product they appear as **this piece + match + match**, each with a
+tick box, a running total, and one button that puts the whole look in the bag.
+Unticking a piece re-totals immediately. A piece already in the cart is shown
+as such rather than added twice, and a variable product is never added blind —
+it says to choose the options on its own page.
+
+Set a **discount on the matching items** and the pairing becomes a real offer:
+the matches are reduced whenever the product they were chosen for is in the
+same cart. A line an offer has already made free is never cut a second time.
+
+Tick **show this product on the matching products' pages too** and the pairing
+works both ways — pick the jewellery on the saree once, and the saree turns up
+beside the jewellery as well.
+
+In the cart, **Complete your look** shows the matches for whatever is in there,
+with an Add button on each — a tile grid on a desktop, and a compact list with
+small thumbnails on a phone, where four 3:4 tiles would be most of a screen.
+`odo_cart_matches_heading` filters the wording.
+
+The discount is worked out on the server during WooCommerce's own totals pass,
+so it holds with JavaScript off, survives a page reload, and cannot be applied
+twice by a recalculation.
+
+---
+
+## Customizer reference
+
+Everything lives under **Ojasvi Drapes Options**:
+
+- **Colours & Palette** — seven colour pickers plus four curated presets
+  (Aubergine & Gold, Midnight Peacock, Espresso & Copper, Temple Ink &
+  Emerald). Values are emitted as CSS custom properties, so a change
+  recolours the whole theme.
+- **Header & Top Bar** — brand tagline, scrolling announcements, phone
+  number, sticky header toggle.
+- **Homepage — Hero Slider** — three slides with eyebrow, title (use `<em>`
+  to gild a word), text, button, link, background image and alignment.
+- **Homepage — Sections** — a switch per section, and products per section.
+- **Homepage — Offer Banners** — two banners, the countdown end time and the
+  story band.
+- **Shop & Product Page** — columns, per page, sidebar, hover swap, swatches,
+  quick view, wishlist, compare, compare limit, gallery choice, sticky buy
+  bar, PIN checker, free-shipping threshold, low-stock threshold and the
+  offer lines.
+- **Footer** — about text, address, phone, email, hours, copyright, five
+  social URLs and the Instagram handle.
+- **Typography** — heading font, base size, corner rounding, content width.
+- **Loading Screen** — on/off, how long, between pages, once per visit, the name.
+
+---
+
+## Tips
+
+- Add `mega` as a CSS class on a top-level menu item (Appearance → Menus →
+  Screen Options → CSS Classes) to turn its dropdown into a four-column mega
+  menu. `hot` and `new` add a small flag to the item.
+- Colour swatches read the product's **Color** / **Colour** / **Shade**
+  attribute and map ~40 common Indian textile colour names to hex. To pin an
+  exact shade, add a term meta named `od_color` holding a hex value.
+- Product images look best portrait at 3:4 — 1200 × 1600 or larger keeps the
+  zoom sharp.
+- Every variation sends its own price, so the price in the summary updates the
+  moment a colour or size is chosen — even where all the variations cost the
+  same and WooCommerce would normally send nothing.
+- The quantity stepper stops at the chosen variation's stock. At the limit the
+  **+** dims and says why on hover, rather than silently doing nothing.
+- The price on the product page is the price of what is in the box: it
+  multiplies with the quantity and follows the chosen variation, struck-through
+  figure included. The discount percentage stays the same, since it does not
+  depend on how many you buy. Product cards and the structured data keep the
+  unit price.
+- Simple and variable products render the same price shape — the current price
+  in gold, the old one struck through, then the discount chip. A variable
+  product whose variations differ in price shows the range instead, and swaps
+  to a single figure once a variation is chosen.
+- Set a category image under **Products → Categories** to fill the homepage
+  mosaic and the round rail.
+- The newsletter form stores addresses in the `od_newsletter_list` option.
+  Hook `od_newsletter_signup` (`do_action( 'od_newsletter_signup', $email )`)
+  to hand them to Mailchimp, Brevo or similar instead.
+- Compare rows are filterable: `add_filter( 'od_compare_rows', ... )`.
+
+---
+
+## Child theme
+
+Overriding a template is the safe way to change markup. Create
+`wp-content/themes/ojasvidrapes-child/style.css`:
+
+```css
+/*
+Theme Name: Ojasvi Drapes Child
+Template: ojasvidrapes
+Version: 1.0.0
+*/
+```
+
+…and a `functions.php`:
+
+```php
+<?php
+add_action( 'wp_enqueue_scripts', function () {
+	wp_enqueue_style( 'od-child', get_stylesheet_uri(), array( 'od-main' ), '1.0.0' );
+} );
+```
+
+Copy any file from the parent theme into the child at the same path to
+override it — including anything under `woocommerce/`.
+
+---
+
+## Structure
+
+```
+ojasvidrapes/
+├── style.css                 Theme header + safety-net base styles
+├── functions.php             Setup, enqueues, menus, widgets
+├── rtl.css                   Right-to-left overrides
+├── screenshot.png
+├── assets/
+│   ├── css/  main.css, shop.css, editor.css
+│   ├── js/   theme.js, shop.js, customizer.js, admin-color-gallery.js
+│   └── images/ logo, mark, favicons, SVG placeholders
+├── inc/
+│   ├── helpers.php           Options, colour map, small utilities
+│   ├── icons.php             Inline SVG icon set
+│   ├── nav-walker.php        Desktop + drawer walkers
+│   ├── customizer.php        All theme options
+│   ├── dynamic-css.php       Options → CSS custom properties
+│   ├── template-tags.php     Reusable markup helpers
+│   ├── ajax.php              Quick view, search, cart, auth, newsletter
+│   ├── compare-wishlist.php  List storage and the compare table data
+│   ├── woocommerce.php       Shop integration and cart fragments
+│   ├── branding.php          Logo assets, site icon, the loading screen
+│   ├── color-gallery.php     Per-colour image sets and the editor panel
+│   ├── seo.php               Meta tags, Open Graph and JSON-LD
+│   ├── legal-content.php     The four policy documents
+│   ├── demo-content.php      One-click page + menu setup, template repair
+│   └── tgm-notice.php        Welcome screen and admin notices
+├── template-parts/
+│   ├── header/  drawer, search overlay, cart panel
+│   ├── home/    the 16 homepage sections
+│   └── shop/    filter sidebar
+├── page-templates/           compare, wishlist, auth, lookbook, about,
+│                             contact, faq, track, legal
+└── woocommerce/              Template overrides
+```
+
+---
+
+## Troubleshooting
+
+### A page renders plain, with none of the theme design
+
+Our Story, Contact, Track Your Order and the policy pages each need their theme
+page template. A page that already existed before the theme was installed, or
+one an importer or page builder touched, sits on WordPress's default template
+instead and renders through `page.php` — so a rebuilt template appears to have
+done nothing.
+
+Fix it from **Appearance → Ojasvi Drapes → Repair page templates**. It finds
+each page by its address or its title (it knows the usual variants —
+`about-us`, `our-story`, `track-order` and so on) and puts it back on the theme
+template without touching what you have written. Or set it by hand: edit the
+page, then Page Attributes → Template.
+
+---
+
+### A plugin's product-page output does not appear
+
+The theme lays out the product summary itself, so for a long time it never
+fired `woocommerce_single_product_summary` and nothing hooked there could
+appear. It fires now, with WooCommerce's own callbacks removed from it so the
+title, price, excerpt, add-to-cart and meta are not printed twice.
+
+If you are writing a plugin, hook `woocommerce_single_product_summary` as
+usual; output lands under the short description, above the add-to-cart form.
+
+---
+
+### The homepage sections show in the Customizer but not on the live site
+
+Fixed in 1.0.1. `get_theme_mod()` does not know about the default registered on
+a Customizer setting — it only returns the default handed to it. Inside the
+Customizer preview WordPress filters `theme_mod_*` and returns the registered
+default, so the hero, banners and footer details appeared there and rendered
+empty everywhere else. All defaults now live in `inc/defaults.php`, which both
+`od_option()` and the Customizer read from.
+
+If a section is still missing after updating:
+
+- **It has no data yet.** Sections return early rather than render an empty
+  block: the category mosaic and rail need product categories, "Deal of the
+  day" needs at least one on-sale product, the Instagram grid needs six images
+  in the media library, and the lookbook strip needs three products with
+  featured images.
+- **It is switched off.** Customizer → Ojasvi Drapes Options → Homepage —
+  Sections.
+- **A cache is serving the old page.** Purge your page cache and CDN. The
+  Customizer preview always bypasses both, which is why it can look right while
+  the live page does not.
+- **The front page is built with Elementor.** Then Elementor owns the page and
+  the theme sections step aside by design — see below.
+
+### The product page columns look squeezed or off to one side
+
+Fixed in 1.0.2. WooCommerce's `woocommerce-layout.css` floats the product
+columns and pins them to `width: 48%` each. Against this theme's grid that
+collapsed the gallery to roughly 300px and left a large empty gap beside it.
+The theme now dequeues Woo's two layout stylesheets — it lays all of those
+screens out itself — and keeps a defensive reset in case a plugin or a
+combined-CSS cache reintroduces them. To keep Woo's layout instead:
+
+```php
+add_filter( 'od_dequeue_woo_layout', '__return_false' );
+```
+
+Also fixed in 1.0.2: the shop stylesheet only loaded on shop screens, which
+left the homepage product grids, the mini-cart and any Elementor product
+widget unstyled. It now loads wherever WooCommerce is active.
+
+### Form fields render as white boxes
+
+Fixed in 1.0.5. **Elementor**, not WooCommerce, was the cause. Elementor's
+Site Settings → Theme Style → Form Fields emits
+
+```css
+.elementor-kit-8 input:not([type="button"]):not([type="submit"]) { background-color: #FFFFFF; }
+```
+
+which loads after the theme and outranks a plain `input[type="text"]`. It sets
+only background and colour, which is why the padding and the labels still
+looked themed while the boxes went white. The theme now marks its field
+background, colour and border important, scoped to real form controls, with
+the focus and WooCommerce validation states marked the same way so they keep
+working. You can also clear the colours under Elementor → Site Settings →
+Theme Style → Form Fields; both routes work and they do not conflict.
+
+### The checkout page still uses WooCommerce's own blocks
+
+WooCommerce 8.3+ builds the Cart and Checkout pages out of **blocks** rather
+than the old `[woocommerce_checkout]` shortcode. Blocks never load the theme's
+`cart.php` / `form-checkout.php` templates and ship a light palette of their
+own. You have two ways out, and 1.0.4 does both.
+
+**Use the theme's own cart and checkout** — the free-shipping meter, the
+savings line and the three-step indicator. One click at
+**Appearance → Ojasvi Drapes → Cart & Checkout style**. It swaps the block for
+the WooCommerce shortcode on both pages, saving the block markup first so the
+same screen can switch you back.
+
+**Or keep the blocks.** WooCommerce Blocks ships a full dark treatment behind a
+`has-dark-controls` class on the block wrapper, normally toggled per block in
+the editor as "Dark mode inputs". The theme declares
+`add_theme_support( 'dark-editor-style' )` so new blocks default to it, and
+adds the class at render time to blocks that already exist, so pages built
+before the theme was installed are fixed without re-saving them. The theme
+palette is layered on top. To opt out:
+
+```php
+add_filter( 'od_woo_block_dark_controls', '__return_false' );
+```
+
+### A page overlaps itself on a phone
+
+Fixed in 1.0.5. Contact, FAQ and Track Order set their sidebar width with an
+inline `grid-template-columns`, and an inline style outranks any media query —
+so those pages kept a 300–380px sidebar inside a 390px screen. The width is now
+passed as a `--od-aside` custom property, leaving the media query free to
+collapse the grid to one column.
+
+### A category page shows a blank band above the products on a phone
+
+Fixed in 1.0.5. The inline shop-layout CSS made the filter sidebar sticky with
+`.od-shop-layout > .od-shop-sidebar`, which outranked the `position: fixed`
+that takes it out of the flow below 1024px. The panel stayed in the grid,
+translated off-screen but still holding a full-width row. That sticky rule is
+now inside a `min-width: 1025px` query.
+
+### The trust strip runs off the screen on a phone
+
+Fixed in 1.0.3, and only affected the Elementor version. An Elementor
+responsive control with no per-device default applies its desktop value at
+every width, so the four boxes stayed four across on a 390px screen. The
+Trust Strip, Testimonials and Instagram widgets now ship tablet and mobile
+defaults. If you had already placed one of those widgets, open it and set
+**Columns** on the tablet and mobile tabs.
+
+### A title shows the literal text `<em>`
+
+Fixed in 1.0.3. Some widget defaults were run through `esc_html__()`, which
+turned the `<em>` markers into visible text. New widgets are correct. A widget
+already on your page keeps the old stored value — retype the title and the
+gilding comes back.
+
+### Elementor
+
+The theme yields to Elementor wherever the builder is in charge:
+
+- A page, post or front page laid out in Elementor renders through
+  `the_content()` alone — no theme container, no article card, no storefront
+  sections. `the_content()` runs unconditionally on those templates, which is
+  what the editor's preview iframe needs in order to load.
+- With Elementor Pro, `header` and `footer` are registered as Theme Builder
+  locations. Build one and it replaces the theme's own. The theme keeps
+  ownership of single, archive and every WooCommerce template.
+- Inside the editor preview the sticky header and the fixed panels are pinned
+  back into the normal flow so they stop covering the widgets you are editing.
+
+**If you still get "Can't Edit? Enable Safe Mode":** that panel means the editor
+preview did not finish loading, and the cause is usually the server rather than
+the theme. Work through these in order:
+
+1. Enable **Safe Mode** from that panel. If the editor then loads, the problem
+   is a plugin or a server limit, not the theme — Elementor will say which.
+2. Raise PHP limits: `memory_limit` 256M or more, `max_execution_time` 300,
+   `max_input_vars` 3000. Elementor → System Info lists the current values.
+3. Confirm the WordPress REST API is reachable — Tools → Site Health flags it
+   when a security plugin, ModSecurity or a firewall rule is blocking
+   `/wp-json/`.
+4. Elementor → Tools → **Regenerate CSS & Data**, then hard-reload.
+5. If your host serves the site through a proxy or CDN, bypass it for
+   `/wp-admin/` and for URLs carrying `elementor-preview`.
+
+---
+
+## Licence
+
+GNU General Public License v2 or later.

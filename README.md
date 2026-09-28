@@ -1,22 +1,22 @@
-# sreesaanvika.in — WordPress theme
+# ojasvidrapes.in — WordPress theme
 
-This repository holds **Sree Saanvika**, a dark-luxe WordPress + WooCommerce
+This repository holds **Ojasvi Drapes**, a dark-luxe WordPress + WooCommerce
 theme for an Indian women's fashion store — handloom sarees, temple jewellery
 and festive dresses.
 
 ## Getting the ZIP
 
-A ready-to-import build lives at **[`sreesaanvika.zip`](sreesaanvika.zip)** in
+A ready-to-import build lives at **[`ojasvidrapes.zip`](ojasvidrapes.zip)** in
 the repository root. In WordPress:
 
-**Appearance → Themes → Add New → Upload Theme →** pick `sreesaanvika.zip` →
+**Appearance → Themes → Add New → Upload Theme →** pick `ojasvidrapes.zip` →
 **Install Now → Activate**, then follow the setup steps in
-[`sreesaanvika/README.md`](sreesaanvika/README.md).
+[`ojasvidrapes/README.md`](ojasvidrapes/README.md).
 
 ## Rebuilding after a change
 
 ```bash
-./build.sh          # writes sreesaanvika.zip in the repo root
+./build.sh          # writes ojasvidrapes.zip in the repo root
 ./build.sh dist/    # or into a directory of your choice
 ```
 
@@ -27,9 +27,9 @@ the build instead of shipping.
 
 | Path | What it is |
 | --- | --- |
-| `sreesaanvika/` | The theme source — this folder is what gets zipped |
-| `sreesaanvika/README.md` | Install guide, feature list and Customizer reference |
+| `ojasvidrapes/` | The theme source — this folder is what gets zipped |
+| `ojasvidrapes/README.md` | Install guide, feature list and Customizer reference |
 | `build.sh` | Packages the theme into an importable ZIP |
-| `sreesaanvika.zip` | The current build |
+| `ojasvidrapes.zip` | The current build |
 
 Requires WordPress 6.0+, PHP 7.4+ and WooCommerce 7.0+.

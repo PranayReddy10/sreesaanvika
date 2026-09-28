@@ -1,0 +1,558 @@
+/**
+ * Offer banner, countdown and the free-line markers.
+ *
+ * Colours come from the theme's custom properties where they exist, with the
+ * maroon-and-cream ticket look baked in as the fallback.
+ */
+
+.odo-banner {
+	--odo-deep: var(--od-maroon, #7b1e3b);
+	--odo-gold: var(--od-gold, #d9a441);
+	--odo-cream: #fdf6ef;
+	--odo-ink: var(--od-text, #f4eaee);
+	--odo-mute: var(--od-muted, #a8909c);
+
+	position: relative;
+	display: flex;
+	align-items: stretch;
+	margin: 22px 0;
+	border-radius: var(--od-radius, 14px);
+	overflow: hidden;
+	background: linear-gradient(180deg, rgba(123, 30, 59, 0.16), rgba(123, 30, 59, 0.06));
+	border: 1px solid rgba(217, 164, 65, 0.34);
+}
+
+/* The stub on the left, like the torn edge of a ticket. */
+.odo-banner__tab {
+	flex: 0 0 68px;
+	display: grid;
+	place-items: center;
+	background: var(--odo-deep);
+}
+
+.odo-banner__pct {
+	width: 38px;
+	height: 38px;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	background: linear-gradient(140deg, #f6e3b4, var(--odo-gold) 45%, #a9732a);
+	color: #4b1224;
+	font-weight: 700;
+	font-size: 1.05rem;
+	line-height: 1;
+}
+
+.odo-banner__body {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 16px 20px;
+	text-align: center;
+}
+
+.odo-banner__head {
+	margin: 0;
+	font-size: clamp(1.05rem, 3.4vw, 1.55rem);
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--odo-gold);
+	line-height: 1.15;
+}
+
+.odo-banner__sub {
+	margin: 6px 0 0;
+	font-size: 0.9rem;
+	color: var(--odo-mute);
+}
+
+.odo-banner__progress {
+	margin: 10px 0 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--od-success, #3f9d7c);
+}
+
+/* Under a product price the banner is quieter. */
+.odo-banner--product { margin: 16px 0 20px; }
+.odo-banner--product .odo-banner__body { text-align: left; padding: 13px 18px; }
+.odo-banner--product .odo-banner__head { font-size: 1rem; }
+.odo-banner--product .odo-banner__tab { flex-basis: 54px; }
+
+/* --- Countdown --- */
+.odo-countdown {
+	flex: 0 0 auto;
+	padding: 14px 20px;
+	border-left: 1px dashed rgba(217, 164, 65, 0.34);
+	text-align: center;
+}
+
+.odo-countdown__label {
+	margin: 0 0 8px;
+	font-size: 0.66rem;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--odo-mute);
+}
+
+.odo-countdown__clock {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 6px;
+}
+
+.odo-unit { display: block; }
+.odo-unit__digits { display: flex; gap: 4px; }
+
+.odo-digit {
+	display: grid;
+	place-items: center;
+	min-width: 30px;
+	padding: 6px 4px;
+	border-radius: 6px;
+	background: var(--odo-deep);
+	color: #f7e6c8;
+	font-size: 1.15rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+.odo-unit__label {
+	display: block;
+	margin-top: 6px;
+	font-size: 0.56rem;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--odo-mute);
+}
+
+.odo-colon {
+	color: var(--odo-gold);
+	font-weight: 700;
+	line-height: 1;
+	padding-top: 8px;
+}
+
+/* --- Product card flag --- */
+.odo-flag {
+	position: absolute;
+	left: 12px;
+	bottom: 12px;
+	z-index: 3;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: var(--od-maroon, #7b1e3b);
+	color: #f7e6c8;
+	font-size: 0.6rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	pointer-events: none;
+}
+
+/* --- The discounted cart line --- */
+.odo-line-flag {
+	display: inline-block;
+	margin-top: 5px;
+	padding: 3px 9px;
+	border-radius: 999px;
+	background: rgba(63, 157, 124, 0.14);
+	border: 1px solid rgba(63, 157, 124, 0.4);
+	color: var(--od-success, #3f9d7c);
+	font-size: 0.64rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.woocommerce td.product-subtotal del,
+.odo-line-now { display: inline-block; }
+
+td.product-subtotal del { opacity: 0.55; margin-right: 6px; }
+.odo-line-now { text-decoration: none; font-weight: 600; }
+
+@media (max-width: 780px) {
+	.odo-banner {
+		flex-wrap: wrap;
+	}
+
+	.odo-banner__tab {
+		flex: 1 0 100%;
+		padding: 10px 0;
+	}
+
+	.odo-banner__body { flex: 1 0 100%; }
+
+	.odo-countdown {
+		flex: 1 0 100%;
+		border-left: 0;
+		border-top: 1px dashed rgba(217, 164, 65, 0.34);
+	}
+
+	.odo-digit { min-width: 26px; font-size: 1rem; }
+}
+
+/* --------------------------------------------------------------------------
+   Complete the look
+   -------------------------------------------------------------------------- */
+
+.odo-look,
+.odo-goeswith {
+	--odo-line: var(--od-line, rgba(244, 234, 238, 0.09));
+	--odo-surface: var(--od-surface, #21121d);
+	--odo-text: var(--od-text, #f4eaee);
+	--odo-mute: var(--od-muted, #a8909c);
+	--odo-gold2: var(--od-gold, #d9a441);
+
+	margin: 40px 0;
+	padding: 26px 28px;
+	border: 1px solid var(--odo-line);
+	border-radius: var(--od-radius, 14px);
+	background: var(--odo-surface);
+	color: var(--odo-text);
+}
+
+.odo-look__head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin-bottom: 22px;
+}
+
+.odo-look__head h2,
+.odo-goeswith h2 {
+	margin: 0;
+	font-size: 1.25rem;
+	letter-spacing: 0.01em;
+}
+
+.odo-look__deal {
+	padding: 5px 13px;
+	border-radius: 999px;
+	background: rgba(63, 157, 124, 0.14);
+	border: 1px solid rgba(63, 157, 124, 0.4);
+	color: var(--od-success, #3f9d7c);
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+}
+
+.odo-look__body {
+	display: flex;
+	gap: 26px;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+
+.odo-look__items {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	flex: 1 1 380px;
+	min-width: 0;
+	flex-wrap: wrap;
+}
+
+.odo-look__plus {
+	align-self: center;
+	color: var(--odo-gold2);
+	font-size: 1.3rem;
+	font-weight: 300;
+	padding-bottom: 26px;
+}
+
+.odo-look__item { flex: 0 1 148px; min-width: 0; }
+.odo-look__item label { display: block; cursor: pointer; position: relative; }
+.odo-look__item.is-lead label { cursor: default; }
+
+/* The tick sits over the corner of the picture. */
+.odo-look__tick {
+	position: absolute;
+	margin: 9px 0 0 9px;
+	z-index: 2;
+	width: 18px;
+	height: 18px;
+	accent-color: var(--odo-gold2);
+}
+
+.odo-look__card { display: block; }
+
+.odo-look__thumb {
+	position: relative;
+	display: block;
+	border-radius: var(--od-radius-sm, 10px);
+	overflow: hidden;
+	background: var(--od-surface-2, #2b1826);
+	aspect-ratio: 3 / 4;
+}
+
+.odo-look__thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: opacity var(--od-fast, 0.2s) ease;
+}
+
+.odo-look__tick:not(:checked) ~ .odo-look__card .odo-look__thumb img { opacity: 0.38; }
+
+.odo-look__badge {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 4px 6px;
+	background: rgba(20, 10, 18, 0.82);
+	color: var(--odo-gold2);
+	font-size: 0.56rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	text-align: center;
+}
+
+.odo-look__name {
+	display: block;
+	text-transform: none;
+	margin-top: 9px;
+	font-size: 0.82rem;
+	line-height: 1.35;
+	color: var(--odo-text);
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.odo-look__price {
+	display: block;
+	margin-top: 5px;
+	font-size: 0.86rem;
+	color: var(--odo-gold2);
+	font-weight: 600;
+}
+
+.odo-look__price del {
+	color: var(--odo-mute);
+	font-weight: 400;
+	font-size: 0.78rem;
+	margin-right: 5px;
+}
+
+.odo-look__price ins { text-decoration: none; }
+
+.odo-look__total {
+	flex: 0 0 220px;
+	padding: 18px 20px;
+	border-radius: var(--od-radius-sm, 10px);
+	border: 1px solid var(--odo-line);
+	background: var(--od-surface-2, #2b1826);
+	text-align: center;
+}
+
+.odo-look__count {
+	margin: 0 0 4px;
+	font-size: 0.68rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--odo-mute);
+}
+
+.odo-look__sum {
+	margin: 0;
+	font-size: 1.4rem;
+	font-weight: 700;
+	color: var(--odo-gold2);
+	font-variant-numeric: tabular-nums;
+}
+
+.odo-look__save {
+	margin: 4px 0 0;
+	font-size: 0.8rem;
+	color: var(--od-success, #3f9d7c);
+	font-weight: 600;
+}
+
+.odo-look__add { margin-top: 14px; width: 100%; }
+.odo-look__add[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+.odo-look__note {
+	margin: 10px 0 0;
+	font-size: 0.78rem;
+	color: var(--odo-mute);
+}
+
+/* --- The cart rail --- */
+.odo-goeswith h2 { margin-bottom: 4px; }
+
+.odo-goeswith__sub {
+	margin: 0 0 18px;
+	font-size: 0.86rem;
+	color: var(--odo-mute);
+}
+
+.odo-goeswith__items {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	gap: 18px;
+}
+
+.odo-goeswith__item { min-width: 0; }
+
+.odo-goeswith__thumb {
+	display: block;
+	border-radius: var(--od-radius-sm, 10px);
+	overflow: hidden;
+	aspect-ratio: 3 / 4;
+	background: var(--od-surface-2, #2b1826);
+}
+
+.odo-goeswith__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.odo-goeswith__name {
+	display: block;
+	text-transform: none;
+	margin: 9px 0 4px;
+	font-size: 0.82rem;
+	line-height: 1.35;
+	color: var(--odo-text);
+	text-decoration: none;
+}
+
+.odo-goeswith__price {
+	display: block;
+	font-size: 0.85rem;
+	color: var(--odo-gold2);
+	font-weight: 600;
+}
+
+.odo-goeswith__price del { color: var(--odo-mute); font-weight: 400; margin-right: 5px; }
+.odo-goeswith__price ins { text-decoration: none; }
+.odo-goeswith__add { margin-top: 9px; width: 100%; }
+
+.odo-line-flag--look {
+	background: rgba(217, 164, 65, 0.14);
+	border-color: rgba(217, 164, 65, 0.4);
+	color: var(--od-gold, #d9a441);
+}
+
+@media (max-width: 780px) {
+	.odo-look, .odo-goeswith { padding: 20px 16px; }
+	.odo-look__body { gap: 18px; }
+	.odo-look__total { flex: 1 1 100%; }
+	.odo-look__item { flex: 0 1 118px; }
+	.odo-look__plus { padding-bottom: 22px; }
+}
+
+/*
+ * The + between the pieces only reads while they sit on one line. Once they
+ * wrap it lands at the start of a row pointing at nothing, so below this width
+ * the pieces become an even grid and the + signs go.
+ */
+@media (max-width: 600px) {
+	.odo-look__items {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+		gap: 10px;
+	}
+
+	.odo-look__plus { display: none; }
+	.odo-look__item { flex: none; }
+	.odo-look__name { font-size: 0.76rem; }
+	.odo-look__price { font-size: 0.8rem; }
+	.odo-look__badge { font-size: 0.5rem; letter-spacing: 0.06em; }
+}
+
+/*
+ * On a phone the cart's matching pieces become a list rather than a grid of
+ * tiles. Four 3:4 tiles two-across is most of a screen of suggestions under a
+ * cart the shopper is trying to get through.
+ */
+@media (max-width: 600px) {
+	.odo-goeswith__items {
+		display: block;
+		gap: 0;
+	}
+
+	.odo-goeswith__item {
+		display: grid;
+		grid-template-columns: 58px minmax(0, 1fr) auto;
+		grid-template-areas:
+			"thumb name  add"
+			"thumb price add";
+		align-items: center;
+		column-gap: 12px;
+		padding: 12px 0;
+		border-bottom: 1px solid var(--odo-line);
+	}
+
+	.odo-goeswith__item:last-child { border-bottom: 0; padding-bottom: 0; }
+	.odo-goeswith__item:first-child { padding-top: 0; }
+
+	.odo-goeswith__thumb {
+		grid-area: thumb;
+		width: 58px;
+		align-self: start;
+	}
+
+	.odo-goeswith__name {
+		grid-area: name;
+		margin: 0;
+		align-self: end;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.odo-goeswith__price {
+		grid-area: price;
+		align-self: start;
+		margin-top: 2px;
+	}
+
+	.odo-goeswith__add {
+		grid-area: add;
+		width: auto;
+		margin: 0;
+		white-space: nowrap;
+		padding-left: 18px;
+		padding-right: 18px;
+	}
+}
+
+/* --- Quantity breaks --- */
+.odo-tiers {
+	list-style: none;
+	margin: 12px 0 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+}
+
+.odo-banner--product .odo-tiers { justify-content: flex-start; }
+
+.odo-tiers li {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	padding: 5px 12px;
+	border-radius: 999px;
+	border: 1px solid rgba(217, 164, 65, 0.3);
+	background: rgba(217, 164, 65, 0.08);
+	font-size: 0.76rem;
+}
+
+.odo-tiers__qty { color: var(--odo-mute); letter-spacing: 0.04em; }
+.odo-tiers__off { color: var(--odo-gold); font-weight: 700; }

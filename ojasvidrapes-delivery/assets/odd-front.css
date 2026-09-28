@@ -1,0 +1,285 @@
+/**
+ * Delivery panel.
+ *
+ * Colours come from the theme's custom properties where they exist, with a
+ * dark fallback baked in so the panel still looks deliberate under any theme.
+ */
+
+.odd-panel {
+	--odd-line: var(--od-line, rgba(244, 234, 238, 0.09));
+	--odd-gold: var(--od-gold, #d9a441);
+	--odd-text: var(--od-text, #f4eaee);
+	--odd-soft: var(--od-text-soft, #cbb8c2);
+	--odd-mute: var(--od-muted, #a8909c);
+	--odd-surface: var(--od-surface, #21121d);
+	--odd-ok: var(--od-success, #3f9d7c);
+
+	margin: 26px 0;
+	padding: 24px 26px 22px;
+	border: 1px solid var(--odd-line);
+	border-radius: var(--od-radius, 14px);
+	background: var(--odd-surface);
+	color: var(--odd-text);
+}
+
+.odd-panel__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	flex-wrap: wrap;
+	margin-bottom: 18px;
+}
+
+.odd-panel__head h2 {
+	margin: 0;
+	font-size: 1.15rem;
+	letter-spacing: 0.02em;
+	color: var(--odd-text);
+}
+
+.odd-panel__state {
+	padding: 5px 13px;
+	border-radius: 999px;
+	background: rgba(63, 157, 124, 0.14);
+	border: 1px solid rgba(63, 157, 124, 0.4);
+	color: var(--odd-ok);
+	font-size: 0.72rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	font-weight: 600;
+}
+
+.odd-panel--stopped .odd-panel__state {
+	background: rgba(196, 84, 84, 0.14);
+	border-color: rgba(196, 84, 84, 0.45);
+	color: #e08585;
+}
+
+.odd-panel__order,
+.odd-panel__promise {
+	margin: 0 0 16px;
+	color: var(--odd-mute);
+	font-size: 0.88rem;
+}
+
+/* --- The progress line --- */
+.odd-steps {
+	list-style: none;
+	margin: 0 0 22px;
+	padding: 0;
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	position: relative;
+}
+
+.odd-steps::before {
+	content: "";
+	position: absolute;
+	left: 6%;
+	right: 6%;
+	top: 7px;
+	height: 2px;
+	background: var(--odd-line);
+}
+
+.odd-step {
+	position: relative;
+	text-align: center;
+	padding-top: 0;
+	min-width: 0;
+}
+
+.odd-step__dot {
+	display: block;
+	width: 16px;
+	height: 16px;
+	margin: 0 auto 10px;
+	border-radius: 50%;
+	background: var(--odd-surface);
+	border: 2px solid var(--odd-line);
+	position: relative;
+	z-index: 1;
+	transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.odd-step.is-done .odd-step__dot {
+	background: var(--odd-gold);
+	border-color: var(--odd-gold);
+}
+
+.odd-step.is-now .odd-step__dot {
+	box-shadow: 0 0 0 5px rgba(217, 164, 65, 0.18);
+}
+
+.odd-step__label {
+	display: block;
+	font-size: 0.72rem;
+	line-height: 1.3;
+	letter-spacing: 0.04em;
+	color: var(--odd-mute);
+	padding: 0 4px;
+}
+
+.odd-step.is-done .odd-step__label { color: var(--odd-soft); }
+.odd-step.is-now .odd-step__label { color: var(--odd-gold); font-weight: 600; }
+
+/* --- Facts --- */
+.odd-facts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 22px 34px;
+	margin: 0 0 18px;
+}
+
+.odd-facts div { margin: 0; }
+
+.odd-facts dt {
+	margin: 0 0 4px;
+	font-size: 0.68rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--odd-mute);
+}
+
+.odd-facts dd {
+	margin: 0;
+	font-size: 0.98rem;
+	color: var(--odd-text);
+	word-break: break-all;
+}
+
+.odd-facts dd a { color: var(--odd-gold); }
+
+/* --- Timeline --- */
+.odd-timeline {
+	list-style: none;
+	margin: 0;
+	padding: 18px 0 0;
+	border-top: 1px solid var(--odd-line);
+}
+
+.odd-timeline li {
+	position: relative;
+	padding: 0 0 14px 20px;
+	font-size: 0.9rem;
+	color: var(--odd-soft);
+}
+
+.odd-timeline li::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 7px;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--odd-gold);
+	opacity: 0.55;
+}
+
+.odd-timeline li:first-child::before { opacity: 1; }
+
+.odd-timeline li::after {
+	content: "";
+	position: absolute;
+	left: 3px;
+	top: 18px;
+	bottom: 0;
+	width: 1px;
+	background: var(--odd-line);
+}
+
+.odd-timeline li:last-child::after { display: none; }
+
+.odd-timeline time {
+	display: block;
+	font-size: 0.72rem;
+	letter-spacing: 0.06em;
+	color: var(--odd-mute);
+	margin-bottom: 2px;
+}
+
+.odd-timeline strong { color: var(--odd-text); font-weight: 600; }
+.odd-timeline__where { color: var(--odd-mute); }
+
+.odd-timeline__note {
+	display: block;
+	color: var(--odd-mute);
+	font-size: 0.85rem;
+}
+
+.odd-panel__help {
+	margin: 16px 0 0;
+	padding-top: 14px;
+	border-top: 1px solid var(--odd-line);
+	font-size: 0.86rem;
+	color: var(--odd-mute);
+}
+
+.odd-panel__help a { color: var(--odd-gold); }
+
+/* --- The standalone tracker --- */
+.odd-tracker__form {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	align-items: flex-end;
+	margin-bottom: 8px;
+}
+
+.odd-tracker__form p { margin: 0; flex: 1 1 200px; }
+.odd-tracker__form p:last-child { flex: 0 0 auto; }
+
+.odd-tracker__form label {
+	display: block;
+	margin-bottom: 6px;
+	font-size: 0.72rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--od-muted, #a8909c);
+}
+
+.odd-tracker__form input {
+	width: 100%;
+	padding: 12px 15px;
+	border-radius: var(--od-radius-sm, 10px);
+	border: 1px solid var(--od-line, rgba(244, 234, 238, 0.09));
+	background: var(--od-surface-2, #2b1826);
+	color: var(--od-text, #f4eaee);
+}
+
+.odd-tracker__miss {
+	margin-top: 16px;
+	color: var(--od-muted, #a8909c);
+}
+
+@media (max-width: 640px) {
+	.odd-panel { padding: 20px 18px 18px; }
+
+	/* Stacked, because six labels never fit across a phone. */
+	.odd-steps {
+		grid-auto-flow: row;
+		gap: 14px;
+	}
+
+	.odd-steps::before {
+		left: 7px;
+		right: auto;
+		top: 8px;
+		bottom: 8px;
+		width: 2px;
+		height: auto;
+	}
+
+	.odd-step {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		text-align: left;
+	}
+
+	.odd-step__dot { margin: 0; flex: none; }
+	.odd-step__label { font-size: 0.84rem; padding: 0; }
+}
