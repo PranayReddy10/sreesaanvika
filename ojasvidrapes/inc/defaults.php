@@ -86,6 +86,8 @@ function od_defaults() {
 		/* Homepage sections ------------------------------------------ */
 		'home_source'          => 'auto',
 		'browse_by'            => 'none',
+		'filter_attrs'         => 'none',
+		'card_sku'             => true,
 		'catrail_text'         => '',
 		'sec_usp'              => true,
 		'sec_catrail'          => true,

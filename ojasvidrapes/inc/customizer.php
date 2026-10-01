@@ -375,6 +375,29 @@ function od_customize_register( $wp_customize ) {
 		'od_sanitize_choice'
 	);
 
+	$add(
+		'filter_attrs',
+		array(
+			'label'       => __( 'Sidebar filters', 'ojasvidrapes' ),
+			'description' => __( 'Attributes get recorded on a product for all sorts of reasons — fabric, blouse length, wash care — and turning each one into a filter invents a way of shopping the shop never wanted. A saree is one design, not a pattern crossed with a colour, so nothing is offered to cross unless it is asked for here. Price and sorting are always available.', 'ojasvidrapes' ),
+			'section'     => 'od_shop',
+			'type'        => 'select',
+			'choices'     => od_filter_attr_choices(),
+		),
+		'od_sanitize_choice'
+	);
+
+	$add(
+		'card_sku',
+		array(
+			'label'       => __( 'Show the design code on each card', 'ojasvidrapes' ),
+			'description' => __( 'The line above the name on a product card. In a shop that does not sort itself into anything, it carries the piece\'s own code — its SKU — which is how stock is usually asked for. Products with no code simply show nothing.', 'ojasvidrapes' ),
+			'section'     => 'od_shop',
+			'type'        => 'checkbox',
+		),
+		'od_sanitize_bool'
+	);
+
 	$add( 'shop_columns', array( 'label' => __( 'Products per row', 'ojasvidrapes' ), 'section' => 'od_shop', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 6 ) ), 'absint' );
 	$add( 'shop_per_page', array( 'label' => __( 'Products per page', 'ojasvidrapes' ), 'section' => 'od_shop', 'type' => 'number', 'input_attrs' => array( 'min' => 4, 'max' => 60 ) ), 'absint' );
 	$add( 'shop_sidebar', array( 'label' => __( 'Show the filter sidebar', 'ojasvidrapes' ), 'section' => 'od_shop', 'type' => 'checkbox' ), 'od_sanitize_bool' );

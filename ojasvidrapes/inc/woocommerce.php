@@ -1108,19 +1108,28 @@ add_filter( 'render_block', 'od_woo_block_dark_controls', 10, 2 );
 /**
  * The attribute filters for the shop sidebar.
  *
- * Each registered product attribute that has terms in use becomes a group of
- * toggles — Pattern, Colour, Fabric. The links carry WooCommerce's own
- * filter_pa_* query arguments, which WC_Query turns into a tax query on the
- * shop loop whether or not the Layered Nav widget is anywhere on the page, so
- * this needs no query code of its own.
+ * Off unless the shop asks for them. Attributes exist on a product for all
+ * sorts of reasons — fabric, blouse length, wash care — and turning every one
+ * of them into a sidebar filter invents a way of shopping the shop never
+ * wanted. A saree is one design, not a pattern crossed with a colour, so by
+ * default nothing is offered to cross.
  *
- * Several values stack: clicking a second pattern adds it rather than
- * replacing the first, and clicking a chosen one takes it off again.
+ * Where they are asked for, the links carry WooCommerce's own filter_pa_*
+ * query arguments, which WC_Query turns into a tax query on the shop loop
+ * whether or not the Layered Nav widget is anywhere on the page, so this
+ * needs no query code of its own. Several values stack: clicking a second
+ * one adds it rather than replacing the first.
  *
  * @return array
  */
 function od_filter_attributes() {
 	if ( ! function_exists( 'wc_get_attribute_taxonomies' ) ) {
+		return array();
+	}
+
+	$wanted = (string) od_option( 'filter_attrs', 'none' );
+
+	if ( 'none' === $wanted || '' === $wanted ) {
 		return array();
 	}
 
@@ -1131,6 +1140,10 @@ function od_filter_attributes() {
 		$taxonomy = wc_attribute_taxonomy_name( $attribute->attribute_name );
 
 		if ( ! taxonomy_exists( $taxonomy ) ) {
+			continue;
+		}
+
+		if ( 'all' !== $wanted && $taxonomy !== $wanted ) {
 			continue;
 		}
 

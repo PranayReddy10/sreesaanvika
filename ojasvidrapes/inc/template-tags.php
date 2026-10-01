@@ -913,3 +913,34 @@ function od_load_more_button( $data ) {
 		od_icon( 'chevron-down', 16 ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	);
 }
+
+/**
+ * Which attributes can be offered as sidebar filters.
+ *
+ * @return array
+ */
+function od_filter_attr_choices() {
+	$choices = array(
+		'none' => __( 'None — just price and sorting', 'ojasvidrapes' ),
+	);
+
+	if ( ! function_exists( 'wc_get_attribute_taxonomies' ) ) {
+		return $choices;
+	}
+
+	$attributes = wc_get_attribute_taxonomies();
+
+	foreach ( $attributes as $attribute ) {
+		$name = wc_attribute_taxonomy_name( $attribute->attribute_name );
+
+		if ( taxonomy_exists( $name ) ) {
+			$choices[ $name ] = $attribute->attribute_label;
+		}
+	}
+
+	if ( count( $choices ) > 2 ) {
+		$choices['all'] = __( 'Every attribute', 'ojasvidrapes' );
+	}
+
+	return $choices;
+}

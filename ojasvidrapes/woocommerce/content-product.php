@@ -16,11 +16,24 @@ if ( empty( $product ) || ! $product->is_visible() ) {
 $od_id       = $product->get_id();
 $od_link     = get_permalink( $od_id );
 $od_second   = od_secondary_image( $product );
-// The small line above the name: the category, the pattern, the colour —
-// whatever this shop browses by, and nothing at all when it browses by nothing.
+/*
+ * The small line above the name. It is whatever this shop browses by, and
+ * where it browses by nothing — one kind of stock, every piece its own design
+ * — it falls back to the design code, which is how the stock is actually
+ * spoken about and asked for.
+ */
 $od_tax      = od_browse_taxonomy();
 $od_cats     = $od_tax ? get_the_terms( $od_id, $od_tax ) : array();
 $od_cat_name = ( $od_cats && ! is_wp_error( $od_cats ) ) ? $od_cats[0]->name : '';
+
+if ( ! $od_cat_name && ! $od_tax && od_option( 'card_sku', true ) ) {
+	$od_sku = $product->get_sku();
+
+	if ( $od_sku ) {
+		/* translators: %s: the shop's own design/product code */
+		$od_cat_name = sprintf( __( 'Design %s', 'ojasvidrapes' ), $od_sku );
+	}
+}
 $od_rating   = (float) $product->get_average_rating();
 ?>
 <li <?php wc_product_class( 'od-product-card', $product ); ?>>
