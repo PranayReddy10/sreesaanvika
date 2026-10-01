@@ -51,29 +51,38 @@ $od_max = $od_max ? $od_max : $od_ceiling;
 <div class="od-filters">
 
 	<?php
-	/* ---- Categories ---- */
-	$od_cats = get_terms(
+	/* ---- Browse (categories, when that is how this shop sorts itself) ---- */
+	$od_browse_tax = od_browse_taxonomy();
+
+	$od_cats = $od_browse_tax ? get_terms(
 		array(
-			'taxonomy'   => 'product_cat',
+			'taxonomy'   => $od_browse_tax,
 			'hide_empty' => true,
 			'parent'     => 0,
 		)
-	);
+	) : array();
 
 	if ( $od_cats && ! is_wp_error( $od_cats ) ) :
-		$od_current = is_product_category() ? get_queried_object_id() : 0;
+		$od_current = is_tax( $od_browse_tax ) ? get_queried_object_id() : 0;
 		?>
 		<div class="od-filter">
 			<button type="button" class="od-filter__head" aria-expanded="true">
-				<?php esc_html_e( 'Category', 'ojasvidrapes' ); ?>
+				<?php echo esc_html( od_browse_label() ); ?>
 				<?php od_the_icon( 'chevron-down', 14 ); ?>
 			</button>
 
 			<div class="od-filter__body">
 				<ul class="od-filter__list">
-					<?php foreach ( $od_cats as $od_cat ) : ?>
+					<?php
+					foreach ( $od_cats as $od_cat ) :
+						$od_cat_link = get_term_link( $od_cat );
+
+						if ( is_wp_error( $od_cat_link ) ) {
+							continue;
+						}
+						?>
 						<li>
-							<a href="<?php echo esc_url( get_term_link( $od_cat ) ); ?>"
+							<a href="<?php echo esc_url( $od_cat_link ); ?>"
 								<?php echo $od_current === $od_cat->term_id ? 'style="color:var(--od-gold)"' : ''; ?>>
 								<?php echo esc_html( $od_cat->name ); ?>
 								<span class="count"><?php echo esc_html( $od_cat->count ); ?></span>
@@ -84,6 +93,42 @@ $od_max = $od_max ? $od_max : $od_ceiling;
 			</div>
 		</div>
 	<?php endif; ?>
+
+	<?php
+	/*
+	 * ---- Attributes: pattern, colour, fabric, whatever the shop keeps ----
+	 *
+	 * A shop with one kind of stock sorts itself by these rather than by
+	 * category, so each attribute that has terms becomes its own filter.
+	 * The links use WooCommerce's own filter_pa_* query arguments, which
+	 * WC_Query applies to the shop loop without any widget being active, and
+	 * several values are comma-separated so they stack.
+	 */
+	foreach ( od_filter_attributes() as $od_attr ) :
+		?>
+		<div class="od-filter">
+			<button type="button" class="od-filter__head" aria-expanded="true">
+				<?php echo esc_html( $od_attr['label'] ); ?>
+				<?php od_the_icon( 'chevron-down', 14 ); ?>
+			</button>
+
+			<div class="od-filter__body">
+				<ul class="od-filter__list od-filter__list--check">
+					<?php foreach ( $od_attr['terms'] as $od_term ) : ?>
+						<li>
+							<a class="od-filter__opt<?php echo $od_term['on'] ? ' is-on' : ''; ?>"
+								href="<?php echo esc_url( $od_term['url'] ); ?>"
+								<?php echo $od_term['on'] ? 'aria-current="true"' : ''; ?>>
+								<span class="od-filter__box" aria-hidden="true"></span>
+								<?php echo esc_html( $od_term['name'] ); ?>
+								<span class="count"><?php echo esc_html( $od_term['count'] ); ?></span>
+							</a>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+		</div>
+	<?php endforeach; ?>
 
 	<?php /* ---- Price ---- */ ?>
 	<div class="od-filter">

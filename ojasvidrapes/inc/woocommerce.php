@@ -1104,3 +1104,112 @@ function od_woo_block_dark_controls( $content, $block ) {
 	);
 }
 add_filter( 'render_block', 'od_woo_block_dark_controls', 10, 2 );
+
+/**
+ * The attribute filters for the shop sidebar.
+ *
+ * Each registered product attribute that has terms in use becomes a group of
+ * toggles — Pattern, Colour, Fabric. The links carry WooCommerce's own
+ * filter_pa_* query arguments, which WC_Query turns into a tax query on the
+ * shop loop whether or not the Layered Nav widget is anywhere on the page, so
+ * this needs no query code of its own.
+ *
+ * Several values stack: clicking a second pattern adds it rather than
+ * replacing the first, and clicking a chosen one takes it off again.
+ *
+ * @return array
+ */
+function od_filter_attributes() {
+	if ( ! function_exists( 'wc_get_attribute_taxonomies' ) ) {
+		return array();
+	}
+
+	$base = od_filter_base_url();
+	$out  = array();
+
+	foreach ( wc_get_attribute_taxonomies() as $attribute ) {
+		$taxonomy = wc_attribute_taxonomy_name( $attribute->attribute_name );
+
+		if ( ! taxonomy_exists( $taxonomy ) ) {
+			continue;
+		}
+
+		$terms = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'hide_empty' => true,
+			)
+		);
+
+		if ( ! $terms || is_wp_error( $terms ) ) {
+			continue;
+		}
+
+		$key    = 'filter_' . sanitize_title( $attribute->attribute_name );
+		$chosen = od_filter_chosen( $key );
+		$items  = array();
+
+		foreach ( $terms as $term ) {
+			$on   = in_array( $term->slug, $chosen, true );
+			$next = $on
+				? array_values( array_diff( $chosen, array( $term->slug ) ) )
+				: array_merge( $chosen, array( $term->slug ) );
+
+			$items[] = array(
+				'name'  => $term->name,
+				'count' => $term->count,
+				'on'    => $on,
+				'url'   => $next
+					? add_query_arg( $key, implode( ',', $next ), $base )
+					: remove_query_arg( $key, $base ),
+			);
+		}
+
+		$out[] = array(
+			'label' => $attribute->attribute_label,
+			'terms' => $items,
+		);
+	}
+
+	return $out;
+}
+
+/**
+ * The slugs already chosen for one filter.
+ *
+ * @param string $key Query argument, e.g. filter_pattern.
+ * @return array
+ */
+function od_filter_chosen( $key ) {
+	// Reading the current filter state off the URL; nothing is written here.
+	if ( empty( $_GET[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return array();
+	}
+
+	$raw = sanitize_text_field( wp_unslash( $_GET[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+	return array_values( array_filter( array_map( 'sanitize_title', array_map( 'trim', explode( ',', $raw ) ) ) ) );
+}
+
+/**
+ * The URL filter links are built from: wherever the shopper is now, minus the
+ * page number, so narrowing a filter never lands them on page 7 of 3.
+ *
+ * @return string
+ */
+function od_filter_base_url() {
+	global $wp;
+
+	$base = home_url( add_query_arg( array(), $wp->request ? $wp->request : '' ) );
+	$args = array();
+
+	foreach ( array_keys( $_GET ) as $key ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$key = sanitize_key( $key );
+
+		if ( 0 === strpos( $key, 'filter_' ) || in_array( $key, array( 'orderby', 'min_price', 'max_price', 's', 'post_type' ), true ) ) {
+			$args[ $key ] = sanitize_text_field( wp_unslash( $_GET[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+	}
+
+	return $args ? add_query_arg( $args, $base ) : $base;
+}

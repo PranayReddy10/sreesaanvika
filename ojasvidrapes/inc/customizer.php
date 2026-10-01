@@ -14,18 +14,12 @@ defined( 'ABSPATH' ) || exit;
  */
 function od_customize_register( $wp_customize ) {
 
-	$wp_customize->get_setting( 'blogname' )->transport        = 'postMessage';
+	/*
+	 * The site title is no longer drawn as text in the header — the brand is
+	 * the logo image, whose alt text carries the name — so there is nothing
+	 * for a partial to swap and the preview falls back to a full refresh.
+	 */
 	$wp_customize->get_setting( 'blogdescription' )->transport = 'postMessage';
-
-	$wp_customize->selective_refresh->add_partial(
-		'blogname',
-		array(
-			'selector'        => '.od-brand__name',
-			'render_callback' => function () {
-				return get_bloginfo( 'name' );
-			},
-		)
-	);
 
 	/* -----------------------------------------------------------------
 	 * Panel
@@ -128,6 +122,7 @@ function od_customize_register( $wp_customize ) {
 				'midnight' => __( 'Midnight Peacock', 'ojasvidrapes' ),
 				'espresso' => __( 'Espresso & Copper', 'ojasvidrapes' ),
 				'ink'      => __( 'Temple Ink & Emerald', 'ojasvidrapes' ),
+				'ivory'    => __( 'Ivory & Gold (white, light)', 'ojasvidrapes' ),
 			),
 		),
 		'od_sanitize_choice'
@@ -255,6 +250,17 @@ function od_customize_register( $wp_customize ) {
 		);
 	}
 
+	$add(
+		'catrail_text',
+		array(
+			'label'       => __( 'Browse rail — supporting line', 'ojasvidrapes' ),
+			'description' => __( 'The sentence under “Find Your Drape”. Left empty the heading stands on its own.', 'ojasvidrapes' ),
+			'section'     => 'od_home',
+			'type'        => 'textarea',
+		),
+		'sanitize_textarea_field'
+	);
+
 	/* -- The collections mosaic -- */
 	$add(
 		'cats_source',
@@ -355,6 +361,18 @@ function od_customize_register( $wp_customize ) {
 			'title' => __( 'Shop & Product Page', 'ojasvidrapes' ),
 			'panel' => 'od_panel',
 		)
+	);
+
+	$add(
+		'browse_by',
+		array(
+			'label'       => __( 'Browse the shop by', 'ojasvidrapes' ),
+			'description' => __( 'What a shopper sorts the catalogue by — the rail and mosaic on the homepage, the label on each product card, the sidebar filter and the breadcrumb all follow this. A shop that sells one kind of thing has nothing to categorise, so choosing “Nothing” takes the word category off the whole site and leads with the pieces instead. Patterns and colours set up under Products → Attributes always appear as filters, whichever is chosen here.', 'ojasvidrapes' ),
+			'section'     => 'od_shop',
+			'type'        => 'select',
+			'choices'     => od_browse_choices(),
+		),
+		'od_sanitize_choice'
 	);
 
 	$add( 'shop_columns', array( 'label' => __( 'Products per row', 'ojasvidrapes' ), 'section' => 'od_shop', 'type' => 'number', 'input_attrs' => array( 'min' => 2, 'max' => 6 ) ), 'absint' );

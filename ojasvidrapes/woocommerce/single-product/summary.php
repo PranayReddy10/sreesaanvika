@@ -13,7 +13,8 @@ if ( ! $product instanceof WC_Product ) {
 	return;
 }
 
-$od_cats  = get_the_terms( $product->get_id(), 'product_cat' );
+$od_tax   = od_browse_taxonomy();
+$od_cats  = $od_tax ? get_the_terms( $product->get_id(), $od_tax ) : array();
 $od_sku   = $product->get_sku();
 $od_sold  = $product->get_total_sales();
 $od_rate  = (float) $product->get_average_rating();
@@ -21,7 +22,7 @@ $od_count = $product->get_review_count();
 ?>
 
 <div class="od-summary__brandline">
-	<?php if ( $od_cats && ! is_wp_error( $od_cats ) ) : ?>
+	<?php if ( $od_cats && ! is_wp_error( $od_cats ) && ! is_wp_error( get_term_link( $od_cats[0] ) ) ) : ?>
 		<a href="<?php echo esc_url( get_term_link( $od_cats[0] ) ); ?>"><?php echo esc_html( $od_cats[0]->name ); ?></a>
 	<?php endif; ?>
 

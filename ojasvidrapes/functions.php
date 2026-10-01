@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OD_VERSION', '2.0.2' );
+define( 'OD_VERSION', '2.1.0' );
 define( 'OD_DIR', get_template_directory() );
 define( 'OD_URI', get_template_directory_uri() );
 
@@ -298,6 +298,11 @@ add_action( 'widgets_init', 'od_widgets' );
  */
 function od_body_class( $classes ) {
 	$classes[] = 'od-theme';
+
+	// Lets the handful of rules that assume a dark page correct themselves.
+	if ( function_exists( 'od_palette_is_light' ) && od_palette_is_light() ) {
+		$classes[] = 'od-light';
+	}
 
 	if ( ! is_active_sidebar( 'sidebar-blog' ) ) {
 		$classes[] = 'od-no-sidebar';

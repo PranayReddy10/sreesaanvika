@@ -476,6 +476,45 @@ ul.products li.product .added_to_cart { display: none; }
 .od-filter__list li a:hover { color: var(--od-gold); }
 .od-filter__list .count { margin-left: auto; color: var(--od-faint); font-size: 0.78rem; }
 
+/* Attribute filters (pattern, colour, fabric) stack, so each is a toggle. */
+.od-filter__list--check li a {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.od-filter__box {
+	flex: none;
+	width: 15px;
+	height: 15px;
+	border: 1px solid var(--od-line);
+	border-radius: 3px;
+	background: var(--od-surface-2);
+	position: relative;
+	transition: background 0.2s var(--od-ease), border-color 0.2s var(--od-ease);
+}
+
+.od-filter__opt.is-on .od-filter__box {
+	background: var(--od-gold);
+	border-color: var(--od-gold);
+}
+
+/* The tick is drawn rather than loaded: one box per filter term adds up. */
+.od-filter__opt.is-on .od-filter__box::after {
+	content: "";
+	position: absolute;
+	left: 4px;
+	top: 1px;
+	width: 4px;
+	height: 8px;
+	border: solid #1a0d17;
+	border-width: 0 2px 2px 0;
+	transform: rotate(42deg);
+}
+
+.od-filter__opt.is-on { color: var(--od-gold); }
+
+
 .od-filter__swatches { display: flex; flex-wrap: wrap; gap: 10px; }
 
 .od-filter__swatches .od-swatch { width: 28px; height: 28px; }
@@ -2288,9 +2327,30 @@ body.woocommerce-page ul.products li.product {
 }
 
 @media (max-width: 600px) {
-	.od-pcard__body { padding: 12px 13px 16px; }
-	.od-pcard__title { font-size: 0.92rem; }
-	.od-pcard__price { font-size: 0.95rem; }
+	/*
+	 * On a phone the card chrome costs more than it gives: a border, a fill
+	 * and a radius around a 160px-wide photo eat the photo. The card becomes
+	 * the picture with its details written underneath, which is how a saree
+	 * is actually shopped for, and the names and prices go up rather than
+	 * down because they have to be read at arm's length.
+	 */
+	ul.products { gap: 10px 9px; }
+
+	ul.products li.product,
+	.od-product-card {
+		background: none;
+		border: 0;
+		border-radius: 0;
+	}
+
+	ul.products li.product:hover,
+	.od-product-card:hover { transform: none; box-shadow: none; }
+
+	.od-pcard__media { border-radius: var(--od-radius); }
+
+	.od-pcard__body { padding: 10px 2px 14px; }
+	.od-pcard__title { font-size: 0.95rem; line-height: 1.35; }
+	.od-pcard__price { font-size: 1.02rem; }
 	.od-pcard__cat { font-size: 0.58rem; letter-spacing: 0.16em; }
 
 	/* Keep the buy button reachable without hover on touch */

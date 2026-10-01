@@ -85,6 +85,8 @@ function od_defaults() {
 
 		/* Homepage sections ------------------------------------------ */
 		'home_source'          => 'auto',
+		'browse_by'            => 'none',
+		'catrail_text'         => '',
 		'sec_usp'              => true,
 		'sec_catrail'          => true,
 		'sec_cats'             => true,
@@ -93,7 +95,7 @@ function od_defaults() {
 		'sec_bestsellers'      => true,
 		'sec_deal'             => true,
 		'sec_sarees'           => true,
-		'sec_jewel'            => true,
+		'sec_jewel'            => false,
 		'sec_lookbook'         => true,
 		'sec_band'             => true,
 		'sec_reviews'          => true,

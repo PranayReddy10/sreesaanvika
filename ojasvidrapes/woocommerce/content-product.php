@@ -16,7 +16,10 @@ if ( empty( $product ) || ! $product->is_visible() ) {
 $od_id       = $product->get_id();
 $od_link     = get_permalink( $od_id );
 $od_second   = od_secondary_image( $product );
-$od_cats     = get_the_terms( $od_id, 'product_cat' );
+// The small line above the name: the category, the pattern, the colour —
+// whatever this shop browses by, and nothing at all when it browses by nothing.
+$od_tax      = od_browse_taxonomy();
+$od_cats     = $od_tax ? get_the_terms( $od_id, $od_tax ) : array();
 $od_cat_name = ( $od_cats && ! is_wp_error( $od_cats ) ) ? $od_cats[0]->name : '';
 $od_rating   = (float) $product->get_average_rating();
 ?>

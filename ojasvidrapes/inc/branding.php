@@ -15,10 +15,14 @@ defined( 'ABSPATH' ) || exit;
  */
 function od_logo_asset( $which = 'logo' ) {
 	$files = array(
-		'mark'    => '/assets/images/mark.svg',
-		'favicon' => '/assets/images/favicon.svg',
-		'logo'    => '/assets/images/logo.svg',
-		'png'     => '/assets/images/icon-512.png',
+		// The lotus on its own, for the preloader and anywhere square.
+		'mark'     => '/assets/images/logo-mark.png',
+		// Lotus beside the wordmark: the header lockup.
+		'header'   => '/assets/images/logo-header.png',
+		// The full stacked lockup, tagline and all.
+		'logo'     => '/assets/images/logo.png',
+		'wordmark' => '/assets/images/logo-wordmark.png',
+		'png'      => '/assets/images/icon-512.png',
 	);
 
 	return OD_URI . ( isset( $files[ $which ] ) ? $files[ $which ] : $files['logo'] );
@@ -37,11 +41,11 @@ function od_favicon_links() {
 	}
 
 	printf(
-		'<link rel="icon" href="%1$s" type="image/svg+xml" />' . "\n"
-		. '<link rel="icon" href="%2$s" sizes="32x32" type="image/png" />' . "\n"
+		'<link rel="icon" href="%1$s" sizes="32x32" type="image/png" />' . "\n"
+		. '<link rel="icon" href="%2$s" sizes="192x192" type="image/png" />' . "\n"
 		. '<link rel="apple-touch-icon" href="%3$s" />' . "\n",
-		esc_url( od_logo_asset( 'favicon' ) ),
 		esc_url( OD_URI . '/assets/images/favicon-32.png' ),
+		esc_url( OD_URI . '/assets/images/icon-192.png' ),
 		esc_url( OD_URI . '/assets/images/apple-touch-icon.png' )
 	);
 }

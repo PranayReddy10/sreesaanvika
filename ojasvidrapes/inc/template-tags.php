@@ -14,7 +14,6 @@ defined( 'ABSPATH' ) || exit;
  */
 function od_brand( $size = 'md' ) {
 	$name = get_bloginfo( 'name' );
-	$tag  = od_option( 'brand_tagline', __( 'Heritage Weaves', 'ojasvidrapes' ) );
 
 	echo '<a class="od-brand od-brand--' . esc_attr( $size ) . '" href="' . esc_url( home_url( '/' ) ) . '" rel="home">';
 
@@ -22,27 +21,27 @@ function od_brand( $size = 'md' ) {
 		$id  = get_theme_mod( 'custom_logo' );
 		$img = wp_get_attachment_image( $id, 'full', false, array( 'alt' => esc_attr( $name ) ) );
 		echo $img; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	} elseif ( 'lg' === $size ) {
+		/*
+		 * Somewhere with room to breathe — the footer, the account pages —
+		 * takes the full stacked lockup, tagline and all.
+		 */
+		printf(
+			'<img class="od-brand__logo od-brand__logo--stacked" src="%1$s" alt="%2$s" width="380" height="228" decoding="async" />',
+			esc_url( od_logo_asset( 'logo' ) ),
+			esc_attr( $name )
+		);
 	} else {
-		// Split the name so the second word can take the gold gradient.
-		$parts = preg_split( '/\s+/', trim( $name ), 2 );
-		$first = isset( $parts[0] ) ? $parts[0] : 'Ojasvi';
-		$rest  = isset( $parts[1] ) ? $parts[1] : '';
-
-		echo '<span class="od-brand__mark" aria-hidden="true">' . esc_html( mb_substr( $first, 0, 1 ) ) . '</span>';
-		echo '<span class="od-brand__text">';
-		echo '<span class="od-brand__name">' . esc_html( $first );
-
-		if ( $rest ) {
-			echo ' <em>' . esc_html( $rest ) . '</em>';
-		}
-
-		echo '</span>';
-
-		if ( $tag ) {
-			echo '<span class="od-brand__tag">' . esc_html( $tag ) . '</span>';
-		}
-
-		echo '</span>';
+		/*
+		 * The header gets the lotus beside the wordmark. The stacked lockup
+		 * would either triple the height of the bar or shrink OJASVI past
+		 * reading size on a phone, and its tagline is unreadable either way.
+		 */
+		printf(
+			'<img class="od-brand__logo" src="%1$s" alt="%2$s" width="280" height="66" decoding="async" />',
+			esc_url( od_logo_asset( 'header' ) ),
+			esc_attr( $name )
+		);
 	}
 
 	echo '</a>';
@@ -99,11 +98,21 @@ function od_breadcrumbs() {
 		if ( is_product_category() || is_product_tag() ) {
 			$items[] = esc_html( single_term_title( '', false ) );
 		} elseif ( is_product() ) {
-			$terms = get_the_terms( get_the_ID(), 'product_cat' );
+			// Shop → Pattern → piece, or just Shop → piece in a shop that
+			// does not sort itself.
+			$tax = od_browse_taxonomy();
 
-			if ( $terms && ! is_wp_error( $terms ) ) {
-				$term    = array_shift( $terms );
-				$items[] = '<a href="' . esc_url( get_term_link( $term ) ) . '">' . esc_html( $term->name ) . '</a>';
+			if ( $tax ) {
+				$terms = get_the_terms( get_the_ID(), $tax );
+
+				if ( $terms && ! is_wp_error( $terms ) ) {
+					$term = array_shift( $terms );
+					$link = get_term_link( $term );
+
+					if ( ! is_wp_error( $link ) ) {
+						$items[] = '<a href="' . esc_url( $link ) . '">' . esc_html( $term->name ) . '</a>';
+					}
+				}
 			}
 
 			$items[] = esc_html( get_the_title() );
@@ -414,12 +423,37 @@ function od_product_loop( $args = array(), $cols = 0, $more = array() ) {
  * @return array
  */
 function od_cat_query( $slugs ) {
+	$slugs = array_filter( array_map( 'sanitize_title', (array) $slugs ) );
+
+	/*
+	 * A shop with one kind of stock has no "sarees" category to filter on, and
+	 * a tax_query for a term that does not exist returns nothing at all — the
+	 * spotlight section would simply vanish. Falling back to the whole
+	 * catalogue is what the section is for anyway: showing the stock.
+	 */
+	if ( ! $slugs || ! taxonomy_exists( 'product_cat' ) ) {
+		return array();
+	}
+
+	$found = get_terms(
+		array(
+			'taxonomy'   => 'product_cat',
+			'hide_empty' => false,
+			'slug'       => $slugs,
+			'fields'     => 'slugs',
+		)
+	);
+
+	if ( ! $found || is_wp_error( $found ) ) {
+		return array();
+	}
+
 	return array(
 		'tax_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery
 			array(
 				'taxonomy' => 'product_cat',
 				'field'    => 'slug',
-				'terms'    => (array) $slugs,
+				'terms'    => $found,
 			),
 		),
 	);
@@ -504,8 +538,98 @@ function od_product_image_url( $product, $size = 'od-product' ) {
 	return $url ? $url : od_placeholder( 'product' );
 }
 
-function od_category_terms( $slugs = '', $count = 6, $top_level = true ) {
-	if ( ! taxonomy_exists( 'product_cat' ) ) {
+/**
+ * Lowercase a label for use inside a sentence, without mangling scripts that
+ * have no case.
+ *
+ * @param string $text Text.
+ * @return string
+ */
+function od_mb_lower( $text ) {
+	return function_exists( 'mb_strtolower' ) ? mb_strtolower( (string) $text, 'UTF-8' ) : strtolower( (string) $text );
+}
+
+/**
+ * The taxonomy shoppers browse this shop by.
+ *
+ * A shop that sells one kind of thing has nothing to categorise — it is all
+ * sarees — so it browses by pattern or by colour instead, or by nothing at
+ * all. Every piece of category furniture in the theme asks this first, which
+ * is what lets the word disappear from the whole site in one setting.
+ *
+ * @return string A taxonomy name, or "" when the shop does not sort itself.
+ */
+function od_browse_taxonomy() {
+	$tax = (string) od_option( 'browse_by', 'none' );
+
+	if ( 'none' === $tax || '' === $tax ) {
+		return '';
+	}
+
+	// An attribute that has since been deleted must not resurrect categories.
+	return taxonomy_exists( $tax ) ? $tax : '';
+}
+
+/**
+ * Does this shop sort itself at all?
+ *
+ * @return bool
+ */
+function od_has_browse() {
+	return '' !== od_browse_taxonomy();
+}
+
+/**
+ * The singular name of whatever the shop browses by — "Category", "Pattern",
+ * "Colour" — for headings and filter labels.
+ *
+ * @return string
+ */
+function od_browse_label() {
+	$tax = od_browse_taxonomy();
+
+	if ( ! $tax ) {
+		return '';
+	}
+
+	$object = get_taxonomy( $tax );
+
+	if ( $object && ! empty( $object->labels->singular_name ) ) {
+		return $object->labels->singular_name;
+	}
+
+	return __( 'Collection', 'ojasvidrapes' );
+}
+
+/**
+ * Every taxonomy a shop could browse by, as Customizer choices.
+ *
+ * @return array
+ */
+function od_browse_choices() {
+	$choices = array( 'none' => __( 'Nothing — this shop sells one kind of thing', 'ojasvidrapes' ) );
+
+	if ( taxonomy_exists( 'product_cat' ) ) {
+		$choices['product_cat'] = __( 'Product categories', 'ojasvidrapes' );
+	}
+
+	if ( function_exists( 'wc_get_attribute_taxonomies' ) ) {
+		foreach ( wc_get_attribute_taxonomies() as $attribute ) {
+			$name = wc_attribute_taxonomy_name( $attribute->attribute_name );
+
+			if ( taxonomy_exists( $name ) ) {
+				$choices[ $name ] = $attribute->attribute_label;
+			}
+		}
+	}
+
+	return $choices;
+}
+
+function od_browse_terms( $slugs = '', $count = 6, $top_level = true ) {
+	$taxonomy = od_browse_taxonomy();
+
+	if ( ! $taxonomy || ! taxonomy_exists( $taxonomy ) ) {
 		return array();
 	}
 
@@ -514,7 +638,7 @@ function od_category_terms( $slugs = '', $count = 6, $top_level = true ) {
 	if ( $chosen ) {
 		$terms = get_terms(
 			array(
-				'taxonomy'   => 'product_cat',
+				'taxonomy'   => $taxonomy,
 				'hide_empty' => false,
 				'slug'       => array_map( 'sanitize_title', $chosen ),
 			)
@@ -545,16 +669,20 @@ function od_category_terms( $slugs = '', $count = 6, $top_level = true ) {
 	}
 
 	$args = array(
-		'taxonomy'   => 'product_cat',
+		'taxonomy'   => $taxonomy,
 		'hide_empty' => false,
 		'number'     => max( 1, absint( $count ) ),
 		'orderby'    => 'count',
 		'order'      => 'DESC',
-		'exclude'    => array( get_option( 'default_product_cat' ) ),
 	);
 
-	if ( $top_level ) {
-		$args['parent'] = 0;
+	// Only categories have an uncategorised bucket, and a parent to sit under.
+	if ( 'product_cat' === $taxonomy ) {
+		$args['exclude'] = array( get_option( 'default_product_cat' ) );
+
+		if ( $top_level ) {
+			$args['parent'] = 0;
+		}
 	}
 
 	$terms = get_terms( $args );

@@ -1,6 +1,6 @@
 <?php
 /**
- * Category mosaic.
+ * The collections mosaic.
  *
  * @package OjasviDrapes
  */
@@ -18,7 +18,17 @@ if ( ! class_exists( 'WooCommerce' ) ) {
  */
 $od_tiles = array();
 
-if ( 'products' === od_option( 'cats_source', 'categories' ) ) {
+/*
+ * A shop that does not sort itself has no terms to tile, so the mosaic shows
+ * pieces instead of falling silent.
+ */
+$od_source = od_option( 'cats_source', 'categories' );
+
+if ( ! od_has_browse() ) {
+	$od_source = 'products';
+}
+
+if ( 'products' === $od_source ) {
 	foreach ( od_picked_products( od_option( 'cats_products' ), absint( od_option( 'cats_count' ) ) ) as $od_product ) {
 		$od_tiles[] = array(
 			'title' => $od_product->get_name(),
@@ -29,7 +39,7 @@ if ( 'products' === od_option( 'cats_source', 'categories' ) ) {
 		);
 	}
 } else {
-	foreach ( od_category_terms( od_option( 'cats_slugs' ), absint( od_option( 'cats_count' ) ), true ) as $od_term ) {
+	foreach ( od_browse_terms( od_option( 'cats_slugs' ), absint( od_option( 'cats_count' ) ), true ) as $od_term ) {
 		$od_thumb_id = get_term_meta( $od_term->term_id, 'thumbnail_id', true );
 
 		$od_tiles[] = array(

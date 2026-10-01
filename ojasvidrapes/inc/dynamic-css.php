@@ -53,6 +53,26 @@ function od_palettes() {
 			'marigold'   => '#e0913c',
 			'text'       => '#f3e8dd',
 		),
+		/*
+		 * The one light palette. Everything else in the theme is built dark,
+		 * so this is not simply the others inverted: the surfaces have to get
+		 * *darker* than the page rather than lighter, and the gold is taken
+		 * down a few steps because the bright gold that carries a dark page
+		 * has almost no contrast on white.
+		 */
+		'ivory'     => array(
+			'bg'         => '#fbf8f4',
+			'bg_alt'     => '#f4ece1',
+			'surface'    => '#ffffff',
+			'surface_2'  => '#f7f1e8',
+			'surface_3'  => '#ede2d4',
+			'gold'       => '#996910',
+			'gold_light' => '#c9a14a',
+			'gold_deep'  => '#7d5513',
+			'maroon'     => '#7b1e3b',
+			'marigold'   => '#bf6f1b',
+			'text'       => '#2a1b22',
+		),
 		'ink'       => array(
 			'bg'         => '#0b1110',
 			'bg_alt'     => '#0f1917',
@@ -67,6 +87,29 @@ function od_palettes() {
 			'text'       => '#eaf3ef',
 		),
 	);
+}
+
+/**
+ * Is this colour light enough that dark text belongs on it?
+ *
+ * Used to decide which way the surface shades run: on a dark page a card is
+ * lighter than the page, on a light one it has to be darker, and the same
+ * od_shade() call cannot do both.
+ *
+ * @param string $hex Hex colour.
+ * @return bool
+ */
+function od_is_light( $hex ) {
+	$rgb = array_map( 'intval', explode( ',', od_rgb( $hex ) ) );
+
+	if ( 3 !== count( $rgb ) ) {
+		return false;
+	}
+
+	// Rec. 601 luma, which tracks perceived brightness closely enough here.
+	$luma = ( $rgb[0] * 299 + $rgb[1] * 587 + $rgb[2] * 114 ) / 1000;
+
+	return $luma > 150;
 }
 
 /**
@@ -119,40 +162,95 @@ function od_rgb( $hex ) {
 }
 
 /**
- * Build the inline stylesheet.
+ * The colours actually in force: the chosen preset, with any colour the shop
+ * owner set by hand taking precedence over it.
  *
- * @return string
+ * Both the stylesheet and the body class read this, so the page can never
+ * claim to be light while rendering dark.
+ *
+ * @return array
  */
-function od_dynamic_css() {
+function od_resolved_palette() {
 	$preset   = od_option( 'palette_preset', 'aubergine' );
 	$palettes = od_palettes();
 	$p        = isset( $palettes[ $preset ] ) ? $palettes[ $preset ] : $palettes['aubergine'];
 
 	// Explicit colour settings win over the preset.
-	$bg       = od_option( 'color_bg', $p['bg'] );
-	$surface  = od_option( 'color_surface', $p['surface'] );
-	$gold     = od_option( 'color_gold', $p['gold'] );
-	$gold_lt  = od_option( 'color_gold_light', $p['gold_light'] );
-	$maroon   = od_option( 'color_maroon', $p['maroon'] );
-	$marigold = od_option( 'color_marigold', $p['marigold'] );
-	$text     = od_option( 'color_text', $p['text'] );
+	$out = array(
+		'bg'         => od_option( 'color_bg', $p['bg'] ),
+		'surface'    => od_option( 'color_surface', $p['surface'] ),
+		'gold'       => od_option( 'color_gold', $p['gold'] ),
+		'gold_light' => od_option( 'color_gold_light', $p['gold_light'] ),
+		'maroon'     => od_option( 'color_maroon', $p['maroon'] ),
+		'marigold'   => od_option( 'color_marigold', $p['marigold'] ),
+		'text'       => od_option( 'color_text', $p['text'] ),
+	);
 
 	// When a non-default preset is picked, let it drive unless the user changed a colour.
 	if ( 'aubergine' !== $preset && isset( $palettes[ $preset ] ) ) {
 		$defaults = $palettes['aubergine'];
-		$bg       = ( $bg === $defaults['bg'] ) ? $p['bg'] : $bg;
-		$surface  = ( $surface === $defaults['surface'] ) ? $p['surface'] : $surface;
-		$gold     = ( $gold === $defaults['gold'] ) ? $p['gold'] : $gold;
-		$gold_lt  = ( $gold_lt === $defaults['gold_light'] ) ? $p['gold_light'] : $gold_lt;
-		$maroon   = ( $maroon === $defaults['maroon'] ) ? $p['maroon'] : $maroon;
-		$marigold = ( $marigold === $defaults['marigold'] ) ? $p['marigold'] : $marigold;
-		$text     = ( $text === $defaults['text'] ) ? $p['text'] : $text;
+
+		foreach ( $out as $key => $value ) {
+			if ( $value === $defaults[ $key ] ) {
+				$out[ $key ] = $p[ $key ];
+			}
+		}
 	}
 
+	/*
+	 * The in-between tones. A palette states its own, because deriving them
+	 * by shifting every channel the same amount drains the warmth out —
+	 * ivory's white card turned flat grey that way. They are only derived
+	 * when the shop owner has picked a background or surface of their own,
+	 * which the palette knows nothing about.
+	 */
+	$step = od_is_light( $out['bg'] ) ? -1 : 1;
+
+	$out['bg_alt']    = ( $out['bg'] === $p['bg'] )
+		? $p['bg_alt']
+		: od_shade( $out['bg'], $step * 8 );
+	$out['surface_2'] = ( $out['surface'] === $p['surface'] )
+		? $p['surface_2']
+		: od_shade( $out['surface'], $step * 12 );
+	$out['surface_3'] = ( $out['surface'] === $p['surface'] )
+		? $p['surface_3']
+		: od_shade( $out['surface'], $step * 26 );
+
+	return $out;
+}
+
+/**
+ * Is the shop currently running on a light background?
+ *
+ * @return bool
+ */
+function od_palette_is_light() {
+	$p = od_resolved_palette();
+
+	return od_is_light( $p['bg'] );
+}
+
+/**
+ * Build the inline stylesheet.
+ *
+ * @return string
+ */
+function od_dynamic_css() {
+	$p = od_resolved_palette();
+
+	$bg       = $p['bg'];
+	$surface  = $p['surface'];
+	$gold     = $p['gold'];
+	$gold_lt  = $p['gold_light'];
+	$maroon   = $p['maroon'];
+	$marigold = $p['marigold'];
+	$text     = $p['text'];
+
+	$light     = od_is_light( $bg );
 	$gold_deep = od_shade( $gold, -50 );
-	$bg_alt    = od_shade( $bg, 8 );
-	$surface_2 = od_shade( $surface, 12 );
-	$surface_3 = od_shade( $surface, 26 );
+	$bg_alt    = $p['bg_alt'];
+	$surface_2 = $p['surface_2'];
+	$surface_3 = $p['surface_3'];
 
 	$font_head = od_option( 'font_head', '"Playfair Display", Georgia, serif' );
 	$scale     = absint( od_option( 'font_scale', 16 ) );
@@ -190,11 +288,17 @@ function od_dynamic_css() {
 	$css .= '--od-container:' . $container . 'px;';
 	$css .= '}';
 
-	// Page background wash follows the accent colours.
+	/*
+	 * Page background wash follows the accent colours. At the strength that
+	 * gives a dark page its depth it would stain a light one, so it drops to
+	 * roughly a fifth there.
+	 */
+	$w = $light ? 0.2 : 1.0;
+
 	$css .= 'body{background-image:'
-		. 'radial-gradient(1100px 620px at 82% -8%,rgba(' . od_rgb( $maroon ) . ',0.34),transparent 62%),'
-		. 'radial-gradient(900px 520px at 6% 4%,rgba(' . od_rgb( $surface_3 ) . ',0.5),transparent 58%),'
-		. 'radial-gradient(700px 700px at 50% 118%,rgba(' . od_rgb( $gold_deep ) . ',0.16),transparent 60%);}';
+		. 'radial-gradient(1100px 620px at 82% -8%,rgba(' . od_rgb( $maroon ) . ',' . round( 0.34 * $w, 3 ) . '),transparent 62%),'
+		. 'radial-gradient(900px 520px at 6% 4%,rgba(' . od_rgb( $surface_3 ) . ',' . round( 0.5 * $w, 3 ) . '),transparent 58%),'
+		. 'radial-gradient(700px 700px at 50% 118%,rgba(' . od_rgb( $gold_deep ) . ',' . round( 0.16 * $w, 3 ) . '),transparent 60%);}';
 
 	if ( $scale && 16 !== $scale ) {
 		$css .= 'body{font-size:' . $scale . 'px;}';

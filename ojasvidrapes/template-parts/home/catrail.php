@@ -1,6 +1,7 @@
 <?php
 /**
- * Round category rail.
+ * Round browse rail — categories, patterns, colours, whatever the shop sorts
+ * itself by. It takes itself off the page entirely when it sorts by nothing.
  *
  * @package OjasviDrapes
  */
@@ -11,7 +12,7 @@ if ( ! class_exists( 'WooCommerce' ) ) {
 	return;
 }
 
-$od_terms = od_category_terms(
+$od_terms = od_browse_terms(
 	od_option( 'catrail_slugs' ),
 	absint( od_option( 'catrail_count' ) ),
 	(bool) od_option( 'catrail_top_level' )
@@ -25,9 +26,10 @@ if ( ! $od_terms ) {
 	<div class="od-container">
 		<?php
 		od_section_head(
-			__( 'Shop by category', 'ojasvidrapes' ),
+			/* translators: %s: what the shop browses by, e.g. "pattern" */
+			sprintf( __( 'Shop by %s', 'ojasvidrapes' ), od_mb_lower( od_browse_label() ) ),
 			__( 'Find Your <em>Drape</em>', 'ojasvidrapes' ),
-			__( 'From nine-yard Kanjivarams to everyday cottons and festive jewellery.', 'ojasvidrapes' )
+			od_option( 'catrail_text', '' )
 		);
 		?>
 

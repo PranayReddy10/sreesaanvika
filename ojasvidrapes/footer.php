@@ -31,7 +31,7 @@ $od_copy    = od_option( 'footer_copy', '' );
 			<div class="od-footer__top">
 
 				<div class="od-footer__col od-footer__col--about od-footer__about">
-					<?php od_brand(); ?>
+					<?php od_brand( 'lg' ); ?>
 					<p><?php echo esc_html( od_option( 'footer_about', '' ) ); ?></p>
 					<?php od_socials(); ?>
 				</div>
@@ -52,18 +52,24 @@ $od_copy    = od_option( 'footer_copy', '' );
 						echo '<ul>';
 
 						if ( class_exists( 'WooCommerce' ) ) {
-							$od_terms = get_terms(
-								array(
-									'taxonomy'   => 'product_cat',
-									'hide_empty' => false,
-									'number'     => 6,
-									'parent'     => 0,
-								)
-							);
+							/*
+							 * Whatever the shop browses by. With nothing to
+							 * browse by this falls through to a plain link to
+							 * the shop, rather than an empty column.
+							 */
+							foreach ( od_browse_terms( '', 6, true ) as $od_term ) {
+								$od_term_link = get_term_link( $od_term );
 
-							if ( $od_terms && ! is_wp_error( $od_terms ) ) {
-								foreach ( $od_terms as $od_term ) {
-									echo '<li><a href="' . esc_url( get_term_link( $od_term ) ) . '">' . esc_html( $od_term->name ) . '</a></li>';
+								if ( ! is_wp_error( $od_term_link ) ) {
+									echo '<li><a href="' . esc_url( $od_term_link ) . '">' . esc_html( $od_term->name ) . '</a></li>';
+								}
+							}
+
+							if ( ! od_has_browse() ) {
+								$od_shop = wc_get_page_permalink( 'shop' );
+
+								if ( $od_shop ) {
+									echo '<li><a href="' . esc_url( $od_shop ) . '">' . esc_html__( 'All pieces', 'ojasvidrapes' ) . '</a></li>';
 								}
 							}
 						}
