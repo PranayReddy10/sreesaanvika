@@ -37,6 +37,7 @@ if ( 'elementor' === od_front_page_source() ) {
 		'cats'        => od_option( 'sec_cats' ),
 		'new'         => od_option( 'sec_new' ),
 		'promo'       => od_option( 'sec_promo' ),
+		'featured'    => od_option( 'sec_featured' ),
 		'bestsellers' => od_option( 'sec_bestsellers' ),
 		'deal'        => od_option( 'sec_deal' ),
 		'sarees'      => od_option( 'sec_sarees' ),

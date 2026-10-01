@@ -233,6 +233,7 @@ function od_customize_register( $wp_customize ) {
 
 	$toggles = array(
 		'sec_usp'         => __( 'Trust / USP strip', 'ojasvidrapes' ),
+		'sec_featured'    => __( 'Featured drapes (editorial rows)', 'ojasvidrapes' ),
 		'sec_catrail'     => __( 'Round category rail', 'ojasvidrapes' ),
 		'sec_cats'        => __( 'Category mosaic', 'ojasvidrapes' ),
 		'sec_new'         => __( 'New arrivals', 'ojasvidrapes' ),
@@ -274,8 +275,9 @@ function od_customize_register( $wp_customize ) {
 
 	/* -- Section wording -- */
 	$heads = array(
-		'cats'   => __( 'The collections mosaic', 'ojasvidrapes' ),
-		'sarees' => __( 'The main product edit', 'ojasvidrapes' ),
+		'featured' => __( 'Featured drapes', 'ojasvidrapes' ),
+		'cats'     => __( 'The collections mosaic', 'ojasvidrapes' ),
+		'sarees'   => __( 'The main product edit', 'ojasvidrapes' ),
 	);
 
 	foreach ( $heads as $od_key => $od_label ) {
@@ -308,6 +310,20 @@ function od_customize_register( $wp_customize ) {
 			'sanitize_textarea_field'
 		);
 	}
+
+	$add(
+		'featured_products',
+		array(
+			'label'       => __( 'Featured drapes — which pieces', 'ojasvidrapes' ),
+			'description' => __( 'The few given a full editorial row each, above the grid that holds everything else. Search, choose, and drag into order. Left empty it takes the most recent.', 'ojasvidrapes' ),
+			'section'     => 'od_home',
+			'type'        => 'picker',
+			'entity'      => 'product',
+		),
+		'sanitize_textarea_field'
+	);
+
+	$add( 'featured_count', array( 'label' => __( 'Featured drapes — how many', 'ojasvidrapes' ), 'section' => 'od_home', 'type' => 'number', 'input_attrs' => array( 'min' => 1, 'max' => 6 ) ), 'absint' );
 
 	/* -- The collections mosaic -- */
 	$add(

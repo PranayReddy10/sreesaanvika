@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OD_VERSION', '2.2.0' );
+define( 'OD_VERSION', '2.3.0' );
 define( 'OD_DIR', get_template_directory() );
 define( 'OD_URI', get_template_directory_uri() );
 

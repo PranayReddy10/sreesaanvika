@@ -346,27 +346,24 @@ class OD_Widget_Category_Mosaic extends OD_Widget {
 	}
 
 	protected function render() {
-		if ( ! taxonomy_exists( 'product_cat' ) ) {
+		if ( ! function_exists( 'wc_get_product' ) ) {
 			$this->editor_notice( esc_html__( 'This widget needs WooCommerce.', 'ojasvidrapes' ) );
 			return;
 		}
 
 		$s = $this->get_settings_for_display();
 
-		$terms = get_terms(
-			array(
-				'taxonomy'   => 'product_cat',
-				'hide_empty' => false,
-				'number'     => absint( $s['count'] ),
-				'parent'     => 0,
-				'orderby'    => 'count',
-				'order'      => 'DESC',
-				'exclude'    => array( get_option( 'default_product_cat' ) ),
-			)
-		);
+		/*
+		 * Tiles of whatever the shop browses by — and pieces when it browses
+		 * by nothing. A page built with this widget before the shop dropped
+		 * its categories would otherwise go on showing them for ever, since
+		 * Elementor saves a widget's settings into the page and nothing in
+		 * the theme can reach in and change them.
+		 */
+		$tiles = $this->mosaic_tiles( absint( $s['count'] ) );
 
-		if ( ! $terms || is_wp_error( $terms ) ) {
-			$this->editor_notice( esc_html__( 'Add some product categories to fill this mosaic.', 'ojasvidrapes' ) );
+		if ( ! $tiles ) {
+			$this->editor_notice( esc_html__( 'Add some products to fill this mosaic.', 'ojasvidrapes' ) );
 			return;
 		}
 
@@ -380,42 +377,80 @@ class OD_Widget_Category_Mosaic extends OD_Widget {
 			6 => array( 'w4 od-cat--h2', 'w2', 'w2', 'w2', 'w2', 'w2' ),
 		);
 
-		$total = count( $terms );
+		$total = count( $tiles );
 		$sizes = isset( $patterns[ $total ] ) ? $patterns[ $total ] : $patterns[6];
 
 		$this->render_heading( $s );
 		?>
 		<div class="od-cats">
 			<?php
-			foreach ( $terms as $n => $term ) :
-				$thumb_id = get_term_meta( $term->term_id, 'thumbnail_id', true );
-				$img      = $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'od-hero' ) : '';
-				$size     = isset( $sizes[ $n ] ) ? $sizes[ $n ] : 'w2';
+			foreach ( $tiles as $n => $tile ) :
+				$size = isset( $sizes[ $n ] ) ? $sizes[ $n ] : 'w2';
 				?>
 				<article class="od-cat od-cat--<?php echo esc_attr( $size ); ?>">
-					<div class="od-cat__img"<?php echo $img ? od_bg_style( $img ) : ''; ?>></div>
+					<div class="od-cat__img"<?php echo $tile['img'] ? od_bg_style( $tile['img'] ) : ''; ?>></div>
 
 					<div class="od-cat__body">
-						<span class="od-cat__count">
-							<?php
-							printf(
-								/* translators: %s: number of products */
-								esc_html( _n( '%s piece', '%s pieces', $term->count, 'ojasvidrapes' ) ),
-								esc_html( number_format_i18n( $term->count ) )
-							);
-							?>
-						</span>
-						<h3 class="od-cat__title"><?php echo esc_html( $term->name ); ?></h3>
-						<span class="od-cat__link"><?php esc_html_e( 'Explore', 'ojasvidrapes' ); ?><?php od_the_icon( 'arrow-right', 15 ); ?></span>
+						<?php if ( $tile['meta'] ) : ?>
+							<span class="od-cat__count"><?php echo esc_html( $tile['meta'] ); ?></span>
+						<?php endif; ?>
+						<h3 class="od-cat__title"><?php echo esc_html( $tile['title'] ); ?></h3>
+						<span class="od-cat__link"><?php echo esc_html( $tile['cta'] ); ?><?php od_the_icon( 'arrow-right', 15 ); ?></span>
 					</div>
 
-					<a class="od-cat__stretch" href="<?php echo esc_url( get_term_link( $term ) ); ?>">
-						<span class="screen-reader-text"><?php echo esc_html( $term->name ); ?></span>
+					<a class="od-cat__stretch" href="<?php echo esc_url( $tile['url'] ); ?>">
+						<span class="screen-reader-text"><?php echo esc_html( $tile['title'] ); ?></span>
 					</a>
 				</article>
 			<?php endforeach; ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * The tiles: browse terms where the shop has them, pieces where it does not.
+	 *
+	 * @param int $count How many tiles.
+	 * @return array
+	 */
+	protected function mosaic_tiles( $count ) {
+		$count = max( 1, $count );
+		$out   = array();
+
+		if ( od_has_browse() ) {
+			foreach ( od_browse_terms( '', $count, true ) as $term ) {
+				$link = get_term_link( $term );
+
+				if ( is_wp_error( $link ) ) {
+					continue;
+				}
+
+				$thumb = get_term_meta( $term->term_id, 'thumbnail_id', true );
+
+				$out[] = array(
+					'title' => $term->name,
+					/* translators: %s: number of products */
+					'meta'  => sprintf( _n( '%s piece', '%s pieces', $term->count, 'ojasvidrapes' ), number_format_i18n( $term->count ) ),
+					'img'   => $thumb ? wp_get_attachment_image_url( $thumb, 'od-hero' ) : '',
+					'url'   => $link,
+					'cta'   => __( 'Explore', 'ojasvidrapes' ),
+				);
+			}
+
+			return $out;
+		}
+
+		foreach ( od_picked_products( '', $count ) as $product ) {
+			$out[] = array(
+				'title' => $product->get_name(),
+				'meta'  => wp_strip_all_tags( $product->get_price_html() ),
+				'img'   => od_product_image_url( $product, 'od-hero' ),
+				'url'   => $product->get_permalink(),
+				'cta'   => __( 'View', 'ojasvidrapes' ),
+			);
+		}
+
+		return $out;
 	}
 }
 

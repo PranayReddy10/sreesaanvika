@@ -90,6 +90,11 @@ function od_defaults() {
 		'card_sku'             => true,
 
 		/* Section wording -------------------------------------------- */
+		'featured_eyebrow'     => 'Hand-picked',
+		'featured_title'       => 'The <em>Drapes</em> We Are Proud Of',
+		'featured_text'        => '',
+		'featured_products'    => '',
+		'featured_count'       => 3,
 		'cats_eyebrow'         => 'The collection',
 		'cats_title'           => 'Every <em>Drape</em> We Have',
 		'cats_text'            => '',
@@ -102,6 +107,7 @@ function od_defaults() {
 		'search_terms'         => "Kanchipuram silk\nBanarasi saree\nSoft silk\nHandloom cotton\nBridal saree\nPochampally ikat",
 		'catrail_text'         => '',
 		'sec_usp'              => true,
+		'sec_featured'         => true,
 		'sec_catrail'          => true,
 		'sec_cats'             => false,
 		'sec_new'              => false,
