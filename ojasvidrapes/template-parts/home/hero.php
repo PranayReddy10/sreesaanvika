@@ -11,8 +11,14 @@ $od_slides = array();
 
 for ( $od_i = 1; $od_i <= 3; $od_i++ ) {
 	$od_title = od_option( "hero{$od_i}_title", '' );
+	$od_img   = od_option( "hero{$od_i}_img", '' );
 
-	if ( ! $od_title ) {
+	/*
+	 * A picture on its own is a slide. Requiring a headline used to mean that
+	 * setting only the background image did nothing at all, with no hint as to
+	 * why, so the slide is kept whenever either one is filled in.
+	 */
+	if ( ! $od_title && ! $od_img ) {
 		continue;
 	}
 
@@ -28,7 +34,7 @@ for ( $od_i = 1; $od_i <= 3; $od_i++ ) {
 		'text'    => od_option( "hero{$od_i}_text", '' ),
 		'btn'     => od_option( "hero{$od_i}_btn", __( 'Shop now', 'ojasvidrapes' ) ),
 		'url'     => $od_url ? $od_url : home_url( '/' ),
-		'img'     => od_option( "hero{$od_i}_img", '' ),
+		'img'     => $od_img,
 		'align'   => od_option( "hero{$od_i}_align", 'left' ),
 	);
 }
@@ -55,7 +61,9 @@ if ( ! $od_slides ) {
 							<span class="od-hero__eyebrow"><?php echo esc_html( $od_slide['eyebrow'] ); ?></span>
 						<?php endif; ?>
 
-						<h1 class="od-hero__title"><?php echo od_kses( $od_slide['title'] ); ?></h1>
+						<?php if ( $od_slide['title'] ) : ?>
+							<h1 class="od-hero__title"><?php echo od_kses( $od_slide['title'] ); ?></h1>
+						<?php endif; ?>
 
 						<?php if ( $od_slide['text'] ) : ?>
 							<p class="od-hero__text"><?php echo esc_html( $od_slide['text'] ); ?></p>
