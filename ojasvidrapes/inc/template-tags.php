@@ -17,7 +17,7 @@ function od_brand( $size = 'md' ) {
 
 	echo '<a class="od-brand od-brand--' . esc_attr( $size ) . '" href="' . esc_url( home_url( '/' ) ) . '" rel="home">';
 
-	if ( has_custom_logo() ) {
+	if ( od_use_site_logo() ) {
 		$id  = get_theme_mod( 'custom_logo' );
 		$img = wp_get_attachment_image( $id, 'full', false, array( 'alt' => esc_attr( $name ) ) );
 		echo $img; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

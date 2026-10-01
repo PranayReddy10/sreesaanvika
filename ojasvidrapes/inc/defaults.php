@@ -47,6 +47,7 @@ function od_defaults() {
 		'palette_preset'       => 'aubergine',
 
 		/* Header ----------------------------------------------------- */
+		'logo_source'          => 'theme',
 		'brand_tagline'        => 'Heritage Weaves',
 		'topbar_on'            => true,
 		'topbar_items'         => "Free shipping across India on orders above ₹2,999\nHandloom certified — direct from the weavers of Kanchipuram & Banaras\nEasy 7-day returns · 100% secure payments",

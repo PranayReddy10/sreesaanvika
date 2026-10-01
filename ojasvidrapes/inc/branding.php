@@ -29,6 +29,46 @@ function od_logo_asset( $which = 'logo' ) {
 }
 
 /**
+ * Which logo the site shows.
+ *
+ * A logo uploaded under Site Identity normally wins, because that is where a
+ * shop owner expects to set one. But a logo uploaded once and half-forgotten
+ * then quietly overrides the brand's own artwork on every page, with nothing
+ * to say where it is coming from — so it can be overruled from the Customizer
+ * without having to find and delete the upload.
+ *
+ * @return bool True to use the Site Identity logo, false for the theme's own.
+ */
+function od_use_site_logo() {
+	$source = od_option( 'logo_source', 'theme' );
+
+	if ( 'theme' === $source ) {
+		return false;
+	}
+
+	return function_exists( 'has_custom_logo' ) && has_custom_logo();
+}
+
+/**
+ * The URL of whichever logo is in force.
+ *
+ * @param string $variant header|logo|wordmark|mark — ignored for an uploaded
+ *                        logo, which has only the one file.
+ * @return string
+ */
+function od_brand_logo_src( $variant = 'header' ) {
+	if ( od_use_site_logo() ) {
+		$url = wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' );
+
+		if ( $url ) {
+			return $url;
+		}
+	}
+
+	return od_logo_asset( $variant );
+}
+
+/**
  * Fall back to the bundled icon when no Site Icon has been uploaded.
  *
  * WordPress prints its own tags whenever Settings → General has a Site Icon,
@@ -118,8 +158,15 @@ function od_preloader() {
 	$ms   = od_preloader_ms();
 	$out  = 520;
 	$name = od_option( 'preloader_text' );
-	$name = $name ? $name : get_bloginfo( 'name' );
-	$tag  = od_option( 'brand_tagline', __( 'Heritage Weaves', 'ojasvidrapes' ) );
+	$tag  = od_option( 'brand_tagline', '' );
+
+	/*
+	 * Wording of their own, or an uploaded logo the wordmark would not match:
+	 * either way fall back to type. Otherwise the real wordmark goes in, which
+	 * already carries the name and the line under it.
+	 */
+	$custom = ( '' !== (string) $name ) || od_use_site_logo();
+	$name   = $name ? $name : get_bloginfo( 'name' );
 	?>
 	<div id="od-preloader" class="od-preloader" role="status" aria-live="polite"
 		data-ms="<?php echo esc_attr( $ms ); ?>"
@@ -132,12 +179,17 @@ function od_preloader() {
 					<circle class="od-preloader__track" cx="60" cy="60" r="55" />
 					<circle class="od-preloader__sweep" cx="60" cy="60" r="55" />
 				</svg>
-				<img src="<?php echo esc_url( od_logo_asset( 'mark' ) ); ?>" alt="" width="86" height="86" />
+				<img src="<?php echo esc_url( od_brand_logo_src( 'mark' ) ); ?>" alt="" width="86" height="86" />
 			</span>
 
-			<span class="od-preloader__name"><?php echo esc_html( $name ); ?></span>
-			<?php if ( $tag ) : ?>
-				<span class="od-preloader__tag"><?php echo esc_html( $tag ); ?></span>
+			<?php if ( $custom ) : ?>
+				<span class="od-preloader__name"><?php echo esc_html( $name ); ?></span>
+				<?php if ( $tag ) : ?>
+					<span class="od-preloader__tag"><?php echo esc_html( $tag ); ?></span>
+				<?php endif; ?>
+			<?php else : ?>
+				<img class="od-preloader__wordmark" src="<?php echo esc_url( od_logo_asset( 'wordmark' ) ); ?>"
+					alt="<?php echo esc_attr( $name ); ?>" width="260" height="51" />
 			<?php endif; ?>
 
 			<span class="od-preloader__bar"><i></i></span>
@@ -232,6 +284,13 @@ function od_preloader() {
 		}
 
 		@keyframes od-preloader-spin { to { transform: rotate(360deg); } }
+
+		.od-preloader__wordmark {
+			display: block;
+			height: clamp(22px, 5vw, 30px);
+			width: auto;
+			margin: 0 auto;
+		}
 
 		.od-preloader__name {
 			display: block;

@@ -139,6 +139,21 @@ function od_customize_register( $wp_customize ) {
 		)
 	);
 
+	$add(
+		'logo_source',
+		array(
+			'label'       => __( 'Which logo to show', 'ojasvidrapes' ),
+			'description' => __( 'The theme ships the Ojasvi lotus lockup — the lotus beside the wordmark in the header, the full stacked logo in the footer, and the lotus and wordmark on the loading screen. It is used by default, so a logo uploaded under Site Identity and half-forgotten cannot quietly replace the brand\'s own artwork. Switch to the second option to use an upload instead.', 'ojasvidrapes' ),
+			'section'     => 'od_header',
+			'type'        => 'select',
+			'choices'     => array(
+				'theme' => __( 'The Ojasvi lotus logo that ships with the theme', 'ojasvidrapes' ),
+				'auto'  => __( 'A logo uploaded under Site Identity, if there is one', 'ojasvidrapes' ),
+			),
+		),
+		'od_sanitize_choice'
+	);
+
 	$add( 'brand_tagline', array( 'label' => __( 'Brand tagline (under the logo)', 'ojasvidrapes' ), 'section' => 'od_header' ) );
 	$add( 'topbar_on', array( 'label' => __( 'Show the announcement bar', 'ojasvidrapes' ), 'section' => 'od_header', 'type' => 'checkbox' ), 'od_sanitize_bool' );
 	$add(
