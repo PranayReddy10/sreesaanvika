@@ -330,7 +330,7 @@ function od_legal_body( $slug ) {
 <ul>
 <li>Blouses stitched to your measurements, and any garment we altered for you.</li>
 <li>Sarees sent for fall and pico stitching at your request.</li>
-<li>Pierced jewellery — earrings, nose pins and nose rings — for hygiene reasons.</li>
+<li>A saree that has been cut, or stitched with a fall and pico, since the work cannot be undone.</li>
 <li>Items marked <em>final sale</em> on the product page.</li>
 <li>Anything returned without tags, or damaged after delivery.</li>
 </ul>

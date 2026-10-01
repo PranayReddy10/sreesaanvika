@@ -23,9 +23,9 @@ if ( ! $od_has ) {
 	<div class="od-container">
 		<?php
 		od_section_head(
-			__( 'Six yards of grace', 'ojasvidrapes' ),
-			__( 'The <em>Saree</em> Edit', 'ojasvidrapes' ),
-			__( 'Kanchipuram, Banarasi, Pochampally, Chanderi and Bhagalpuri silks — straight from the weavers.', 'ojasvidrapes' )
+			od_option( 'sarees_eyebrow' ),
+			od_option( 'sarees_title' ),
+			od_option( 'sarees_text' )
 		);
 
 		echo $od_loop; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

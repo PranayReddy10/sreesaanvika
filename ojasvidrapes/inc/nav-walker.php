@@ -103,10 +103,16 @@ function od_menu_fallback( $args = array() ) {
 		$items[ wc_get_page_permalink( 'shop' ) ] = __( 'Shop', 'ojasvidrapes' );
 	}
 
-	foreach ( array( 'sarees' => __( 'Sarees', 'ojasvidrapes' ), 'jewellery' => __( 'Jewellery', 'ojasvidrapes' ), 'dresses' => __( 'Dresses', 'ojasvidrapes' ) ) as $slug => $label ) {
-		$term = get_term_by( 'slug', $slug, 'product_cat' );
-		if ( $term && ! is_wp_error( $term ) ) {
-			$items[ get_term_link( $term ) ] = $label;
+	/*
+	 * Whatever the shop browses by, if anything. This used to name Sarees,
+	 * Jewellery and Dresses outright, which put departments in the menu of a
+	 * shop that has never had any.
+	 */
+	foreach ( od_browse_terms( '', 4, true ) as $term ) {
+		$link = get_term_link( $term );
+
+		if ( ! is_wp_error( $link ) ) {
+			$items[ $link ] = $term->name;
 		}
 	}
 

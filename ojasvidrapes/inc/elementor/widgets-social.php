@@ -96,7 +96,7 @@ class OD_Widget_Testimonials extends OD_Widget {
 					),
 					array(
 						'stars' => '5',
-						'text'  => esc_html__( 'Ordered an Anarkali two sizes up by mistake — the return pickup came the next morning and the exchange shipped the same week.', 'ojasvidrapes' ),
+						'text'  => esc_html__( 'Ordered the wrong shade by mistake — the return pickup came the next morning and the exchange shipped the same week.', 'ojasvidrapes' ),
 						'name'  => esc_html__( 'Fatima Sheikh', 'ojasvidrapes' ),
 						'city'  => esc_html__( 'Hyderabad', 'ojasvidrapes' ),
 					),

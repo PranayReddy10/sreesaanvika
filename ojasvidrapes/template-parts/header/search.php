@@ -7,14 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$od_suggestions = array(
-	__( 'Kanchipuram silk', 'ojasvidrapes' ),
-	__( 'Banarasi saree', 'ojasvidrapes' ),
-	__( 'Temple jewellery', 'ojasvidrapes' ),
-	__( 'Anarkali suit', 'ojasvidrapes' ),
-	__( 'Chikankari kurta', 'ojasvidrapes' ),
-	__( 'Bridal lehenga', 'ojasvidrapes' ),
-);
+// One per line in the Customizer. A shop that sells one kind of thing should
+// not be suggesting the other kinds it has never stocked.
+$od_suggestions = array_filter( array_map( 'trim', preg_split( '/[\r\n]+/', (string) od_option( 'search_terms' ) ) ) );
 ?>
 <div class="od-search-overlay" aria-hidden="true" role="dialog" aria-modal="true"
 	aria-label="<?php esc_attr_e( 'Search', 'ojasvidrapes' ); ?>">
@@ -27,7 +22,7 @@ $od_suggestions = array(
 	<div class="od-search-overlay__inner">
 		<?php od_search_form(); ?>
 
-		<div class="od-search-overlay__hint">
+		<div class="od-search-overlay__hint"<?php echo $od_suggestions ? '' : ' hidden'; ?>>
 			<span><?php esc_html_e( 'Popular:', 'ojasvidrapes' ); ?></span>
 			<?php foreach ( $od_suggestions as $od_term ) : ?>
 				<a class="od-chip" href="<?php echo esc_url( add_query_arg( array( 's' => rawurlencode( $od_term ), 'post_type' => 'product' ), home_url( '/' ) ) ); ?>">

@@ -76,7 +76,7 @@ $od_first = array_key_first( $od_tabs );
 			<li><?php esc_html_e( 'Refold along a different line every three months so the silk does not crease permanently.', 'ojasvidrapes' ); ?></li>
 			<li><?php esc_html_e( 'Keep perfume and deodorant away from the fabric; spray before you drape, not after.', 'ojasvidrapes' ); ?></li>
 			<li><?php esc_html_e( 'Iron on the reverse at a low setting with a cotton cloth between the iron and the weave.', 'ojasvidrapes' ); ?></li>
-			<li><?php esc_html_e( 'For oxidised and antique-finish jewellery, wipe with a dry cloth and store in the pouch provided.', 'ojasvidrapes' ); ?></li>
+			<li><?php esc_html_e( 'Fold along a different line every few months so the zari never creases in the same place twice.', 'ojasvidrapes' ); ?></li>
 		</ul>
 	</div>
 
@@ -93,7 +93,7 @@ $od_first = array_key_first( $od_tabs );
 		<ul>
 			<li><?php esc_html_e( 'Seven days from delivery, on unworn pieces with the tags intact.', 'ojasvidrapes' ); ?></li>
 			<li><?php esc_html_e( 'Free reverse pickup in serviceable PIN codes; refunds land within 5–7 business days.', 'ojasvidrapes' ); ?></li>
-			<li><?php esc_html_e( 'Custom-stitched blouses, altered garments and pierced jewellery are final sale.', 'ojasvidrapes' ); ?></li>
+			<li><?php esc_html_e( 'Sarees that have been cut, stitched with a fall and pico, or had the blouse piece separated are final sale.', 'ojasvidrapes' ); ?></li>
 			<li><?php esc_html_e( 'Slight variations in colour and weave are the mark of a handloom, not a defect.', 'ojasvidrapes' ); ?></li>
 		</ul>
 	</div>

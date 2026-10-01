@@ -12,7 +12,7 @@ do_action( 'woocommerce_cart_is_empty' );
 od_empty_state(
 	'bag',
 	__( 'Your bag is empty', 'ojasvidrapes' ),
-	__( 'Nothing here yet. Browse the new arrivals — there are handloom sarees, temple jewellery and festive dresses waiting.', 'ojasvidrapes' ),
+	__( 'Nothing here yet. Have a look at the collection — every drape is sourced straight from the weavers.', 'ojasvidrapes' ),
 	wc_get_page_permalink( 'shop' ),
 	__( 'Start shopping', 'ojasvidrapes' )
 );

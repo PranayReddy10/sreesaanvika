@@ -108,7 +108,7 @@ function od_seo_description() {
 		if ( ! $text && $term ) {
 			$text = sprintf(
 				/* translators: 1: term name, 2: site name */
-				__( 'Shop %1$s at %2$s — handloom sarees, temple jewellery and festive dresses, sourced direct from Indian weavers.', 'ojasvidrapes' ),
+				__( 'Shop %1$s at %2$s — handloom sarees sourced direct from Indian weaver families.', 'ojasvidrapes' ),
 				$term->name,
 				get_bloginfo( 'name' )
 			);

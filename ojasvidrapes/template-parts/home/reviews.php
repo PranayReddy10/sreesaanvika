@@ -50,7 +50,7 @@ if ( ! $od_quotes ) {
 		),
 		array(
 			'stars' => 5,
-			'text'  => __( 'Ordered an Anarkali two sizes up by mistake — the return pickup came the next morning and the exchange shipped the same week. Genuinely good service.', 'ojasvidrapes' ),
+			'text'  => __( 'Ordered the wrong shade by mistake — the return pickup came the next morning and the exchange shipped the same week. Genuinely good service.', 'ojasvidrapes' ),
 			'name'  => __( 'Fatima Sheikh', 'ojasvidrapes' ),
 			'city'  => __( 'Hyderabad', 'ojasvidrapes' ),
 		),

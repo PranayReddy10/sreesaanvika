@@ -90,7 +90,7 @@ function od_welcome_screen() {
 		</h1>
 
 		<p style="font-size:14px;max-width:760px">
-			<?php esc_html_e( 'A dark-luxe WooCommerce theme for Indian women\'s fashion — handloom sarees, temple jewellery and festive dresses. Follow the three steps below and your storefront is live.', 'ojasvidrapes' ); ?>
+			<?php esc_html_e( 'A dark-luxe WooCommerce theme for a handloom saree house. Follow the three steps below and your storefront is live.', 'ojasvidrapes' ); ?>
 		</p>
 
 		<?php
@@ -366,7 +366,7 @@ function od_welcome_screen() {
 				</p>
 			<?php else : ?>
 				<p>
-					<?php esc_html_e( 'Ojasvi Drapes Offers runs Buy 2 Get 1 Free and offers like it with no code to type. You pick the products; when a shopper has enough of them in the cart the cheapest one goes free by itself. Run one for sarees and another for jewellery — they are counted separately.', 'ojasvidrapes' ); ?>
+					<?php esc_html_e( 'Ojasvi Drapes Offers runs Buy 2 Get 1 Free and offers like it with no code to type. You pick the pieces; when a shopper has enough of them in the cart the cheapest one goes free by itself. Several offers can run at once and are counted separately.', 'ojasvidrapes' ); ?>
 				</p>
 				<p><?php esc_html_e( 'Install ojasvidrapes-offers.zip under Plugins → Add New → Upload Plugin.', 'ojasvidrapes' ); ?></p>
 				<a class="button" href="<?php echo esc_url( admin_url( 'plugin-install.php?tab=upload' ) ); ?>">

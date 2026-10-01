@@ -295,7 +295,7 @@ function od_search_form( $class = '' ) {
 	<form role="search" method="get" class="od-searchform <?php echo esc_attr( $class ); ?>" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 		<label class="screen-reader-text" for="od-search-field"><?php esc_html_e( 'Search for:', 'ojasvidrapes' ); ?></label>
 		<input type="search" id="od-search-field" name="s" value="<?php echo esc_attr( get_search_query() ); ?>"
-			placeholder="<?php esc_attr_e( 'Search sarees, jewellery, dresses…', 'ojasvidrapes' ); ?>" autocomplete="off" />
+			placeholder="<?php echo esc_attr( od_option( 'search_placeholder' ) ); ?>" autocomplete="off" />
 		<?php if ( class_exists( 'WooCommerce' ) ) : ?>
 			<input type="hidden" name="post_type" value="product" />
 		<?php endif; ?>

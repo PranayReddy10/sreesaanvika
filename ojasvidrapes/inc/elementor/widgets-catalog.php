@@ -321,9 +321,9 @@ class OD_Widget_Category_Mosaic extends OD_Widget {
 		$this->start_controls_section( 'heading_section', array( 'label' => esc_html__( 'Heading', 'ojasvidrapes' ) ) );
 
 		$this->add_heading_controls(
-			esc_html__( 'The collections', 'ojasvidrapes' ),
-			__( 'Curated for <em>Every Celebration</em>', 'ojasvidrapes' ),
-			esc_html__( 'Weddings, festivals, workdays and the quiet evenings in between.', 'ojasvidrapes' )
+			esc_html__( 'The collection', 'ojasvidrapes' ),
+			__( 'Every <em>Drape</em> We Have', 'ojasvidrapes' ),
+			''
 		);
 
 		$this->end_controls_section();

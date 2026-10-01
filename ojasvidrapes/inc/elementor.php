@@ -298,3 +298,75 @@ function od_elementor_home_notice() {
 		. esc_html__( 'Edit the homepage in Elementor', 'ojasvidrapes' )
 		. '</a></span>';
 }
+
+/**
+ * Say on every admin screen when the homepage settings are not being used.
+ *
+ * The Customizer says so too, but a shop owner who has been told the homepage
+ * is set up in the Customizer will change a setting, see the live page
+ * unchanged, and conclude the theme is broken — which is exactly what
+ * happened. This is the one notice worth interrupting them for, so it carries
+ * both ways out and can be dismissed for good once they have chosen one.
+ */
+function od_elementor_home_admin_notice() {
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		return;
+	}
+
+	if ( ! od_front_page_is_elementor() || 'theme' === od_option( 'home_source', 'auto' ) ) {
+		return;
+	}
+
+	if ( get_user_meta( get_current_user_id(), 'od_dismissed_home_notice', true ) ) {
+		return;
+	}
+
+	$customize = add_query_arg(
+		array( 'autofocus[control]' => 'od_home_source' ),
+		admin_url( 'customize.php' )
+	);
+
+	printf(
+		'<div class="notice notice-warning is-dismissible od-home-notice"><p><strong>%1$s</strong> %2$s</p><p><a class="button button-primary" href="%3$s">%4$s</a> <a class="button" href="%5$s">%6$s</a></p></div>',
+		esc_html__( 'Your homepage is built in Elementor.', 'ojasvidrapes' ),
+		esc_html__( 'Elementor draws the whole front page, so the hero slider and the homepage sections in the Customizer are not being used. Edit the page in Elementor, or switch the homepage over to the theme’s sections — your Elementor page is kept either way.', 'ojasvidrapes' ),
+		esc_url( od_front_page_elementor_link() ),
+		esc_html__( 'Edit the homepage in Elementor', 'ojasvidrapes' ),
+		esc_url( $customize ),
+		esc_html__( 'Use the theme’s sections instead', 'ojasvidrapes' )
+	);
+
+	// Dismissing a core notice only hides it for the page view, so the choice
+	// is recorded against the user.
+	?>
+	<script>
+	( function () {
+		var n = document.querySelector( '.od-home-notice' );
+		if ( ! n ) { return; }
+		n.addEventListener( 'click', function ( e ) {
+			if ( ! e.target.classList.contains( 'notice-dismiss' ) ) { return; }
+			var body = new FormData();
+			body.append( 'action', 'od_dismiss_home_notice' );
+			body.append( 'nonce', '<?php echo esc_js( wp_create_nonce( 'od_dismiss_home_notice' ) ); ?>' );
+			fetch( <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>, { method: 'POST', body: body, credentials: 'same-origin' } );
+		} );
+	}() );
+	</script>
+	<?php
+}
+add_action( 'admin_notices', 'od_elementor_home_admin_notice' );
+
+/**
+ * Remember that the homepage notice was dismissed.
+ */
+function od_dismiss_home_notice() {
+	check_ajax_referer( 'od_dismiss_home_notice', 'nonce' );
+
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		wp_send_json_error();
+	}
+
+	update_user_meta( get_current_user_id(), 'od_dismissed_home_notice', 1 );
+	wp_send_json_success();
+}
+add_action( 'wp_ajax_od_dismiss_home_notice', 'od_dismiss_home_notice' );

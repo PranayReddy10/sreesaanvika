@@ -63,9 +63,9 @@ $od_sizes = od_category_tile_sizes( count( $od_tiles ) );
 	<div class="od-container">
 		<?php
 		od_section_head(
-			__( 'The collections', 'ojasvidrapes' ),
-			__( 'Curated for <em>Every Celebration</em>', 'ojasvidrapes' ),
-			__( 'Weddings, festivals, workdays and the quiet evenings in between.', 'ojasvidrapes' )
+			od_option( 'cats_eyebrow' ),
+			od_option( 'cats_title' ),
+			od_option( 'cats_text' )
 		);
 		?>
 

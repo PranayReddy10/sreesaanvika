@@ -53,7 +53,7 @@ $od_rows = array(
 	<ul style="color:var(--od-text-soft);font-size:.9rem">
 		<li><?php esc_html_e( 'Standard saree — 5.5 metres plus a 0.8 metre blouse piece', 'ojasvidrapes' ); ?></li>
 		<li><?php esc_html_e( 'Nine-yard (madisar) — 8.2 metres, no separate blouse piece', 'ojasvidrapes' ); ?></li>
-		<li><?php esc_html_e( 'Lehenga — free size waist with a 3-inch adjustable drawstring', 'ojasvidrapes' ); ?></li>
+		<li><?php esc_html_e( 'Blouse piece — unstitched, cut generously enough for sizes 32 to 42', 'ojasvidrapes' ); ?></li>
 	</ul>
 
 	<p style="color:var(--od-muted);font-size:.86rem">

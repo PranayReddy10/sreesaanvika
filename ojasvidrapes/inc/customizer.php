@@ -152,6 +152,17 @@ function od_customize_register( $wp_customize ) {
 		'sanitize_textarea_field'
 	);
 	$add( 'topbar_phone', array( 'label' => __( 'Top bar phone number', 'ojasvidrapes' ), 'section' => 'od_header' ) );
+	$add( 'search_placeholder', array( 'label' => __( 'Search box placeholder', 'ojasvidrapes' ), 'section' => 'od_header' ) );
+	$add(
+		'search_terms',
+		array(
+			'label'       => __( 'Popular searches', 'ojasvidrapes' ),
+			'description' => __( 'One per line, shown as chips under the search box. Leave empty for none. Only put things the shop actually stocks here — suggesting what you have never sold is worse than suggesting nothing.', 'ojasvidrapes' ),
+			'section'     => 'od_header',
+			'type'        => 'textarea',
+		),
+		'sanitize_textarea_field'
+	);
 	$add( 'sticky_header', array( 'label' => __( 'Sticky header on scroll', 'ojasvidrapes' ), 'section' => 'od_header', 'type' => 'checkbox' ), 'od_sanitize_bool' );
 
 	/* -----------------------------------------------------------------
@@ -260,6 +271,43 @@ function od_customize_register( $wp_customize ) {
 		),
 		'sanitize_textarea_field'
 	);
+
+	/* -- Section wording -- */
+	$heads = array(
+		'cats'   => __( 'The collections mosaic', 'ojasvidrapes' ),
+		'sarees' => __( 'The main product edit', 'ojasvidrapes' ),
+	);
+
+	foreach ( $heads as $od_key => $od_label ) {
+		$add(
+			$od_key . '_eyebrow',
+			array(
+				/* translators: %s: the name of a homepage section */
+				'label'   => sprintf( __( '%s — small label', 'ojasvidrapes' ), $od_label ),
+				'section' => 'od_home',
+			)
+		);
+		$add(
+			$od_key . '_title',
+			array(
+				/* translators: %s: the name of a homepage section */
+				'label'   => sprintf( __( '%s — heading (use <em> for the gold words)', 'ojasvidrapes' ), $od_label ),
+				'section' => 'od_home',
+				'type'    => 'textarea',
+			),
+			'od_sanitize_html'
+		);
+		$add(
+			$od_key . '_text',
+			array(
+				/* translators: %s: the name of a homepage section */
+				'label'   => sprintf( __( '%s — supporting line', 'ojasvidrapes' ), $od_label ),
+				'section' => 'od_home',
+				'type'    => 'textarea',
+			),
+			'sanitize_textarea_field'
+		);
+	}
 
 	/* -- The collections mosaic -- */
 	$add(

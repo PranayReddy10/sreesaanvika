@@ -21,7 +21,7 @@ $od_groups = array(
 	__( 'Returns & exchanges', 'ojasvidrapes' ) => array(
 		array( __( 'What is your return window?', 'ojasvidrapes' ), __( 'Seven days from delivery on unworn pieces with the tags intact. Free reverse pickup wherever our courier reaches.', 'ojasvidrapes' ) ),
 		array( __( 'How long do refunds take?', 'ojasvidrapes' ), __( 'Once the piece reaches us and passes a quick check, refunds are issued within 5–7 business days to the original payment method.', 'ojasvidrapes' ) ),
-		array( __( 'What cannot be returned?', 'ojasvidrapes' ), __( 'Custom-stitched blouses, altered garments and pierced jewellery are final sale for hygiene and fit reasons.', 'ojasvidrapes' ) ),
+		array( __( 'What cannot be returned?', 'ojasvidrapes' ), __( 'A saree that has been cut, stitched with a fall and pico, or had its blouse piece separated cannot be returned — the work cannot be undone.', 'ojasvidrapes' ) ),
 	),
 	__( 'Product & authenticity', 'ojasvidrapes' ) => array(
 		array( __( 'Is the zari real?', 'ojasvidrapes' ), __( 'On every saree listed as pure zari, yes — tested silver-gilt thread. Where we use tested or imitation zari, the product page and the label say so plainly.', 'ojasvidrapes' ) ),
