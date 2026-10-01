@@ -82,6 +82,67 @@ function od_elementor_owns_page() {
 }
 
 /**
+ * Is the front page itself laid out in Elementor?
+ *
+ * Asked from the admin, where there is no current post, so the page has to be
+ * named explicitly.
+ *
+ * @return bool
+ */
+function od_front_page_is_elementor() {
+	if ( 'page' !== get_option( 'show_on_front' ) ) {
+		return false;
+	}
+
+	$id = (int) get_option( 'page_on_front' );
+
+	return $id && od_built_with_elementor( $id );
+}
+
+/**
+ * Who draws the front page.
+ *
+ * A page built in Elementor takes over by default, because otherwise the
+ * builder's full-width sections and the theme's own storefront sections would
+ * be stacked on the same page. That is almost always what a shop wants, but it
+ * is silent: the Customizer's hero slider and section switches simply stop
+ * having any effect, with nothing to say why. So it can also be set outright,
+ * for a shop that would rather keep its Elementor page on file and go back to
+ * the theme's sections.
+ *
+ * @return string "elementor" or "theme".
+ */
+function od_front_page_source() {
+	/*
+	 * The editor preview always belongs to Elementor, whatever the setting —
+	 * the iframe has to find the rendered content wrapper or the editor never
+	 * finishes loading.
+	 */
+	if ( od_elementor_preview() ) {
+		return 'elementor';
+	}
+
+	if ( 'theme' === od_option( 'home_source', 'auto' ) ) {
+		return 'theme';
+	}
+
+	return od_built_with_elementor() ? 'elementor' : 'theme';
+}
+
+/**
+ * The link that opens the front page in the Elementor editor.
+ *
+ * @return string Empty when there is no Elementor front page to open.
+ */
+function od_front_page_elementor_link() {
+	if ( ! od_front_page_is_elementor() ) {
+		return '';
+	}
+
+	return admin_url( 'post.php?post=' . (int) get_option( 'page_on_front' ) . '&action=elementor' );
+}
+
+/**
  * Register the header and footer theme locations for Elementor Pro's
  * Theme Builder. Only these two — the theme keeps ownership of single,
  * archive and every WooCommerce template.
@@ -204,3 +265,36 @@ function od_elementor_register_widgets( $widgets_manager ) {
 }
 add_action( 'elementor/widgets/register', 'od_elementor_register_widgets' );
 add_action( 'elementor/widgets/widgets_registered', 'od_elementor_register_widgets' );
+
+/**
+ * The note shown on the Customizer's homepage sections when Elementor has
+ * taken the front page over.
+ *
+ * Without it, the hero slider controls look and behave exactly as normal —
+ * they save, the preview may even seem to agree — while the live homepage goes
+ * on showing whatever is in the Elementor page. The note says which of the two
+ * is in charge, and gives both ways out.
+ *
+ * @return string Markup for a section description, or an empty string.
+ */
+function od_elementor_home_notice() {
+	if ( ! od_front_page_is_elementor() ) {
+		return '';
+	}
+
+	$style = 'display:block;margin-top:10px;padding:10px 12px;border-left:3px solid #d9a441;background:rgba(217,164,65,.09);line-height:1.6;';
+
+	if ( 'theme' === od_option( 'home_source', 'auto' ) ) {
+		return '<span style="' . esc_attr( $style ) . '">'
+			. esc_html__( 'Your homepage was built in Elementor, but “Homepage layout” below is set to the theme’s sections, so these settings are the ones in use. The Elementor page is kept and can be switched back to at any time.', 'ojasvidrapes' )
+			. '</span>';
+	}
+
+	return '<span style="' . esc_attr( $style ) . '"><strong>'
+		. esc_html__( 'These settings are not being used right now.', 'ojasvidrapes' )
+		. '</strong> '
+		. esc_html__( 'Your homepage was built in Elementor, so Elementor draws it and the slider below is ignored. Either edit the slider in Elementor, or set “Homepage layout” in Homepage — Sections to the theme’s sections.', 'ojasvidrapes' )
+		. ' <a href="' . esc_url( od_front_page_elementor_link() ) . '" target="_blank" rel="noopener">'
+		. esc_html__( 'Edit the homepage in Elementor', 'ojasvidrapes' )
+		. '</a></span>';
+}

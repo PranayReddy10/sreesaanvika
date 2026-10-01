@@ -4,7 +4,8 @@
  *
  * Renders the storefront sections in the order set in the Customizer. If the
  * front page was laid out in Elementor, the builder owns the page instead and
- * the theme sections step aside.
+ * the theme sections step aside — unless "Homepage layout" has been set to the
+ * theme's sections outright, which is what od_front_page_source() decides.
  *
  * @package OjasviDrapes
  */
@@ -13,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 
 get_header();
 
-if ( od_elementor_owns_page() ) {
+if ( 'elementor' === od_front_page_source() ) {
 
 	/*
 	 * Elementor built this page. Print the content and nothing else — and

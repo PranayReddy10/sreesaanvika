@@ -84,6 +84,7 @@ function od_defaults() {
 		'hero_speed'           => 6,
 
 		/* Homepage sections ------------------------------------------ */
+		'home_source'          => 'auto',
 		'sec_usp'              => true,
 		'sec_catrail'          => true,
 		'sec_cats'             => true,

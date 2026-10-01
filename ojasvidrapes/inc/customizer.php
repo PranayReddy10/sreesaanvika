@@ -167,7 +167,8 @@ function od_customize_register( $wp_customize ) {
 		array(
 			'title'       => __( 'Homepage — Hero Slider', 'ojasvidrapes' ),
 			'panel'       => 'od_panel',
-			'description' => __( 'Up to three slides. Leave a title empty to skip that slide.', 'ojasvidrapes' ),
+			'description' => __( 'Up to three slides. A slide needs a title or a background image — one is enough.', 'ojasvidrapes' )
+				. od_elementor_home_notice(),
 		)
 	);
 
@@ -203,9 +204,25 @@ function od_customize_register( $wp_customize ) {
 	$wp_customize->add_section(
 		'od_home',
 		array(
-			'title' => __( 'Homepage — Sections', 'ojasvidrapes' ),
-			'panel' => 'od_panel',
+			'title'       => __( 'Homepage — Sections', 'ojasvidrapes' ),
+			'panel'       => 'od_panel',
+			'description' => od_elementor_home_notice(),
 		)
+	);
+
+	$add(
+		'home_source',
+		array(
+			'label'       => __( 'Homepage layout', 'ojasvidrapes' ),
+			'description' => __( 'A homepage built in Elementor takes over from the theme, so these switches and the hero slider above stop applying to it. Choose the theme\'s sections to use them instead — your Elementor page is kept, just not shown.', 'ojasvidrapes' ),
+			'section'     => 'od_home',
+			'type'        => 'select',
+			'choices'     => array(
+				'auto'  => __( 'Elementor when the page is built with it', 'ojasvidrapes' ),
+				'theme' => __( "The theme's sections, always", 'ojasvidrapes' ),
+			),
+		),
+		'od_sanitize_choice'
 	);
 
 	$toggles = array(
