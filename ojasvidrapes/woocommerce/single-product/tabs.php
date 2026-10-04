@@ -83,7 +83,12 @@ $od_first = array_key_first( $od_tabs );
 	<div class="od-tabs__panel" id="tab-shipping" role="tabpanel" aria-labelledby="tabbtn-shipping">
 		<h3><?php esc_html_e( 'Shipping', 'ojasvidrapes' ); ?></h3>
 		<ul>
-			<li><?php esc_html_e( 'Free shipping across India on orders above ₹2,999; a flat ₹99 below that.', 'ojasvidrapes' ); ?></li>
+			<li>
+				<?php
+				/* translators: %s: the spend that earns free shipping */
+				printf( esc_html__( 'Free shipping across India on orders above %s; a flat charge below that.', 'ojasvidrapes' ), esc_html( od_free_ship_price() ) );
+				?>
+			</li>
 			<li><?php esc_html_e( 'Metro cities: 2–4 business days. Rest of India: 4–7 business days.', 'ojasvidrapes' ); ?></li>
 			<li><?php esc_html_e( 'Cash on delivery available on orders up to ₹15,000.', 'ojasvidrapes' ); ?></li>
 			<li><?php esc_html_e( 'International shipping is calculated at checkout and takes 7–14 business days.', 'ojasvidrapes' ); ?></li>

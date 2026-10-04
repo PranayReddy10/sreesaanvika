@@ -59,7 +59,12 @@ $od_count = $product->get_review_count();
 	<?php od_price_block( $product, 'od-price-block price' ); ?>
 </div>
 
-<p class="od-tax-note"><?php esc_html_e( 'Inclusive of all taxes · Free shipping over ₹2,999', 'ojasvidrapes' ); ?></p>
+<p class="od-tax-note">
+	<?php
+	/* translators: %s: the spend that earns free shipping */
+	printf( esc_html__( 'Inclusive of all taxes · Free shipping over %s', 'ojasvidrapes' ), esc_html( od_free_ship_price() ) );
+	?>
+</p>
 
 <?php if ( $product->get_short_description() ) : ?>
 	<div class="woocommerce-product-details__short-description">

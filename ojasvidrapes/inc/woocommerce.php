@@ -519,23 +519,31 @@ function od_free_ship_threshold() {
 		return $cache;
 	}
 
-	$cache = (float) od_option( 'free_ship_threshold', 2999 );
+	$fallback = (float) od_option( 'free_ship_threshold', 2999 );
 
+	/*
+	 * Not cached on the way out of these branches: they are the ones taken
+	 * before WooCommerce has a cart, and remembering the fallback then would
+	 * freeze it for the rest of the request — which is how the page can end up
+	 * naming one figure while the progress meter counts towards another.
+	 */
 	if ( ! function_exists( 'WC' ) || ! WC()->cart || ! WC()->shipping() ) {
-		return $cache;
+		return $fallback;
 	}
 
 	$packages = WC()->cart->get_shipping_packages();
 
 	if ( ! $packages ) {
-		return $cache;
+		return $fallback;
 	}
 
 	$zone = function_exists( 'wc_get_shipping_zone' ) ? wc_get_shipping_zone( reset( $packages ) ) : null;
 
 	if ( ! $zone ) {
-		return $cache;
+		return $fallback;
 	}
+
+	$cache = $fallback;
 
 	foreach ( $zone->get_shipping_methods( true ) as $method ) {
 		if ( 'free_shipping' !== $method->id ) {
@@ -561,6 +569,24 @@ function od_free_ship_threshold() {
 	$cache = (float) apply_filters( 'od_free_ship_threshold', $cache );
 
 	return $cache;
+}
+
+/**
+ * The free-shipping threshold as a price, for use in a sentence.
+ *
+ * Every "free shipping over ..." line on the site reads this rather than
+ * naming a figure of its own. The threshold is whatever WooCommerce is
+ * actually configured to give free shipping at, so hard-coded copy drifts
+ * away from the meter the moment that setting is changed — which is exactly
+ * what happened: the page promised free shipping over one amount while the
+ * bag counted towards another.
+ *
+ * @return string Formatted price, or "" when there is no threshold.
+ */
+function od_free_ship_price() {
+	$threshold = od_free_ship_threshold();
+
+	return $threshold > 0 ? wp_strip_all_tags( wc_price( $threshold, array( 'decimals' => 0 ) ) ) : '';
 }
 
 /**
@@ -738,7 +764,8 @@ function od_single_offers() {
  */
 function od_single_trust() {
 	$items = array(
-		array( 'truck', __( 'Free shipping over ₹2,999', 'ojasvidrapes' ) ),
+		/* translators: %s: the spend that earns free shipping, e.g. "₹2,999" */
+		array( 'truck', sprintf( __( 'Free shipping over %s', 'ojasvidrapes' ), od_free_ship_price() ) ),
 		array( 'refresh', __( '7-day easy returns', 'ojasvidrapes' ) ),
 		array( 'shield', __( 'Authentic handloom', 'ojasvidrapes' ) ),
 	);

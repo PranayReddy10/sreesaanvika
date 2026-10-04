@@ -14,7 +14,8 @@ od_page_header( get_the_title(), __( 'Sizes, shipping, returns and how to care f
 $od_groups = array(
 	__( 'Orders & shipping', 'ojasvidrapes' ) => array(
 		array( __( 'How long does delivery take?', 'ojasvidrapes' ), __( 'Metro cities receive orders in 2–4 business days, and the rest of India in 4–7. You will get a tracking link by SMS and email the moment your parcel leaves our studio.', 'ojasvidrapes' ) ),
-		array( __( 'Is shipping free?', 'ojasvidrapes' ), __( 'Shipping is free across India on orders above ₹2,999. Below that a flat ₹99 applies. International rates are calculated at checkout.', 'ojasvidrapes' ) ),
+		/* translators: %s: the spend that earns free shipping */
+		array( __( 'Is shipping free?', 'ojasvidrapes' ), sprintf( __( 'Shipping is free across India on orders above %s. Below that a flat charge applies. International rates are calculated at checkout.', 'ojasvidrapes' ), od_free_ship_price() ) ),
 		array( __( 'Do you offer cash on delivery?', 'ojasvidrapes' ), __( 'Yes, on orders up to ₹15,000 in serviceable PIN codes. Enter your PIN code on any product page to check.', 'ojasvidrapes' ) ),
 		array( __( 'Can I change my address after ordering?', 'ojasvidrapes' ), __( 'Message us within 12 hours of placing the order and we will update it before the parcel is handed over to the courier.', 'ojasvidrapes' ) ),
 	),

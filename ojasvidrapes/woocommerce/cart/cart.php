@@ -177,7 +177,12 @@ do_action( 'woocommerce_before_cart' );
 			<div class="od-trust" style="grid-template-columns:1fr;gap:10px">
 				<div class="od-trust__item" style="display:flex;align-items:center;gap:12px;text-align:left">
 					<?php od_the_icon( 'truck', 22 ); ?>
-					<span><?php esc_html_e( 'Free shipping on orders above ₹2,999', 'ojasvidrapes' ); ?></span>
+					<span>
+						<?php
+						/* translators: %s: the spend that earns free shipping */
+						printf( esc_html__( 'Free shipping on orders above %s', 'ojasvidrapes' ), esc_html( od_free_ship_price() ) );
+						?>
+					</span>
 				</div>
 				<div class="od-trust__item" style="display:flex;align-items:center;gap:12px;text-align:left">
 					<?php od_the_icon( 'refresh', 22 ); ?>
