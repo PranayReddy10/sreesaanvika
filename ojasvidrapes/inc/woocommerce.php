@@ -891,12 +891,23 @@ function od_buy_now_button() {
 }
 
 /**
- * Redirect straight to checkout when "Buy it now" was used.
+ * Where to go after something is added to the bag.
  *
- * @param string $url Redirect URL.
+ * "Buy it now" goes to checkout. Everything else goes back to the page it came
+ * from — and the point is that it *goes* somewhere at all.
+ *
+ * Add to cart is a form post. Left to itself WooCommerce renders the result of
+ * that post in place, without redirecting, so the page sitting in the browser's
+ * history is a POST. Pressing Back or Forward onto it asks to resubmit, and
+ * resubmitting adds the saree to the bag a second time — which is how a bag
+ * ends up holding six of something nobody chose six of. Redirecting turns that
+ * history entry into an ordinary GET: Back and Forward then just show the page
+ * again, and change nothing.
+ *
+ * @param string $url Redirect URL, empty when nothing has asked for one.
  * @return string
  */
-function od_buy_now_redirect( $url ) {
+function od_add_to_cart_redirect( $url ) {
 	// The hidden field is always submitted, so test the value, not its presence.
 	$flag = isset( $_REQUEST['od_buy_now'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['od_buy_now'] ) ) : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
@@ -904,9 +915,76 @@ function od_buy_now_redirect( $url ) {
 		return wc_get_checkout_url();
 	}
 
-	return $url;
+	// Something else already decided; leave it be.
+	if ( $url ) {
+		return $url;
+	}
+
+	// WooCommerce's own "redirect to the cart" setting still wins.
+	if ( 'yes' === get_option( 'woocommerce_cart_redirect_after_add' ) ) {
+		return wc_get_cart_url();
+	}
+
+	return od_current_url();
 }
-add_filter( 'woocommerce_add_to_cart_redirect', 'od_buy_now_redirect' );
+add_filter( 'woocommerce_add_to_cart_redirect', 'od_add_to_cart_redirect' );
+
+/**
+ * The page the shopper is on, without the arguments that performed an action.
+ *
+ * Used as a redirect target, so it must never carry add-to-cart arguments
+ * forward — landing on a URL that adds to the bag again would reintroduce the
+ * very thing the redirect exists to stop.
+ *
+ * @return string
+ */
+function od_current_url() {
+	$referer = wp_get_referer();
+	$url     = $referer ? $referer : home_url( add_query_arg( array() ) );
+
+	$url = remove_query_arg(
+		array( 'add-to-cart', 'quantity', 'variation_id', 'od_buy_now', 'removed_item', 'undo_item' ),
+		$url
+	);
+
+	return $url ? $url : wc_get_cart_url();
+}
+
+/**
+ * Turn the cart page's own form posts into ordinary page views.
+ *
+ * Updating quantities and applying a coupon both post to the cart. WooCommerce
+ * handles them on wp_loaded and then renders the page, leaving a POST in the
+ * history for Back and Forward to trip over. By the time this runs the work is
+ * done, so sending the shopper to the same page as a GET changes nothing
+ * except what the browser remembers.
+ *
+ * Checkout is left alone: placing an order is its own flow.
+ */
+function od_cart_post_redirect() {
+	if ( ! isset( $_SERVER['REQUEST_METHOD'] ) || 'POST' !== strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) ) {
+		return;
+	}
+
+	if ( is_admin() || wp_doing_ajax() || ! function_exists( 'is_cart' ) || ! is_cart() ) {
+		return;
+	}
+
+	// Only the cart's own forms, never some other plugin's post to this page.
+	$ours = isset( $_POST['update_cart'] ) || isset( $_POST['apply_coupon'] ) || isset( $_POST['coupon_code'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+	if ( ! $ours ) {
+		return;
+	}
+
+	/*
+	 * Notices are kept in the session, so they survive the redirect and the
+	 * shopper still sees "Coupon applied" or whatever went wrong.
+	 */
+	wp_safe_redirect( wc_get_cart_url(), 303 );
+	exit;
+}
+add_action( 'template_redirect', 'od_cart_post_redirect', 1 );
 
 /**
  * Highlight the active My Account menu item for the CSS.

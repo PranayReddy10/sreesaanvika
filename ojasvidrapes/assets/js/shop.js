@@ -1129,6 +1129,28 @@
 		var inflight = {};
 
 		/*
+		 * Only a real press counts. The stepper fires a synthetic change event,
+		 * so "was this trusted?" cannot be asked of the event itself — instead
+		 * the line is marked the moment a finger or a key lands on one of its
+		 * controls. A value the browser puts back on its own, going forward or
+		 * back through history, never sets this and so never changes the bag.
+		 */
+		var touched = {};
+
+		function mark(e) {
+			var hit = e.target.closest && e.target.closest('.od-qty-btn, input.qty');
+			if (!hit) { return; }
+
+			var row = hit.closest('.od-cartrow');
+			var key = row && row.getAttribute('data-od-key');
+
+			if (key) { touched[key] = true; }
+		}
+
+		form.addEventListener('pointerdown', mark, true);
+		form.addEventListener('keydown', mark, true);
+
+		/*
 		 * Changing a quantity used to submit the form, which reloaded the page
 		 * and left the shopper on the result of a POST — so Back could only
 		 * get there by posting it again, which is what produced the
@@ -1215,7 +1237,7 @@
 			if (!row) { return; }
 
 			var key = row.getAttribute('data-od-key');
-			if (!key) { return; }
+			if (!key || !touched[key]) { return; }
 
 			clearTimeout(timers[key]);
 			timers[key] = setTimeout(function () { push(row); }, 450);
