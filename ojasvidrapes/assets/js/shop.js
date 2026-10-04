@@ -932,6 +932,83 @@
 		});
 	});
 
+	/* ==================================================================
+	 * 6b. Add to cart from the product page, without leaving it
+	 *
+	 * The form posts, and a post that is answered with a page leaves an entry
+	 * in history that Back and Forward can replay — which is how a bag ended
+	 * up holding six of one saree. The server now redirects to stop that, but
+	 * a redirect still costs a page load and lands the shopper at the top of
+	 * the page, so the thing they just did appears not to have happened. Doing
+	 * it here instead means no post, no page load, and the bag opens to show
+	 * what went in.
+	 *
+	 * Anything unusual is handed back to WooCommerce: Buy it now needs its own
+	 * redirect to checkout, grouped products post several quantities at once,
+	 * and a variable product with nothing chosen needs Woo's own message.
+	 * Without JavaScript the form posts as it always did, and the redirect on
+	 * the server keeps the history clean.
+	 * ================================================================== */
+	on(D, 'submit', function (e) {
+		var form = e.target && e.target.closest ? e.target.closest('form.cart') : null;
+		if (!form) { return; }
+
+		if (form.classList.contains('grouped_form')) { return; }
+
+		var flag = form.querySelector('.od-buy-now-flag');
+		if (flag && flag.value && flag.value !== '0') { return; }
+
+		var idField = form.querySelector('[name="add-to-cart"]');
+		var id = idField ? parseInt(idField.value, 10) : 0;
+		if (!id) { return; }
+
+		var isVariable = form.classList.contains('variations_form');
+		var varField = form.querySelector('[name="variation_id"]');
+		var varId = varField ? parseInt(varField.value, 10) : 0;
+
+		if (isVariable && !varId) { return; }
+
+		var qtyField = form.querySelector('input.qty');
+		var qty = qtyField ? parseInt(qtyField.value, 10) : 1;
+		if (isNaN(qty) || qty < 1) { qty = 1; }
+
+		var attrs = {};
+		$$('[name^="attribute_"]', form).forEach(function (field) {
+			attrs[field.name] = field.value;
+		});
+
+		e.preventDefault();
+
+		var btn = form.querySelector('.single_add_to_cart_button');
+		if (btn) { btn.classList.add('loading'); }
+
+		post('od_add_to_cart', {
+			id: id,
+			qty: qty,
+			variation_id: varId,
+			variation: attrs
+		}).then(function (res) {
+			if (btn) { btn.classList.remove('loading'); }
+
+			if (res.success === false) {
+				var payload = res.data || {};
+				toast(payload.message || i18n.error, 'error');
+				return;
+			}
+
+			applyFragments(res.fragments || (res.data && res.data.fragments));
+			toast(i18n.added, 'success');
+
+			var panel = $('#od-cart-panel');
+			if (panel && window.odOpenPanel) { window.odOpenPanel(panel); }
+		}).catch(function () {
+			// Something went wrong talking to the server — let the form do it
+			// the old way rather than leaving the button doing nothing.
+			if (btn) { btn.classList.remove('loading'); }
+			form.submit();
+		});
+	});
+
 	function applyFragments(fragments) {
 		if (!fragments) { return; }
 
