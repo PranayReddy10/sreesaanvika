@@ -1,6 +1,6 @@
 # ojasvidrapes.in — WordPress theme
 
-This repository holds **Ojasvi Drapes**, a dark-luxe WordPress + WooCommerce
+This repository holds **OJASVI**, a dark-luxe WordPress + WooCommerce
 theme for an Indian women's fashion store — handloom sarees, temple jewellery
 and festive dresses.
 

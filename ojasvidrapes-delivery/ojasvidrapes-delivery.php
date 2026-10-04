@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name:       Ojasvi Drapes Delivery
+ * Plugin Name:       OJASVI Delivery
  * Plugin URI:        https://ojasvidrapes.in/
  * Description:       One courier, tracked end to end. Records the tracking number and delivery status against each WooCommerce order, shows the shopper where their parcel is, and takes status pushes from your delivery app over a REST endpoint.
  * Version:           2.0.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Author:            Ojasvi Drapes
+ * Author:            OJASVI
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       ojasvidrapes-delivery
@@ -64,7 +64,7 @@ add_action( 'plugins_loaded', 'odd_boot' );
  */
 function odd_missing_woo_notice() {
 	echo '<div class="notice notice-warning"><p>'
-		. esc_html__( 'Ojasvi Drapes Delivery needs WooCommerce to be active. Activate WooCommerce and this starts working on its own.', 'ojasvidrapes-delivery' )
+		. esc_html__( 'OJASVI Delivery needs WooCommerce to be active. Activate WooCommerce and this starts working on its own.', 'ojasvidrapes-delivery' )
 		. '</p></div>';
 }
 

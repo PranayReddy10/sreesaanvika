@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name:       Ojasvi Drapes Offers
+ * Plugin Name:       OJASVI Offers
  * Plugin URI:        https://ojasvidrapes.in/
  * Description:       Buy 2 get 1 free, and offers like it, without a promo code. Pick the products an offer covers; when enough of them are in the cart the cheapest ones go free on their own.
  * Version:           2.0.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Author:            Ojasvi Drapes
+ * Author:            OJASVI
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       ojasvidrapes-offers
@@ -30,7 +30,7 @@ function odo_boot() {
 			'admin_notices',
 			function () {
 				echo '<div class="notice notice-warning"><p>'
-					. esc_html__( 'Ojasvi Drapes Offers needs WooCommerce to be active.', 'ojasvidrapes-offers' )
+					. esc_html__( 'OJASVI Offers needs WooCommerce to be active.', 'ojasvidrapes-offers' )
 					. '</p></div>';
 			}
 		);

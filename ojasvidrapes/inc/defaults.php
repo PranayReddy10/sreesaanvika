@@ -48,7 +48,7 @@ function od_defaults() {
 
 		/* Header ----------------------------------------------------- */
 		'logo_source'          => 'theme',
-		'brand_tagline'        => 'Heritage Weaves',
+		'brand_tagline'        => 'Timeless Elegance',
 		'topbar_on'            => true,
 		'topbar_items'         => "Free shipping across India on orders above ₹2,999\nHandloom certified — direct from the weavers of Kanchipuram & Banaras\nEasy 7-day returns · 100% secure payments",
 		'topbar_phone'         => '+91 73869 12300',
@@ -148,7 +148,7 @@ function od_defaults() {
 		'deal_end'             => '',
 		'band_img'             => '',
 		'band_title'           => 'Woven by hands that have known the loom for six generations',
-		'band_text'            => 'Every Ojasvi Drapes saree is sourced straight from weaver families in Kanchipuram, Banaras, Pochampally and Bhagalpur — no middlemen, fair wages, and a name tag on every drape.',
+		'band_text'            => 'Every OJASVI saree is sourced straight from weaver families in Kanchipuram, Banaras, Pochampally and Bhagalpur — no middlemen, fair wages, and a name tag on every drape.',
 
 		/* Shop ------------------------------------------------------- */
 		'shop_columns'         => 4,
@@ -168,7 +168,7 @@ function od_defaults() {
 		'offers_text'          => "Extra 10% off on prepaid orders — code `OJASVI10`\nFlat ₹500 off on your first order above ₹4,999\nFree fall & pico stitching on every silk saree\nBank offer: 5% cashback on HDFC credit cards",
 
 		/* Footer ----------------------------------------------------- */
-		'footer_about'         => 'Ojasvi Drapes brings you handloom sarees sourced directly from Indian weaver families — honest pricing, heirloom quality, and a name tag on every drape.',
+		'footer_about'         => 'OJASVI brings you handloom sarees sourced directly from Indian weaver families — honest pricing, heirloom quality, and a name tag on every drape.',
 		'footer_address'       => "18-3-490/1, Aliyabad, Near Phool Bagh,\nChaman, Charminar, Falaknuma,\nHyderabad, Telangana 500053",
 		'footer_phone'         => '+91 73869 12300',
 		'footer_email'         => 'support@ojasvidrapes.in',
@@ -190,7 +190,7 @@ function od_defaults() {
 		/* SEO & social ----------------------------------------------- */
 		'seo_enable'           => true,
 		'seo_schema'           => true,
-		'seo_meta_home'        => 'Shop handloom sarees at Ojasvi Drapes — Kanchipuram, Banarasi, Pochampally and soft silks sourced direct from Indian weavers, with free shipping over ₹2,999 and 7-day returns.',
+		'seo_meta_home'        => 'Shop handloom sarees at OJASVI — Kanchipuram, Banarasi, Pochampally and soft silks sourced direct from Indian weavers, with free shipping over ₹2,999 and 7-day returns.',
 		'seo_og_image'         => '',
 		'seo_twitter'          => '',
 		'seo_org_type'         => 'OnlineStore',
@@ -211,7 +211,7 @@ function od_defaults() {
 		'preloader_once'       => false,
 		'preloader_text'       => '',
 
-		'legal_entity'         => 'Ojasvi Drapes',
+		'legal_entity'         => 'OJASVI',
 		'legal_jurisdiction'   => 'Hyderabad, Telangana',
 		'legal_gstin'          => '',
 		'grievance_officer'    => 'Customer Care Team',

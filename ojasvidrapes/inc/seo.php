@@ -255,7 +255,7 @@ function od_seo_head() {
 	$title       = wp_get_document_title();
 	$type        = is_singular( 'post' ) ? 'article' : ( ( function_exists( 'is_product' ) && is_product() ) ? 'product' : 'website' );
 
-	echo "\n<!-- Ojasvi Drapes SEO -->\n";
+	echo "\n<!-- OJASVI SEO -->\n";
 
 	if ( $description ) {
 		printf( "<meta name=\"description\" content=\"%s\" />\n", esc_attr( $description ) );
@@ -311,7 +311,7 @@ function od_seo_head() {
 
 	od_seo_verification();
 
-	echo "<!-- /Ojasvi Drapes SEO -->\n\n";
+	echo "<!-- /OJASVI SEO -->\n\n";
 }
 add_action( 'wp_head', 'od_seo_head', 2 );
 

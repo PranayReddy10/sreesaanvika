@@ -1,13 +1,13 @@
 <?php
 /**
- * Ojasvi Drapes theme bootstrap.
+ * OJASVI theme bootstrap.
  *
  * @package OjasviDrapes
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OD_VERSION', '2.3.1' );
+define( 'OD_VERSION', '2.4.0' );
 define( 'OD_DIR', get_template_directory() );
 define( 'OD_URI', get_template_directory_uri() );
 

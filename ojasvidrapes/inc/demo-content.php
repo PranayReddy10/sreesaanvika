@@ -40,7 +40,7 @@ function od_setup_pages() {
 		'about'    => array(
 			'title'    => __( 'Our Story', 'ojasvidrapes' ),
 			'template' => 'page-templates/template-about.php',
-			'content'  => __( 'Ojasvi Drapes began at a single loom in Kanchipuram, with a simple frustration: the weaver who spent six months on a saree was seeing a fraction of what it sold for in a city showroom. We started buying directly, paying upfront, and putting the weaver\'s name on the label.', 'ojasvidrapes' ),
+			'content'  => __( 'OJASVI began at a single loom in Kanchipuram, with a simple frustration: the weaver who spent six months on a saree was seeing a fraction of what it sold for in a city showroom. We started buying directly, paying upfront, and putting the weaver\'s name on the label.', 'ojasvidrapes' ),
 		),
 		'contact'  => array(
 			'title'    => __( 'Contact', 'ojasvidrapes' ),

@@ -27,7 +27,7 @@ function od_customize_register( $wp_customize ) {
 	$wp_customize->add_panel(
 		'od_panel',
 		array(
-			'title'       => __( 'Ojasvi Drapes Options', 'ojasvidrapes' ),
+			'title'       => __( 'OJASVI Options', 'ojasvidrapes' ),
 			'description' => __( 'Everything that makes the theme yours — colours, header, homepage sections and shop behaviour.', 'ojasvidrapes' ),
 			'priority'    => 10,
 		)

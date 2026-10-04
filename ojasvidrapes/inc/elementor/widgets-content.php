@@ -471,7 +471,7 @@ class OD_Widget_Band extends OD_Widget {
 		$this->start_controls_section( 'content', array( 'label' => esc_html__( 'Band', 'ojasvidrapes' ) ) );
 
 		$this->add_control( 'title', array( 'label' => esc_html__( 'Heading', 'ojasvidrapes' ), 'type' => Controls_Manager::TEXTAREA, 'rows' => 2, 'default' => esc_html__( 'Woven by hands that have known the loom for six generations', 'ojasvidrapes' ) ) );
-		$this->add_control( 'text', array( 'label' => esc_html__( 'Text', 'ojasvidrapes' ), 'type' => Controls_Manager::TEXTAREA, 'rows' => 4, 'default' => esc_html__( 'Every Ojasvi Drapes saree is sourced straight from weaver families in Kanchipuram, Banaras, Pochampally and Bhagalpur — no middlemen, fair wages, and a name tag on every drape.', 'ojasvidrapes' ) ) );
+		$this->add_control( 'text', array( 'label' => esc_html__( 'Text', 'ojasvidrapes' ), 'type' => Controls_Manager::TEXTAREA, 'rows' => 4, 'default' => esc_html__( 'Every OJASVI saree is sourced straight from weaver families in Kanchipuram, Banaras, Pochampally and Bhagalpur — no middlemen, fair wages, and a name tag on every drape.', 'ojasvidrapes' ) ) );
 		$this->add_control( 'btn_text', array( 'label' => esc_html__( 'Button label', 'ojasvidrapes' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'Read our story', 'ojasvidrapes' ) ) );
 		$this->add_control( 'btn_link', array( 'label' => esc_html__( 'Button link', 'ojasvidrapes' ), 'type' => Controls_Manager::URL ) );
 		$this->add_control( 'image', array( 'label' => esc_html__( 'Background image', 'ojasvidrapes' ), 'type' => Controls_Manager::MEDIA ) );

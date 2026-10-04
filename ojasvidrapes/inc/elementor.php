@@ -199,7 +199,7 @@ function od_elementor_category( $manager ) {
 	$manager->add_category(
 		'ojasvidrapes',
 		array(
-			'title' => esc_html__( 'Ojasvi Drapes', 'ojasvidrapes' ),
+			'title' => esc_html__( 'OJASVI', 'ojasvidrapes' ),
 			'icon'  => 'eicon-woocommerce',
 		)
 	);

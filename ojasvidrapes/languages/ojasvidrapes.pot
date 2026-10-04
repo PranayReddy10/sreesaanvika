@@ -1,9 +1,9 @@
-# Translation template for the Ojasvi Drapes theme.
-# Copyright (C) 2024 Ojasvi Drapes
+# Translation template for the OJASVI theme.
+# Copyright (C) 2024 OJASVI
 # This file is distributed under the GNU GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Ojasvi Drapes 2.0.0\n"
+"Project-Id-Version: OJASVI 2.0.0\n"
 "Report-Msgid-Bugs-To: https://ojasvidrapes.in\n"
 "POT-Creation-Date: 2024-01-01T00:00:00+05:30\n"
 "MIME-Version: 1.0\n"

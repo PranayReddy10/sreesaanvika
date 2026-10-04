@@ -1,4 +1,4 @@
-=== Ojasvi Drapes Delivery ===
+=== OJASVI Delivery ===
 Contributors: ojasvidrapes
 Tags: woocommerce, shipping, tracking, delivery, india
 Requires at least: 6.0
@@ -55,7 +55,7 @@ so a status push will not wipe a tracking number.
 Use WooCommerce → Import tracking. It takes a two-column CSV — order number and
 consignment number — which is what most couriers give you after a pickup.
 
-= Does it work with a theme other than Ojasvi Drapes? =
+= Does it work with a theme other than OJASVI? =
 
 Yes. The panel picks up the theme's colours when they exist and falls back to
 its own dark styling when they do not.
@@ -63,7 +63,7 @@ its own dark styling when they do not.
 == Changelog ==
 
 = 2.0.0 =
-* Renamed from Sree Saanvika Delivery to Ojasvi Drapes Delivery. Settings and
+* Renamed from Sree Saanvika Delivery to OJASVI Delivery. Settings and
   every recorded shipment are carried over the first time the plugin loads;
   nothing needs re-entering. The push header is X-ODD-Key now, and the old
   X-SSD-Key is still accepted so an app already wired up keeps working.

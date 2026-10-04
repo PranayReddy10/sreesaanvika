@@ -299,7 +299,7 @@ function od_ajax_register() {
 
 	wp_send_json_success(
 		array(
-			'message'  => __( 'Account created. Welcome to Ojasvi Drapes!', 'ojasvidrapes' ),
+			'message'  => __( 'Account created. Welcome to OJASVI!', 'ojasvidrapes' ),
 			'redirect' => function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/' ),
 		)
 	);
@@ -401,3 +401,89 @@ function od_ajax_load_more() {
 }
 add_action( 'wp_ajax_od_load_more', 'od_ajax_load_more' );
 add_action( 'wp_ajax_nopriv_od_load_more', 'od_ajax_load_more' );
+
+/**
+ * Change one line's quantity on the cart page.
+ *
+ * The cart page used to answer a quantity change by submitting its form, which
+ * cost a full page load and — because the result was a POST — left the shopper
+ * on a page their back button could only reach by re-posting it. That is where
+ * the "confirm form resubmission" prompt and the stale-session notices came
+ * from. Nothing is posted now: the cart is changed here and the page is
+ * patched in place, so the history stays clean and Back goes where it should.
+ *
+ * The server is the only authority on the new quantity. It answers with what
+ * the cart actually holds, which is what stops the box and the bag drifting
+ * apart when clicks come faster than replies.
+ */
+function od_ajax_cart_qty() {
+	od_check_nonce();
+
+	if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+		wp_send_json_error( array( 'message' => __( 'The bag is not available.', 'ojasvidrapes' ) ), 400 );
+	}
+
+	$key = isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : '';
+	$qty = isset( $_POST['qty'] ) ? wc_stock_amount( wp_unslash( $_POST['qty'] ) ) : 0;
+
+	$item = WC()->cart->get_cart_item( $key );
+
+	if ( ! $item ) {
+		wp_send_json_error( array( 'message' => __( 'That piece is no longer in your bag.', 'ojasvidrapes' ) ), 404 );
+	}
+
+	if ( $qty < 0 ) {
+		$qty = 0;
+	}
+
+	$product = $item['data'];
+
+	// Clamp rather than refuse: a shopper holding the + button down should
+	// stop at the last one in stock, not be shown an error.
+	if ( $qty > 0 && $product instanceof WC_Product ) {
+		$max = $product->get_max_purchase_quantity();
+
+		if ( $max > 0 && $qty > $max ) {
+			$qty = $max;
+		}
+
+		if ( ! $product->has_enough_stock( $qty ) ) {
+			$stock = $product->get_stock_quantity();
+			$qty   = ( null === $stock ) ? $qty : max( 0, (int) $stock );
+		}
+	}
+
+	WC()->cart->set_quantity( $key, $qty, true );
+	WC()->cart->calculate_totals();
+
+	$item = WC()->cart->get_cart_item( $key );
+
+	ob_start();
+	wc_get_template( 'cart/cart-summary.php' );
+	$summary = ob_get_clean();
+
+	$subtotal = '';
+
+	if ( $item ) {
+		$subtotal = apply_filters(
+			'woocommerce_cart_item_subtotal',
+			WC()->cart->get_product_subtotal( $item['data'], $item['quantity'] ),
+			$item,
+			$key
+		);
+	}
+
+	wp_send_json_success(
+		array(
+			'key'      => $key,
+			'qty'      => $item ? (int) $item['quantity'] : 0,
+			'removed'  => ! $item,
+			'empty'    => 0 === WC()->cart->get_cart_contents_count(),
+			'count'    => WC()->cart->get_cart_contents_count(),
+			'subtotal' => $subtotal,
+			'summary'  => $summary,
+		)
+	);
+}
+add_action( 'wp_ajax_od_cart_qty', 'od_ajax_cart_qty' );
+add_action( 'wp_ajax_nopriv_od_cart_qty', 'od_ajax_cart_qty' );

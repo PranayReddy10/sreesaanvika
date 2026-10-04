@@ -83,7 +83,7 @@ $od_steps = array(
 			?>
 			<p><?php esc_html_e( 'A saree should carry the name of the person who made it.', 'ojasvidrapes' ); ?></p>
 			<p>
-				<?php esc_html_e( 'Ojasvi Drapes began at a single loom in Kanchipuram, with a frustration that would not go away: the weaver who had spent six months on a saree was seeing a fraction of what it sold for in a city showroom. So we started buying directly, paying upfront, and putting the weaver\'s name on the label.', 'ojasvidrapes' ); ?>
+				<?php esc_html_e( 'OJASVI began at a single loom in Kanchipuram, with a frustration that would not go away: the weaver who had spent six months on a saree was seeing a fraction of what it sold for in a city showroom. So we started buying directly, paying upfront, and putting the weaver\'s name on the label.', 'ojasvidrapes' ); ?>
 			</p>
 		<?php endif; ?>
 	</div>

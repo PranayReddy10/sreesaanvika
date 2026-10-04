@@ -12,8 +12,8 @@ defined( 'ABSPATH' ) || exit;
  */
 function od_admin_menu() {
 	add_theme_page(
-		__( 'Ojasvi Drapes', 'ojasvidrapes' ),
-		__( 'Ojasvi Drapes', 'ojasvidrapes' ),
+		__( 'OJASVI', 'ojasvidrapes' ),
+		__( 'OJASVI', 'ojasvidrapes' ),
 		'edit_theme_options',
 		'ojasvidrapes',
 		'od_welcome_screen'
@@ -43,7 +43,7 @@ function od_admin_notices() {
 		?>
 		<div class="notice notice-warning">
 			<p>
-				<strong><?php esc_html_e( 'Ojasvi Drapes needs WooCommerce.', 'ojasvidrapes' ); ?></strong>
+				<strong><?php esc_html_e( 'OJASVI needs WooCommerce.', 'ojasvidrapes' ); ?></strong>
 				<?php esc_html_e( 'The shop, cart, product pages, compare and wishlist all depend on it.', 'ojasvidrapes' ); ?>
 			</p>
 			<p>
@@ -85,7 +85,7 @@ function od_welcome_screen() {
 	}
 	?>
 	<div class="wrap">
-		<h1><?php esc_html_e( 'Ojasvi Drapes', 'ojasvidrapes' ); ?>
+		<h1><?php esc_html_e( 'OJASVI', 'ojasvidrapes' ); ?>
 			<span style="font-size:13px;font-weight:400;color:#666">v<?php echo esc_html( OD_VERSION ); ?></span>
 		</h1>
 
@@ -262,7 +262,7 @@ function od_welcome_screen() {
 			</form>
 
 			<h2><?php esc_html_e( 'Step 3 — Make it yours', 'ojasvidrapes' ); ?></h2>
-			<p><?php esc_html_e( 'Every colour, homepage section, hero slide and shop behaviour lives in the Customizer under “Ojasvi Drapes Options”.', 'ojasvidrapes' ); ?></p>
+			<p><?php esc_html_e( 'Every colour, homepage section, hero slide and shop behaviour lives in the Customizer under “OJASVI Options”.', 'ojasvidrapes' ); ?></p>
 			<a class="button" href="<?php echo esc_url( admin_url( 'customize.php' ) ); ?>">
 				<?php esc_html_e( 'Open the Customizer', 'ojasvidrapes' ); ?>
 			</a>
@@ -329,7 +329,7 @@ function od_welcome_screen() {
 			<h2><?php esc_html_e( 'Delivery tracking', 'ojasvidrapes' ); ?></h2>
 
 			<?php if ( class_exists( 'ODD_Shipment' ) ) : ?>
-				<p style="color:#1a7f5a">✓ <?php esc_html_e( 'Ojasvi Drapes Delivery is active.', 'ojasvidrapes' ); ?></p>
+				<p style="color:#1a7f5a">✓ <?php esc_html_e( 'OJASVI Delivery is active.', 'ojasvidrapes' ); ?></p>
 				<p>
 					<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=odd-settings' ) ); ?>">
 						<?php esc_html_e( 'Delivery settings', 'ojasvidrapes' ); ?>
@@ -340,7 +340,7 @@ function od_welcome_screen() {
 				</p>
 			<?php else : ?>
 				<p>
-					<?php esc_html_e( 'The theme ships with a companion plugin, Ojasvi Drapes Delivery. It records the courier\'s tracking number and delivery status on each order, shows the shopper a progress line on the order page and under Track Your Order, and takes status pushes straight from your delivery app.', 'ojasvidrapes' ); ?>
+					<?php esc_html_e( 'The theme ships with a companion plugin, OJASVI Delivery. It records the courier\'s tracking number and delivery status on each order, shows the shopper a progress line on the order page and under Track Your Order, and takes status pushes straight from your delivery app.', 'ojasvidrapes' ); ?>
 				</p>
 				<p>
 					<?php esc_html_e( 'Install ojasvidrapes-delivery.zip under Plugins → Add New → Upload Plugin.', 'ojasvidrapes' ); ?>
@@ -355,7 +355,7 @@ function od_welcome_screen() {
 			<h2><?php esc_html_e( 'Offers without a promo code', 'ojasvidrapes' ); ?></h2>
 
 			<?php if ( class_exists( 'ODO_Offer' ) ) : ?>
-				<p style="color:#1a7f5a">✓ <?php esc_html_e( 'Ojasvi Drapes Offers is active.', 'ojasvidrapes' ); ?></p>
+				<p style="color:#1a7f5a">✓ <?php esc_html_e( 'OJASVI Offers is active.', 'ojasvidrapes' ); ?></p>
 				<p>
 					<a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=od_offer' ) ); ?>">
 						<?php esc_html_e( 'Your offers', 'ojasvidrapes' ); ?>
@@ -366,7 +366,7 @@ function od_welcome_screen() {
 				</p>
 			<?php else : ?>
 				<p>
-					<?php esc_html_e( 'Ojasvi Drapes Offers runs Buy 2 Get 1 Free and offers like it with no code to type. You pick the pieces; when a shopper has enough of them in the cart the cheapest one goes free by itself. Several offers can run at once and are counted separately.', 'ojasvidrapes' ); ?>
+					<?php esc_html_e( 'OJASVI Offers runs Buy 2 Get 1 Free and offers like it with no code to type. You pick the pieces; when a shopper has enough of them in the cart the cheapest one goes free by itself. Several offers can run at once and are counted separately.', 'ojasvidrapes' ); ?>
 				</p>
 				<p><?php esc_html_e( 'Install ojasvidrapes-offers.zip under Plugins → Add New → Upload Plugin.', 'ojasvidrapes' ); ?></p>
 				<a class="button" href="<?php echo esc_url( admin_url( 'plugin-install.php?tab=upload' ) ); ?>">
@@ -391,7 +391,7 @@ function od_welcome_screen() {
 
 			<p>
 				<strong><?php esc_html_e( 'Option B — rebuild it in Elementor.', 'ojasvidrapes' ); ?></strong>
-				<?php esc_html_e( 'This creates a real Elementor page holding the same sections, seeded with your current settings, so you can drag, drop and restyle them visually. Every section is available as a widget under the "Ojasvi Drapes" category.', 'ojasvidrapes' ); ?>
+				<?php esc_html_e( 'This creates a real Elementor page holding the same sections, seeded with your current settings, so you can drag, drop and restyle them visually. Every section is available as a widget under the "OJASVI" category.', 'ojasvidrapes' ); ?>
 			</p>
 
 			<?php if ( ! od_has_elementor() ) : ?>

@@ -15,7 +15,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Shared behaviour for every Ojasvi Drapes widget.
+ * Shared behaviour for every OJASVI widget.
  */
 abstract class OD_Widget extends \Elementor\Widget_Base {
 

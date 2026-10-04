@@ -1,7 +1,7 @@
 # Feature guide — source
 
-`../Ojasvi-Drapes-Feature-Guide.pdf` is rendered from `deck.html` in this
-folder. `../Ojasvi-Drapes-Feature-Guide.md` is the same content as plain
+`../OJASVI-Feature-Guide.pdf` is rendered from `deck.html` in this
+folder. `../OJASVI-Feature-Guide.md` is the same content as plain
 Markdown, for anyone who would rather read or edit text.
 
 ## Rebuilding the PDF
@@ -18,7 +18,7 @@ const { chromium } = require('playwright');
 
     await page.goto('file://' + process.cwd() + '/deck.html', { waitUntil: 'networkidle' });
     await page.pdf({
-        path: 'Ojasvi-Drapes-Feature-Guide.pdf',
+        path: 'OJASVI-Feature-Guide.pdf',
         format: 'A4',
         printBackground: true,
         margin: { top: '0', right: '0', bottom: '0', left: '0' },

@@ -35,7 +35,8 @@ if ( $max_value && $min_value === $max_value ) {
 			step="<?php echo esc_attr( $step ); ?>"
 			placeholder="<?php echo esc_attr( $placeholder ); ?>"
 			inputmode="<?php echo esc_attr( $inputmode ); ?>"
-			autocomplete="<?php echo esc_attr( isset( $autocomplete ) ? $autocomplete : 'on' ); ?>"
+			<?php /* Never "on": a restored value fights what the cart actually holds. */ ?>
+			autocomplete="<?php echo esc_attr( isset( $autocomplete ) ? $autocomplete : 'off' ); ?>"
 		/>
 
 		<button type="button" class="od-qty-btn od-qty-plus" aria-label="<?php esc_attr_e( 'Increase quantity', 'ojasvidrapes' ); ?>">+</button>

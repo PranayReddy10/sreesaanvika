@@ -1,4 +1,4 @@
-# Ojasvi Drapes
+# OJASVI
 
 A dark-luxe WordPress + WooCommerce theme built for **ojasvidrapes.in** — handloom
 sarees, temple jewellery and festive dresses. Deep aubergine, antique gold and
@@ -12,11 +12,11 @@ marigold throughout: there is no white background anywhere in the theme.
 2. Choose `ojasvidrapes.zip` and press **Install Now**, then **Activate**.
 3. Install and activate **WooCommerce** if you have not already — the shop,
    cart, product pages, compare and wishlist all depend on it.
-4. Go to **Appearance → Ojasvi Drapes** and press **Run one-click setup**.
+4. Go to **Appearance → OJASVI** and press **Run one-click setup**.
    That creates the Compare, Wishlist, Sign In, Lookbook, Our Story, Contact
    and FAQs pages and builds a primary menu from your product categories.
    It never overwrites a page or menu you already have.
-5. Open the **Customizer → Ojasvi Drapes Options** to set your hero slides,
+5. Open the **Customizer → OJASVI Options** to set your hero slides,
    banners, colours, contact details and social links.
 6. Optional: install the two companion plugins under **Plugins → Add New →
    Upload Plugin** — `ojasvidrapes-delivery.zip` for courier tracking on every
@@ -30,7 +30,7 @@ Requires WordPress 6.0+, PHP 7.4+ and WooCommerce 7.0+.
 
 ### Homepage
 Sixteen sections, each of which can be switched off individually in
-**Customizer → Ojasvi Drapes Options → Homepage — Sections**:
+**Customizer → OJASVI Options → Homepage — Sections**:
 
 | Section | What it shows |
 | --- | --- |
@@ -98,7 +98,7 @@ There are two ways, and you pick one.
 ### A — keep the theme homepage (fastest)
 
 The storefront homepage is assembled in PHP from Customizer options. Edit it at
-**Appearance → Customize → Ojasvi Drapes Options**:
+**Appearance → Customize → OJASVI Options**:
 
 | What you want to change | Where |
 | --- | --- |
@@ -113,7 +113,7 @@ Section order is fixed in this mode. Nothing extra loads, so it stays fast.
 
 ### B — rebuild it in Elementor (drag and drop)
 
-**Appearance → Ojasvi Drapes → Build an Elementor copy of the homepage.**
+**Appearance → OJASVI → Build an Elementor copy of the homepage.**
 
 That creates a real Elementor page holding the same sections in the same
 order, seeded with your current Customizer values, so it looks identical the
@@ -124,7 +124,7 @@ the box on that screen to make it the homepage straight away, or leave it
 unticked, review the page, and switch later under **Settings → Reading**. To go
 back to the theme homepage, set Settings → Reading back to your old page.
 
-Every section is also available on its own, under the **Ojasvi Drapes**
+Every section is also available on its own, under the **OJASVI**
 category in the Elementor widget panel:
 
 | Widget | What it is |
@@ -246,7 +246,7 @@ query is rebuilt and validated server side.
 
 ## Logo, site icon and the loading screen
 
-The theme ships its own mark: a gold medallion with the Ojasvi Drapes **S**,
+The theme ships its own mark: a gold medallion with the OJASVI **S**,
 drawn as SVG so it stays sharp at any size.
 
 | File | Where it is used |
@@ -267,7 +267,7 @@ A full-screen gold medallion curtain while a page loads. It comes down again
 when a shopper follows a link, so moving around the shop feels like one piece
 rather than a series of white flashes.
 
-**Customizer → Ojasvi Drapes Options → Loading Screen** turns it off at any
+**Customizer → OJASVI Options → Loading Screen** turns it off at any
 time, and controls:
 
 - how long it stays (2000ms by default),
@@ -285,7 +285,7 @@ reduced motion gets it without the moving parts, and no curtain between pages.
 ## Choosing what the homepage shows
 
 Two sections read from the category list, and both are picked the same way in
-**Customizer → Ojasvi Drapes Options → Homepage Sections**: type a few letters,
+**Customizer → OJASVI Options → Homepage Sections**: type a few letters,
 tick the ones you want, and drag them into the order they should appear.
 Nothing chosen means the busiest categories, automatically.
 
@@ -511,7 +511,7 @@ twice by a recalculation.
 
 ## Customizer reference
 
-Everything lives under **Ojasvi Drapes Options**:
+Everything lives under **OJASVI Options**:
 
 - **Colours & Palette** — seven colour pickers plus four curated presets
   (Aubergine & Gold, Midnight Peacock, Espresso & Copper, Temple Ink &
@@ -575,7 +575,7 @@ Overriding a template is the safe way to change markup. Create
 
 ```css
 /*
-Theme Name: Ojasvi Drapes Child
+Theme Name: OJASVI Child
 Template: ojasvidrapes
 Version: 1.0.0
 */
@@ -644,7 +644,7 @@ one an importer or page builder touched, sits on WordPress's default template
 instead and renders through `page.php` — so a rebuilt template appears to have
 done nothing.
 
-Fix it from **Appearance → Ojasvi Drapes → Repair page templates**. It finds
+Fix it from **Appearance → OJASVI → Repair page templates**. It finds
 each page by its address or its title (it knows the usual variants —
 `about-us`, `our-story`, `track-order` and so on) and puts it back on the theme
 template without touching what you have written. Or set it by hand: edit the
@@ -680,7 +680,7 @@ If a section is still missing after updating:
   day" needs at least one on-sale product, the Instagram grid needs six images
   in the media library, and the lookbook strip needs three products with
   featured images.
-- **It is switched off.** Customizer → Ojasvi Drapes Options → Homepage —
+- **It is switched off.** Customizer → OJASVI Options → Homepage —
   Sections.
 - **A cache is serving the old page.** Purge your page cache and CDN. The
   Customizer preview always bypasses both, which is why it can look right while
@@ -731,7 +731,7 @@ own. You have two ways out, and 1.0.4 does both.
 
 **Use the theme's own cart and checkout** — the free-shipping meter, the
 savings line and the three-step indicator. One click at
-**Appearance → Ojasvi Drapes → Cart & Checkout style**. It swaps the block for
+**Appearance → OJASVI → Cart & Checkout style**. It swaps the block for
 the WooCommerce shortcode on both pages, saving the block markup first so the
 same screen can switch you back.
 

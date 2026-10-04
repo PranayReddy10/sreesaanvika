@@ -1,5 +1,5 @@
 /**
- * Ojasvi Drapes — core front-end behaviour.
+ * OJASVI — core front-end behaviour.
  * No dependencies; runs on its own.
  */
 (function () {

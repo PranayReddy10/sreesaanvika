@@ -1,5 +1,5 @@
 /**
- * Ojasvi Drapes — shop behaviour: gallery, swatches, wishlist, compare,
+ * OJASVI — shop behaviour: gallery, swatches, wishlist, compare,
  * quick view, quantity steppers and the mobile filter drawer.
  */
 (function () {
@@ -1125,27 +1125,109 @@
 		var form = $('.woocommerce-cart-form');
 		if (!form) { return; }
 
-		var timer;
+		var timers = {};
+		var inflight = {};
+
+		/*
+		 * Changing a quantity used to submit the form, which reloaded the page
+		 * and left the shopper on the result of a POST — so Back could only
+		 * get there by posting it again, which is what produced the
+		 * resubmission prompt and the expired-session notices. The change is
+		 * made over AJAX instead and the page patched in place, so the history
+		 * stays clean.
+		 */
+		function push(row) {
+			var key = row.getAttribute('data-od-key');
+			var input = row.querySelector('input.qty');
+
+			if (!key || !input) { return; }
+
+			var qty = parseInt(input.value, 10);
+
+			if (isNaN(qty) || qty < 0) { qty = 0; }
+
+			// One request per line at a time. A reply that arrives after a
+			// newer one would otherwise write a stale number back into the box.
+			if (inflight[key]) {
+				inflight[key] = qty;
+				return;
+			}
+
+			inflight[key] = true;
+			row.classList.add('is-updating');
+
+			var body = new FormData();
+			body.append('action', 'od_cart_qty');
+			body.append('nonce', data.nonce || '');
+			body.append('key', key);
+			body.append('qty', qty);
+
+			fetch(data.ajaxUrl, { method: 'POST', body: body, credentials: 'same-origin' })
+				.then(function (r) { return r.json(); })
+				.then(function (res) {
+					var queued = inflight[key];
+					inflight[key] = false;
+
+					if (!res || !res.success) {
+						row.classList.remove('is-updating');
+						return;
+					}
+
+					var d = res.data;
+
+					if (d.removed) {
+						row.remove();
+					} else {
+						// The server is the authority: if it clamped to the
+						// last one in stock, the box has to say so.
+						if (String(input.value) !== String(d.qty)) {
+							input.value = d.qty;
+							syncQty(input.closest('.od-qty, .quantity'));
+						}
+
+						var cell = row.querySelector('[data-od-subtotal]');
+						if (cell) { cell.innerHTML = d.subtotal; }
+
+						row.classList.remove('is-updating');
+					}
+
+					var box = $('.cart-collaterals');
+					if (box && d.summary) { box.outerHTML = d.summary; }
+
+					// The header count, the mini-bag and the free-shipping
+					// meter all ride on Woo's own fragment refresh.
+					if (window.jQuery) { window.jQuery(document.body).trigger('wc_fragment_refresh'); }
+
+					if (d.empty) { window.location.reload(); return; }
+
+					if (typeof queued === 'number' && queued !== d.qty) { push(row); }
+				})
+				.catch(function () {
+					inflight[key] = false;
+					row.classList.remove('is-updating');
+				});
+		}
 
 		form.addEventListener('change', function (e) {
 			if (!e.target.matches('input.qty')) { return; }
 
 			var row = e.target.closest('.od-cartrow');
-			if (row) { row.classList.add('is-updating'); }
+			if (!row) { return; }
 
-			clearTimeout(timer);
+			var key = row.getAttribute('data-od-key');
+			if (!key) { return; }
 
-			timer = setTimeout(function () {
-				var update = form.querySelector('[name="update_cart"]');
-
-				if (update) {
-					update.disabled = false;
-					update.click();
-				} else {
-					form.submit();
-				}
-			}, 700);
+			clearTimeout(timers[key]);
+			timers[key] = setTimeout(function () { push(row); }, 450);
 		});
+
+		/*
+		 * Without JavaScript the Update bag button is how a quantity is saved,
+		 * so it stays in the markup. With JavaScript it would only re-post the
+		 * form — the very thing that broke the back button — so it goes.
+		 */
+		var update = form.querySelector('[name="update_cart"]');
+		if (update) { update.remove(); }
 	})();
 })();
 

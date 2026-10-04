@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Ojasvi Drapes — WooCommerce & shop styles
+   OJASVI — WooCommerce & shop styles
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -1489,7 +1489,11 @@ table.shop_attributes td p { margin: 0; }
 }
 
 .od-cartrow:hover { border-color: var(--od-line); }
-.od-cartrow.is-updating { opacity: 0.5; pointer-events: none; }
+/* Dimmed while a quantity is saving, but still clickable: the stepper queues
+   the newest value and sends it when the reply lands, so blocking the button
+   would only make a second press feel broken. */
+.od-cartrow.is-updating { opacity: 0.6; }
+.od-cartrow.is-updating .od-cartrow__remove { pointer-events: none; }
 
 .od-cartrow__thumb {
 	aspect-ratio: 3 / 4;

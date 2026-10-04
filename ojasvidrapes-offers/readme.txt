@@ -1,4 +1,4 @@
-=== Ojasvi Drapes Offers ===
+=== OJASVI Offers ===
 Contributors: ojasvidrapes
 Tags: woocommerce, bogo, offers, discount, india
 Requires at least: 6.0
@@ -91,7 +91,7 @@ side.
 == Changelog ==
 
 = 2.0.0 =
-* Renamed from Sree Saanvika Offers to Ojasvi Drapes Offers. Existing offers
+* Renamed from Sree Saanvika Offers to OJASVI Offers. Existing offers
   and every Complete the look pairing are carried over the first time the
   plugin loads — nothing needs setting up again.
 

@@ -1,7 +1,7 @@
-# Ojasvi Drapes — Website Feature Guide
+# OJASVI — Website Feature Guide
 
 **ojasvidrapes.in** · Handloom sarees, jewellery and women's wear
-Prepared for the Ojasvi Drapes team · Theme v2.0.0
+Prepared for the OJASVI team · Theme v2.0.0
 
 ---
 
@@ -64,7 +64,7 @@ are one click away: **Aubergine & Gold** (default), **Midnight Peacock**,
 
 ### Logo and site icon
 
-A gold medallion carrying the Ojasvi Drapes **S**, drawn as SVG so it stays
+A gold medallion carrying the OJASVI **S**, drawn as SVG so it stays
 sharp from a browser tab to a billboard. Shipped as a full lockup, a medallion
 on its own, and a complete favicon set (16px through 512px, plus an Apple
 touch icon). Upload your own under Settings → General → Site Icon at any time
@@ -76,7 +76,7 @@ A gold medallion curtain while a page loads, which comes back down when a
 shopper follows a link — so moving around the shop feels like one piece rather
 than a series of white flashes.
 
-**Customizer → Ojasvi Drapes Options → Loading Screen** controls all of it: on
+**Customizer → OJASVI Options → Loading Screen** controls all of it: on
 or off, how long it stays (2 seconds by default), whether it shows between
 pages, whether a returning shopper sees it only once per visit, and the name
 printed on it. It is built so it can never trap anybody — it clears itself even
@@ -273,7 +273,7 @@ Completed when the parcel lands.
 
 ## 8. Pages and policies
 
-One button on **Appearance → Ojasvi Drapes** creates all twelve pages and
+One button on **Appearance → OJASVI** creates all twelve pages and
 builds a menu from your product categories. It never overwrites anything you
 already have.
 
@@ -311,14 +311,14 @@ can find the answer without reading the whole thing.
 
 ## 10. Running the shop
 
-Everything is in the Customizer, under **Ojasvi Drapes Options** — eleven
+Everything is in the Customizer, under **OJASVI Options** — eleven
 sections:
 
 Colours & Palette · Header & Top Bar · Hero Slider · Homepage Sections ·
 Promo Banners · Shop & Product Page · Footer & Contact · Social Links ·
 Policies & Legal · Loading Screen · Typography
 
-Plus, on **Appearance → Ojasvi Drapes**: one-click setup, a cart/checkout style
+Plus, on **Appearance → OJASVI**: one-click setup, a cart/checkout style
 switch, the Elementor homepage builder, a **Repair page templates** tool for
 when a page loses its design, and shortcuts into the offers and delivery
 screens.
@@ -356,7 +356,7 @@ keep up to date.
 
 ---
 
-### Ojasvi Drapes
+### OJASVI
 
 18-3-490/1, Aliyabad, Near Phool Bagh, Chaman, Charminar, Falaknuma,
 Hyderabad, Telangana 500053

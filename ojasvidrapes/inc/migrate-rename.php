@@ -1,6 +1,6 @@
 <?php
 /**
- * One-time move from the old Sree Saanvika names to Ojasvi Drapes.
+ * One-time move from the old Sree Saanvika names to OJASVI.
  *
  * Renaming the code is free; renaming what is already in the database is not.
  * Two separate things have to be carried across.
