@@ -135,6 +135,97 @@ class AdminPanelTest extends TestCase
         ]);
     }
 
+    public function test_an_order_can_be_sent_which_emails_the_tracking_number(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+
+        $order = \App\Models\Order::where('status', 'confirmed')->firstOrFail();
+
+        \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ListOrders::class)
+            ->callTableAction('ship', $order, [
+                'courier' => 'delhivery',
+                'awb' => '12345678901',
+                'expected_on' => now()->addDays(4)->toDateString(),
+                'tell_them' => true,
+            ])
+            ->assertHasNoActionErrors();
+
+        $order->refresh();
+
+        $this->assertSame('shipped', $order->status);
+        $this->assertSame('12345678901', $order->shipment->awb);
+
+        \Illuminate\Support\Facades\Mail::assertQueued(
+            \App\Mail\OrderShipped::class,
+            fn ($mail) => $mail->hasTo($order->email),
+        );
+    }
+
+    public function test_calling_off_an_order_puts_the_stock_back(): void
+    {
+        $order = \App\Models\Order::where('status', 'confirmed')->with('items')->firstOrFail();
+        $line = $order->items->first();
+        $before = \App\Models\Product::find($line->product_id)->stock;
+
+        \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ListOrders::class)
+            ->callTableAction('cancel', $order, ['why' => 'They changed their mind'])
+            ->assertHasNoActionErrors();
+
+        $this->assertSame('cancelled', $order->fresh()->status);
+        $this->assertSame(
+            $before + $line->quantity,
+            \App\Models\Product::find($line->product_id)->stock,
+            'A cancelled order must not leave the shop believing pieces are sold.',
+        );
+    }
+
+    public function test_a_cash_order_counts_as_paid_once_it_arrives(): void
+    {
+        $order = \App\Models\Order::where('payment_method', 'cod')
+            ->where('payment_status', '!=', 'paid')
+            ->firstOrFail();
+
+        $order->forceFill(['status' => 'shipped'])->save();
+        $order->shipment()->create(['courier' => 'delhivery', 'awb' => '999', 'status' => 'in_transit']);
+
+        \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ListOrders::class)
+            ->callTableAction('delivered', $order)
+            ->assertHasNoActionErrors();
+
+        $order->refresh();
+
+        $this->assertSame('delivered', $order->status);
+        $this->assertSame('paid', $order->payment_status, 'Cash is paid at the door.');
+    }
+
+    public function test_a_refund_cannot_exceed_what_was_charged(): void
+    {
+        $order = \App\Models\Order::where('payment_status', 'paid')->firstOrFail();
+
+        \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ListOrders::class)
+            ->callTableAction('refund', $order, ['amount' => (float) $order->grand_total + 1000])
+            ->assertHasActionErrors(['amount']);
+
+        $this->assertSame('paid', $order->fresh()->payment_status);
+    }
+
+    public function test_a_refund_without_a_gateway_payment_is_recorded_anyway(): void
+    {
+        // A cash order that was paid at the door: there is nothing to call, so
+        // the shop pays it back by hand and this records that it did.
+        $order = \App\Models\Order::where('payment_method', 'cod')->firstOrFail();
+        $order->forceFill(['payment_status' => 'paid', 'paid_at' => now()])->save();
+
+        \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ListOrders::class)
+            ->callTableAction('refund', $order, ['amount' => (float) $order->grand_total, 'why' => 'Returned'])
+            ->assertHasNoActionErrors();
+
+        $order->refresh();
+
+        $this->assertSame('refunded', $order->payment_status);
+        $this->assertEquals((float) $order->grand_total, (float) $order->refunded_total);
+    }
+
     public function test_settings_can_be_saved(): void
     {
         \Livewire\Livewire::test(\App\Filament\Pages\ShopSettings::class)

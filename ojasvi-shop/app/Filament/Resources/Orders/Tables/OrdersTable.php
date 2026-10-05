@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Filament\Resources\Orders\Actions\OrderActions;
+
 use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -111,6 +113,12 @@ class OrdersTable
             ])
             ->recordActions([
                 ViewAction::make(),
+
+                OrderActions::ship(),
+                OrderActions::delivered(),
+
+                OrderActions::cancel(),
+                OrderActions::refund(),
 
                 Action::make('advance')
                     ->label('Move on')
