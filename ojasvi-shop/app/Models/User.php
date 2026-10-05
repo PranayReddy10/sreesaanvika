@@ -20,7 +20,10 @@ class User extends Authenticatable implements FilamentUser
     use Notifiable;
     use SoftDeletes;
 
-    protected $fillable = ['name', 'email', 'phone', 'password', 'is_admin', 'avatar'];
+    protected $fillable = [
+        'name', 'email', 'phone', 'password', 'is_admin', 'avatar',
+        'email_verified_at', 'last_login_at',
+    ];
 
     protected $hidden = ['password', 'remember_token'];
 

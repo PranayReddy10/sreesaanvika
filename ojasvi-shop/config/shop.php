@@ -10,4 +10,15 @@ return [
     'flat_shipping'      => 99.0,
     'cod_fee'            => 0.0,
     'low_stock_at'       => 3,
+
+    /*
+     * The first admin account, created by `php artisan db:seed`. Read through
+     * config rather than env() directly so it still works on a host where the
+     * config has been cached.
+     */
+    'admin' => [
+        'name'     => env('ADMIN_NAME', 'OJASVI'),
+        'email'    => env('ADMIN_EMAIL', 'admin@ojasvidrapes.in'),
+        'password' => env('ADMIN_PASSWORD', 'change-this-now'),
+    ],
 ];

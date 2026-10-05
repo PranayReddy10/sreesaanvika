@@ -18,9 +18,20 @@ class Section extends Model
         return ['settings' => 'array', 'is_visible' => 'boolean'];
     }
 
+    /** What the shop shows: visible slides, in order. */
     public function slides()
     {
         return $this->hasMany(Slide::class)->where('is_visible', true)->orderBy('position');
+    }
+
+    /**
+     * Every slide, hidden ones included. The admin edits through this one — a
+     * slide switched off must still be findable, and creating through the
+     * filtered relation above would quietly force it back on.
+     */
+    public function allSlides()
+    {
+        return $this->hasMany(Slide::class)->orderBy('position');
     }
 
     public function scopeVisible(Builder $query): Builder
