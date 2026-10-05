@@ -932,110 +932,6 @@
 		});
 	});
 
-	/* ==================================================================
-	 * 6b. Add to cart from the product page, without leaving it
-	 *
-	 * The form posts, and a post that is answered with a page leaves an entry
-	 * in history that Back and Forward can replay — which is how a bag ended
-	 * up holding six of one saree. The server now redirects to stop that, but
-	 * a redirect still costs a page load and lands the shopper at the top of
-	 * the page, so the thing they just did appears not to have happened. Doing
-	 * it here instead means no post, no page load, and the bag opens to show
-	 * what went in.
-	 *
-	 * Anything unusual is handed back to WooCommerce: Buy it now needs its own
-	 * redirect to checkout, grouped products post several quantities at once,
-	 * and a variable product with nothing chosen needs Woo's own message.
-	 * Without JavaScript the form posts as it always did, and the redirect on
-	 * the server keeps the history clean.
-	 * ================================================================== */
-	on(D, 'submit', function (e) {
-		var form = e.target && e.target.closest ? e.target.closest('form.cart') : null;
-		if (!form) { return; }
-
-		if (form.classList.contains('grouped_form')) { return; }
-
-		var flag = form.querySelector('.od-buy-now-flag');
-		if (flag && flag.value && flag.value !== '0') { return; }
-
-		var idField = form.querySelector('[name="add-to-cart"]');
-		var id = idField ? parseInt(idField.value, 10) : 0;
-		if (!id) { return; }
-
-		var isVariable = form.classList.contains('variations_form');
-		var varField = form.querySelector('[name="variation_id"]');
-		var varId = varField ? parseInt(varField.value, 10) : 0;
-
-		if (isVariable && !varId) { return; }
-
-		var qtyField = form.querySelector('input.qty');
-		var qty = qtyField ? parseInt(qtyField.value, 10) : 1;
-		if (isNaN(qty) || qty < 1) { qty = 1; }
-
-		var attrs = {};
-		$$('[name^="attribute_"]', form).forEach(function (field) {
-			attrs[field.name] = field.value;
-		});
-
-		e.preventDefault();
-
-		var btn = form.querySelector('.single_add_to_cart_button');
-		if (btn) { btn.classList.add('loading'); }
-
-		/*
-		 * Posting the form by hand drops the submit button's own name and
-		 * value — and on a simple product that button is the add-to-cart
-		 * field, so WooCommerce would receive a form asking for nothing. The
-		 * id goes in as a field of its own before handing it over.
-		 */
-		function postTheOldWay() {
-			if (!form.querySelector('input[name="add-to-cart"]')) {
-				var hidden = D.createElement('input');
-				hidden.type = 'hidden';
-				hidden.name = 'add-to-cart';
-				hidden.value = id;
-				form.appendChild(hidden);
-			}
-
-			form.submit();
-		}
-
-		post('od_add_to_cart', {
-			id: id,
-			qty: qty,
-			variation_id: varId,
-			variation: attrs
-		}).then(function (res) {
-			if (btn) { btn.classList.remove('loading'); }
-
-			if (res.success === false) {
-				var payload = res.data || {};
-
-				// Something between us and WordPress answered instead of it.
-				// The form still works, so use it rather than telling the
-				// shopper their saree could not be added when it can.
-				if (payload.code === 'bad_response') {
-					postTheOldWay();
-					return;
-				}
-
-				toast(payload.message || i18n.error, 'error');
-				return;
-			}
-
-			applyFragments(res.fragments || (res.data && res.data.fragments));
-			toast(i18n.added, 'success');
-
-			var panel = $('#od-cart-panel');
-			if (panel && window.odOpenPanel) { window.odOpenPanel(panel); }
-		}).catch(function () {
-			// Something went wrong talking to the server — let the form do it
-			// the old way rather than leaving the button doing nothing.
-			if (btn) { btn.classList.remove('loading'); }
-			postTheOldWay();
-		});
-	});
-
 	function applyFragments(fragments) {
 		if (!fragments) { return; }
 
@@ -1233,28 +1129,6 @@
 		var inflight = {};
 
 		/*
-		 * Only a real press counts. The stepper fires a synthetic change event,
-		 * so "was this trusted?" cannot be asked of the event itself — instead
-		 * the line is marked the moment a finger or a key lands on one of its
-		 * controls. A value the browser puts back on its own, going forward or
-		 * back through history, never sets this and so never changes the bag.
-		 */
-		var touched = {};
-
-		function mark(e) {
-			var hit = e.target.closest && e.target.closest('.od-qty-btn, input.qty');
-			if (!hit) { return; }
-
-			var row = hit.closest('.od-cartrow');
-			var key = row && row.getAttribute('data-od-key');
-
-			if (key) { touched[key] = true; }
-		}
-
-		form.addEventListener('pointerdown', mark, true);
-		form.addEventListener('keydown', mark, true);
-
-		/*
 		 * Changing a quantity used to submit the form, which reloaded the page
 		 * and left the shopper on the result of a POST — so Back could only
 		 * get there by posting it again, which is what produced the
@@ -1282,24 +1156,20 @@
 			inflight[key] = true;
 			row.classList.add('is-updating');
 
-			// Through the shared helper, so a nonce that went stale behind a
-			// page cache is refreshed and retried rather than reported as an
-			// expired session.
-			post('od_cart_qty', { key: key, qty: qty })
+			var body = new FormData();
+			body.append('action', 'od_cart_qty');
+			body.append('nonce', data.nonce || '');
+			body.append('key', key);
+			body.append('qty', qty);
+
+			fetch(data.ajaxUrl, { method: 'POST', body: body, credentials: 'same-origin' })
+				.then(function (r) { return r.json(); })
 				.then(function (res) {
 					var queued = inflight[key];
 					inflight[key] = false;
 
 					if (!res || !res.success) {
 						row.classList.remove('is-updating');
-
-						// As above: when the answer is not WordPress's, use
-						// the button so the quantity still saves.
-						if (res && res.data && 'bad_response' === res.data.code && update) {
-							update.hidden = false;
-							update.click();
-						}
-
 						return;
 					}
 
@@ -1345,21 +1215,19 @@
 			if (!row) { return; }
 
 			var key = row.getAttribute('data-od-key');
-			if (!key || !touched[key]) { return; }
+			if (!key) { return; }
 
 			clearTimeout(timers[key]);
 			timers[key] = setTimeout(function () { push(row); }, 450);
 		});
 
 		/*
-		 * Without JavaScript the Update bag button is how a quantity is saved.
-		 * With JavaScript it has nothing to do and would only re-post the form
-		 * — the very thing that broke the back button — so it is hidden rather
-		 * than removed: if something other than WordPress starts answering, it
-		 * is the way the quantity still gets saved.
+		 * Without JavaScript the Update bag button is how a quantity is saved,
+		 * so it stays in the markup. With JavaScript it would only re-post the
+		 * form — the very thing that broke the back button — so it goes.
 		 */
 		var update = form.querySelector('[name="update_cart"]');
-		if (update) { update.hidden = true; }
+		if (update) { update.remove(); }
 	})();
 })();
 

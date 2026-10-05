@@ -55,39 +55,7 @@
 	/* ------------------------------------------------------------------
 	 * AJAX helper
 	 * ---------------------------------------------------------------- */
-	var FORM_TYPE = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' };
-
-	/*
-	 * Fetch a new nonce for this visitor.
-	 *
-	 * The one printed into the page dies after a day, and a page cache will
-	 * happily serve HTML older than that — so the first thing a shopper does
-	 * gets told their session expired, when nothing of the sort has happened.
-	 */
-	function refreshNonce() {
-		var body = new URLSearchParams();
-		body.append('action', 'od_nonce');
-
-		return fetch(data.ajaxUrl, {
-			method: 'POST',
-			credentials: 'same-origin',
-			headers: FORM_TYPE,
-			body: body.toString()
-		}).then(function (res) {
-			return res.json();
-		}).then(function (json) {
-			if (json && json.success && json.data && json.data.nonce) {
-				data.nonce = json.data.nonce;
-				return true;
-			}
-
-			return false;
-		}).catch(function () {
-			return false;
-		});
-	}
-
-	function post(action, payload, retried) {
+	function post(action, payload) {
 		var body = new URLSearchParams();
 		body.append('action', action);
 		body.append('nonce', data.nonce || '');
@@ -107,49 +75,16 @@
 		return fetch(data.ajaxUrl, {
 			method: 'POST',
 			credentials: 'same-origin',
-			headers: FORM_TYPE,
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
 			body: body.toString()
 		}).then(function (res) {
-			/*
-			 * Not everything that answers is WordPress. A security plugin, a
-			 * firewall or an optimiser can intercept the request and send back
-			 * a page of its own — which is not JSON, and which the browser may
-			 * even offer to download if it is navigated to. Say so plainly and
-			 * carry the status, so the caller can fall back to doing the job
-			 * the ordinary way instead of showing a shrug.
-			 */
 			return res.json().catch(function () {
-				/*
-				 * The status goes in the message on purpose. When a shop
-				 * owner reports "it shows an error", that number is the
-				 * difference between guessing and knowing which thing in
-				 * front of WordPress answered instead of it.
-				 */
-				return {
-					success: false,
-					data: {
-						code: 'bad_response',
-						status: res.status,
-						message: (i18n.badReply || 'The server gave an unexpected reply') + ' (' + res.status + ').'
-					}
-				};
-			});
-		}).then(function (json) {
-			var stale = json && false === json.success && json.data && 'stale_nonce' === json.data.code;
-
-			// Once only: a second failure is a real one, not an old page.
-			if (!stale || retried) {
-				return json;
-			}
-
-			return refreshNonce().then(function (ok) {
-				return ok ? post(action, payload, true) : json;
+				return { success: false, data: { message: i18n.error } };
 			});
 		});
 	}
 
 	window.odPost = post;
-	window.odRefreshNonce = refreshNonce;
 
 	/* ------------------------------------------------------------------
 	 * Scrim shared by the drawer and side panels

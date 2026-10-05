@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OD_VERSION', '2.5.3' );
+define( 'OD_VERSION', '2.4.2' );
 define( 'OD_DIR', get_template_directory() );
 define( 'OD_URI', get_template_directory_uri() );
 
@@ -218,9 +218,6 @@ function od_assets() {
 				'compareFull'    => __( 'You can compare up to %d products', 'ojasvidrapes' ),
 				'copied'         => __( 'Link copied', 'ojasvidrapes' ),
 				'error'          => __( 'Something went wrong. Please try again.', 'ojasvidrapes' ),
-				// Carries an HTTP status, which is what identifies whatever
-				// answered in WordPress's place.
-				'badReply'       => __( 'The server gave an unexpected reply', 'ojasvidrapes' ),
 				'selectOptions'  => __( 'Please choose the available options first', 'ojasvidrapes' ),
 				'deliverTo'      => __( 'Delivery to %s in 3–6 business days', 'ojasvidrapes' ),
 				'badPin'         => __( 'Enter a valid 6-digit PIN code', 'ojasvidrapes' ),
