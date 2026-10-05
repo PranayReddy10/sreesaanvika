@@ -7,6 +7,7 @@ use App\Http\Controllers\BagController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShopController;
@@ -72,6 +73,9 @@ Route::post('/account/saved/{product}', [AccountController::class, 'save'])
     ->name('account.save');
 
 Route::get('/page/{slug}', PageController::class)->name('page');
+
+Route::post('/newsletter', [NewsletterController::class, 'store'])->name('newsletter');
+Route::get('/newsletter/leave', [NewsletterController::class, 'leave'])->name('newsletter.leave');
 
 /*
  * What the shop tells search engines and shopping services about itself.

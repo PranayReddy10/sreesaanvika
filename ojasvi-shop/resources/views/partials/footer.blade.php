@@ -1,6 +1,47 @@
 @php use App\Support\Shop; @endphp
 
-<footer class="mt-24 border-t border-[color:var(--color-line-soft)] bg-[color:var(--color-page-alt)]">
+<section class="mt-24 border-t border-[color:var(--color-line-soft)] bg-[color:var(--color-page-alt)]">
+    <div class="od-wrap py-12 md:py-16 grid gap-6 md:grid-cols-2 md:items-center">
+        <div>
+            <p class="od-eyebrow">Keep in touch</p>
+            <h2 class="mt-3 font-display text-2xl md:text-3xl">When something worth seeing comes off the loom</h2>
+            <p class="mt-3 text-sm text-ink-muted leading-relaxed max-w-md">
+                A few pieces at a time, once or twice a month. No daily nonsense, and one click to stop.
+            </p>
+        </div>
+
+        <form method="post" action="{{ route('newsletter') }}" class="md:justify-self-end w-full max-w-md">
+            @csrf
+            {{-- Seen by nobody with eyes; filled in by most of what is not a
+                 person. Cheaper and quieter than a puzzle. Positioned with an
+                 inline style rather than a utility class, because this must be
+                 off the page whether or not the stylesheet was rebuilt. --}}
+            <div style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden"
+                 aria-hidden="true">
+                <label for="website">Leave this empty</label>
+                <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+            </div>
+
+            <label for="newsletter-email" class="od-label">Your email</label>
+            <div class="flex gap-2">
+                <input id="newsletter-email" name="email" type="email" required
+                       placeholder="you@example.in" class="od-input">
+                <button type="submit" class="od-btn od-btn-gold px-6 shrink-0">Join</button>
+            </div>
+
+            @error('email')
+                <p class="mt-2 text-sm text-[color:var(--color-marigold)]">{{ $message }}</p>
+            @enderror
+
+            <p class="mt-2 text-xs text-ink-faint">
+                We never pass your address on. See our
+                <a href="{{ route('page', 'privacy') }}" class="text-gold hover:text-gold-light">privacy notice</a>.
+            </p>
+        </form>
+    </div>
+</section>
+
+<footer class="border-t border-[color:var(--color-line-soft)] bg-[color:var(--color-page-alt)]">
     <div class="od-wrap py-14 grid gap-10 md:grid-cols-4">
         <div class="md:col-span-1">
             <img src="{{ Shop::logo() }}" alt="{{ Shop::name() }}" class="h-9 w-auto" width="280" height="70">

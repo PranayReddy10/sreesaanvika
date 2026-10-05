@@ -69,6 +69,12 @@ class Cart extends Model
         }
 
         $other->items()->delete();
+
+        // A bag that has just changed hands is demonstrably being used. Without
+        // this it keeps whatever activity it had — which for a brand new
+        // account is none at all, and it then reads as abandoned the moment it
+        // is created.
+        $this->touchActivity();
         $other->delete();
         $this->load('items');
     }

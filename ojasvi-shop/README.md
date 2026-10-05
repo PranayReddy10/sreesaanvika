@@ -112,7 +112,7 @@ to change lives in **Settings** in the admin instead.
 | **Catalogue** | Sarees (with shades and a gallery per shade), Collections, Fabric & weave |
 | **Selling** | Orders, Offers, Coupons |
 | **Storefront** | Front page (the rows of the home page, reorderable), Reviews |
-| **Shop** | Customers, Delivery areas, Settings |
+| **Shop** | Customers, Delivery areas, Mailing list, Analysis, Settings |
 
 Orders can be read and moved along but never invented: an order typed into an
 admin has no payment behind it and no stock taken for it.
@@ -120,6 +120,32 @@ admin has no payment behind it and no stock taken for it.
 The front page is rows in the database, so the shop can rearrange and retitle
 its own home page. That is the lesson of the WordPress build this replaced,
 where every change meant a developer.
+
+---
+
+## Being found, and knowing what happened
+
+`/sitemap.xml`, `/robots.txt` and `/feed/google.xml` are built on request —
+the catalogue is small enough that a cached file would only be one more thing
+to go quietly stale. The feed is read by both Google Merchant Center and Meta
+commerce, with one entry per shade.
+
+Most of the SEO work is about keeping pages *out* of the index. A narrowed
+listing is `noindex, follow` and points its canonical at the plain listing; a
+saree is one page however many shades it has; the bag, the checkout and
+anybody's account are `noindex, nofollow`.
+
+Search Console, Analytics, Meta and Ads ids all live in **Settings**, because
+the person pasting a verification tag at eleven at night is the shop owner.
+Nothing is loaded until its id is set, and a nonsense id is ignored rather
+than printed.
+
+**Analysis** (`/admin/insights`) answers what Google Analytics cannot: which
+saree is looked at four hundred times and bought twice, and what people
+searched for and were shown nothing. For a twelve-design shop those two lists
+are worth more than every chart in Analytics, and neither can be had without
+the shop's own database. Searches are recorded without a user, an address or a
+session — what the shop was asked for, never who asked.
 
 ---
 

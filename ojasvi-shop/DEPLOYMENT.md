@@ -240,6 +240,54 @@ Last, in the admin at `/admin`:
 
 ---
 
+## 8. Being found
+
+None of this needs a developer. It is all in the admin, under **Shop →
+Settings → Found on Google** and **Analytics**.
+
+1. **Search Console.** Add the site at
+   [search.google.com/search-console](https://search.google.com/search-console),
+   choose the **HTML tag** method, and paste what it gives you into the Google
+   Search Console box. Save, then go back and press Verify. Afterwards, submit
+   your sitemap — the address is on that same screen, and it keeps itself up
+   to date as you add sarees.
+
+   Search Console is also where you see what people typed into Google before
+   they found you, which is worth more than any other number you will see.
+
+2. **Google Analytics.** Make a GA4 property at analytics.google.com, take the
+   `G-XXXXXXXXXX` from Admin → Data streams, and paste it in. The shop reports
+   views, adds to bag, checkouts and purchases by itself — there is nothing to
+   configure in Analytics beyond turning on Enhanced Measurement if you want
+   scroll depth too.
+
+3. **Google Merchant Center** — the one worth the hour. Free listings put your
+   sarees in the Shopping tab at no cost. Create an account, verify the domain
+   (it is already verified if you did Search Console), then Products → Feeds →
+   add a **scheduled fetch** pointing at the feed address shown in Settings.
+   Set it to fetch daily. One entry per shade, so somebody searching for an
+   indigo Kanjivaram is shown the indigo one.
+
+4. **Meta.** The same feed works as a Meta catalogue: Commerce Manager →
+   Catalogue → Data sources → Scheduled feed. That is what lets you tag a
+   saree in an Instagram post. The pixel id goes in the Analytics tab and is
+   what makes advertising measurable.
+
+5. **Check the policy pages read the way you would say it.** Returns,
+   delivery, terms and privacy are written for you already and are true of the
+   shop as built, but they are in our words. Razorpay reads them during
+   approval, and so will your customers.
+
+6. **Turn off "Hide the whole shop from search engines"** on the day you open,
+   if you turned it on while building. Nothing else on this list matters until
+   you do.
+
+Give it a fortnight. A new domain is not ranked quickly however good the
+markup is, and the shop's first visitors will come from Instagram and from
+people you tell.
+
+---
+
 ## Deploying a change afterwards
 
 ```sh

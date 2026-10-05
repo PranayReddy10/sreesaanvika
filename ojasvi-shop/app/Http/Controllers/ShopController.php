@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attribute;
 use App\Models\Product;
+use App\Models\Search;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -67,6 +68,13 @@ class ShopController extends Controller
         $this->sort($query, (string) $request->query('sort', ''));
 
         $products = $query->paginate(24)->withQueryString();
+
+        // Only the first page, and only a real search: paging through results
+        // is one search, not four, and recording it four times would make the
+        // popular terms a measure of patience rather than of interest.
+        if (($q = trim((string) $request->query('q', ''))) !== '' && $products->currentPage() === 1) {
+            Search::record($q, $products->total());
+        }
 
         return view('shop.index', [
             'products' => $products,
