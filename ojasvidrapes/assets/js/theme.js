@@ -110,8 +110,29 @@
 			headers: FORM_TYPE,
 			body: body.toString()
 		}).then(function (res) {
+			/*
+			 * Not everything that answers is WordPress. A security plugin, a
+			 * firewall or an optimiser can intercept the request and send back
+			 * a page of its own — which is not JSON, and which the browser may
+			 * even offer to download if it is navigated to. Say so plainly and
+			 * carry the status, so the caller can fall back to doing the job
+			 * the ordinary way instead of showing a shrug.
+			 */
 			return res.json().catch(function () {
-				return { success: false, data: { message: i18n.error } };
+				/*
+				 * The status goes in the message on purpose. When a shop
+				 * owner reports "it shows an error", that number is the
+				 * difference between guessing and knowing which thing in
+				 * front of WordPress answered instead of it.
+				 */
+				return {
+					success: false,
+					data: {
+						code: 'bad_response',
+						status: res.status,
+						message: (i18n.badReply || 'The server gave an unexpected reply') + ' (' + res.status + ').'
+					}
+				};
 			});
 		}).then(function (json) {
 			var stale = json && false === json.success && json.data && 'stale_nonce' === json.data.code;

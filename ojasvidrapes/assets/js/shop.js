@@ -982,6 +982,24 @@
 		var btn = form.querySelector('.single_add_to_cart_button');
 		if (btn) { btn.classList.add('loading'); }
 
+		/*
+		 * Posting the form by hand drops the submit button's own name and
+		 * value — and on a simple product that button is the add-to-cart
+		 * field, so WooCommerce would receive a form asking for nothing. The
+		 * id goes in as a field of its own before handing it over.
+		 */
+		function postTheOldWay() {
+			if (!form.querySelector('input[name="add-to-cart"]')) {
+				var hidden = D.createElement('input');
+				hidden.type = 'hidden';
+				hidden.name = 'add-to-cart';
+				hidden.value = id;
+				form.appendChild(hidden);
+			}
+
+			form.submit();
+		}
+
 		post('od_add_to_cart', {
 			id: id,
 			qty: qty,
@@ -992,6 +1010,15 @@
 
 			if (res.success === false) {
 				var payload = res.data || {};
+
+				// Something between us and WordPress answered instead of it.
+				// The form still works, so use it rather than telling the
+				// shopper their saree could not be added when it can.
+				if (payload.code === 'bad_response') {
+					postTheOldWay();
+					return;
+				}
+
 				toast(payload.message || i18n.error, 'error');
 				return;
 			}
@@ -1005,7 +1032,7 @@
 			// Something went wrong talking to the server — let the form do it
 			// the old way rather than leaving the button doing nothing.
 			if (btn) { btn.classList.remove('loading'); }
-			form.submit();
+			postTheOldWay();
 		});
 	});
 
@@ -1265,6 +1292,14 @@
 
 					if (!res || !res.success) {
 						row.classList.remove('is-updating');
+
+						// As above: when the answer is not WordPress's, use
+						// the button so the quantity still saves.
+						if (res && res.data && 'bad_response' === res.data.code && update) {
+							update.hidden = false;
+							update.click();
+						}
+
 						return;
 					}
 
@@ -1317,12 +1352,14 @@
 		});
 
 		/*
-		 * Without JavaScript the Update bag button is how a quantity is saved,
-		 * so it stays in the markup. With JavaScript it would only re-post the
-		 * form — the very thing that broke the back button — so it goes.
+		 * Without JavaScript the Update bag button is how a quantity is saved.
+		 * With JavaScript it has nothing to do and would only re-post the form
+		 * — the very thing that broke the back button — so it is hidden rather
+		 * than removed: if something other than WordPress starts answering, it
+		 * is the way the quantity still gets saved.
 		 */
 		var update = form.querySelector('[name="update_cart"]');
-		if (update) { update.remove(); }
+		if (update) { update.hidden = true; }
 	})();
 })();
 
