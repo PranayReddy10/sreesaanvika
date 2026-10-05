@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
@@ -8,11 +7,9 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
-            fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
-            ],
+            // The fonts are already in public/fonts, fetched once by
+            // `php artisan ojasvi:fonts` and served from the shop's own
+            // domain. Nothing here reaches a font service at build time.
         }),
         tailwindcss(),
     ],

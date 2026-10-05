@@ -199,6 +199,62 @@ class CartService
         $item->delete();
     }
 
+    /** How many pieces are in the bag — what the number on the bag icon means. */
+    public function count(): int
+    {
+        $cart = $this->current(false);
+
+        return $cart ? (int) $cart->items->sum('quantity') : 0;
+    }
+
+    /* ---------------------------------------------------------- coupons */
+
+    /**
+     * Try a code against the bag.
+     *
+     * Returns the reason it cannot be used, or null if it was applied. The
+     * code is checked again when the order is placed — a coupon that runs out
+     * between the bag and the payment must not be honoured because it was
+     * valid ten minutes ago.
+     */
+    public function applyCoupon(string $code): ?string
+    {
+        $code = strtoupper(trim($code));
+
+        if ($code === '') {
+            return 'Type a code first.';
+        }
+
+        $cart = $this->current();
+
+        if (! $cart || $cart->items->isEmpty()) {
+            return 'Your bag is empty.';
+        }
+
+        $coupon = Coupon::live()->where('code', $code)->first();
+
+        if (! $coupon) {
+            return 'That code is not one of ours, or it has expired.';
+        }
+
+        $totals = $this->totals($cart);
+        $after = max(0, $totals->subtotal - $totals->offerTotal);
+
+        if ($reason = $coupon->reasonItCannotApply($after, $cart->user_id)) {
+            return $reason;
+        }
+
+        $cart->update(['coupon_code' => $coupon->code]);
+        $cart->refresh();
+
+        return null;
+    }
+
+    public function removeCoupon(): void
+    {
+        $this->current(false)?->update(['coupon_code' => null]);
+    }
+
     public function clear(Cart $cart): void
     {
         $cart->items()->delete();
@@ -259,6 +315,11 @@ class CartService
         return (float) Setting::get('free_shipping_from', config('shop.free_shipping_from', 2999));
     }
 
+    public function flatShipping(): float
+    {
+        return (float) Setting::get('flat_rate', config('shop.flat_shipping', 99));
+    }
+
     protected function shippingFor(CartTotals $t, ?string $pincode): float
     {
         $goods = max(0, $t->subtotal - $t->offerTotal - $t->couponTotal);
@@ -272,7 +333,7 @@ class CartService
             : null;
 
         $threshold = $zone?->free_from !== null ? (float) $zone->free_from : $this->freeShippingFrom();
-        $rate      = $zone ? (float) $zone->rate : (float) Setting::get('shipping_flat', 99);
+        $rate      = $zone ? (float) $zone->rate : $this->flatShipping();
 
         return $threshold > 0 && $goods >= $threshold ? 0.0 : $rate;
     }
