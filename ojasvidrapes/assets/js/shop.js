@@ -1255,14 +1255,10 @@
 			inflight[key] = true;
 			row.classList.add('is-updating');
 
-			var body = new FormData();
-			body.append('action', 'od_cart_qty');
-			body.append('nonce', data.nonce || '');
-			body.append('key', key);
-			body.append('qty', qty);
-
-			fetch(data.ajaxUrl, { method: 'POST', body: body, credentials: 'same-origin' })
-				.then(function (r) { return r.json(); })
+			// Through the shared helper, so a nonce that went stale behind a
+			// page cache is refreshed and retried rather than reported as an
+			// expired session.
+			post('od_cart_qty', { key: key, qty: qty })
 				.then(function (res) {
 					var queued = inflight[key];
 					inflight[key] = false;

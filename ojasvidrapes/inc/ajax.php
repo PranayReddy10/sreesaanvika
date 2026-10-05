@@ -9,12 +9,46 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Verify the shared nonce, or die with a JSON error.
+ *
+ * The failure is labelled so the page can tell this apart from a real error.
+ * A nonce is minted when the HTML is built and only lives a day or so, but
+ * almost every shop sits behind a page cache — so a visitor can be handed
+ * yesterday's HTML carrying a nonce that died hours ago, and the first thing
+ * they try to do is told their session expired. Nothing is actually wrong, and
+ * nothing was expired: the page was simply older than its token. Given this
+ * label, the page fetches a fresh one and tries again without the shopper ever
+ * seeing it.
  */
 function od_check_nonce() {
 	if ( ! check_ajax_referer( 'od_nonce', 'nonce', false ) ) {
-		wp_send_json_error( array( 'message' => __( 'Your session expired. Please refresh the page.', 'ojasvidrapes' ) ), 403 );
+		wp_send_json_error(
+			array(
+				'code'    => 'stale_nonce',
+				// Only ever seen if fetching a fresh one failed too, and a
+				// shopper who is not logged in has no session to expire.
+				'message' => __( 'That did not go through. Please refresh the page and try again.', 'ojasvidrapes' ),
+			),
+			403
+		);
 	}
 }
+
+/**
+ * Hand out a fresh nonce.
+ *
+ * Deliberately has no nonce of its own — it is the way back when the one in
+ * the page has gone stale, so requiring a good one would be circular. It reads
+ * nothing, writes nothing and discloses nothing: a nonce ties a request to the
+ * visitor already making it, and anyone can ask for their own by loading any
+ * page of the site.
+ */
+function od_ajax_nonce() {
+	nocache_headers();
+
+	wp_send_json_success( array( 'nonce' => wp_create_nonce( 'od_nonce' ) ) );
+}
+add_action( 'wp_ajax_od_nonce', 'od_ajax_nonce' );
+add_action( 'wp_ajax_nopriv_od_nonce', 'od_ajax_nonce' );
 
 /**
  * Toggle wishlist / compare.
