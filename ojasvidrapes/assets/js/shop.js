@@ -1170,6 +1170,11 @@
 
 					if (!res || !res.success) {
 						row.classList.remove('is-updating');
+
+						// Failing in silence looks exactly like a cart that
+						// will not update. Say so, and leave the Update bag
+						// button there to do it the ordinary way.
+						toast((res && res.data && res.data.message) || i18n.error, 'error');
 						return;
 					}
 
@@ -1205,6 +1210,7 @@
 				.catch(function () {
 					inflight[key] = false;
 					row.classList.remove('is-updating');
+					toast(i18n.error, 'error');
 				});
 		}
 
@@ -1222,12 +1228,13 @@
 		});
 
 		/*
-		 * Without JavaScript the Update bag button is how a quantity is saved,
-		 * so it stays in the markup. With JavaScript it would only re-post the
-		 * form — the very thing that broke the back button — so it goes.
+		 * The Update bag button stays. It is how a quantity is saved without
+		 * JavaScript, and — the reason it is back — it is the only way to save
+		 * one when the quiet path above fails: a nonce the page cache
+		 * outlived, a firewall answering instead of WordPress. Taking it away
+		 * left a cart that simply could not be updated, with nothing on screen
+		 * to say why.
 		 */
-		var update = form.querySelector('[name="update_cart"]');
-		if (update) { update.remove(); }
 	})();
 })();
 
