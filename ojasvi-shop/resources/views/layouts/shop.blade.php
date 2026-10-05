@@ -34,6 +34,17 @@
 
     @include('partials.header')
 
+    @if (session('bag') || session('bag_error'))
+        <div class="od-wrap pt-4">
+            <p class="rounded-[var(--radius-card)] border px-4 py-3 text-sm
+                      {{ session('bag_error')
+                          ? 'border-[color:var(--color-maroon)] text-ink'
+                          : 'border-[color:var(--color-line)] text-gold-light' }}">
+                {{ session('bag_error') ?: session('bag') }}
+            </p>
+        </div>
+    @endif
+
     <main id="main" class="flex-1">
         @yield('content')
     </main>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -24,6 +25,22 @@ class AccountController extends Controller
                 ? auth()->user()->wishlistItems()->with('product.images', 'product.colourways')->get()
                 : collect(),
         ]);
+    }
+
+    /** Save a saree, or unsave it. One button, both ways. */
+    public function save(Product $product): \Illuminate\Http\RedirectResponse
+    {
+        $existing = auth()->user()->wishlistItems()->where('product_id', $product->id)->first();
+
+        if ($existing) {
+            $existing->delete();
+
+            return back()->with('bag', 'Taken off your saved list.');
+        }
+
+        auth()->user()->wishlistItems()->create(['product_id' => $product->id]);
+
+        return back()->with('bag', 'Saved.');
     }
 
     public function track(): View

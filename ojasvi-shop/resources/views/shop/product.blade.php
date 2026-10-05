@@ -214,6 +214,24 @@
                 </button>
             </form>
 
+            @auth
+                @php $saved = auth()->user()->wishlistItems()->where('product_id', $product->id)->exists(); @endphp
+                <form method="post" action="{{ route('account.save', $product) }}" class="mt-3">
+                    @csrf
+                    <button type="submit" class="text-sm text-ink-muted hover:text-gold-light transition inline-flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="{{ $saved ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M21 8.25c0-2.485-2.1-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/>
+                        </svg>
+                        {{ $saved ? 'Saved — tap to remove' : 'Save for later' }}
+                    </button>
+                </form>
+            @else
+                <p class="mt-3 text-sm text-ink-faint">
+                    <a href="{{ route('sign-in') }}" class="text-gold hover:text-gold-light">Sign in</a> to save this for later.
+                </p>
+            @endauth
+
             <div class="mt-7 grid gap-3 text-sm text-ink-muted">
                 <p class="flex items-center gap-2.5">
                     <span class="text-gold">✦</span>

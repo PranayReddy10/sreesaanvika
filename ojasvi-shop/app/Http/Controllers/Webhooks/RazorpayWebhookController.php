@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Webhooks;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\OrderMailer;
 use App\Services\OrderService;
 use App\Services\Payments\Razorpay;
 use Illuminate\Http\Request;
@@ -24,7 +25,11 @@ use Illuminate\Support\Facades\Log;
  */
 class RazorpayWebhookController extends Controller
 {
-    public function __construct(private Razorpay $razorpay, private OrderService $orders)
+    public function __construct(
+        private Razorpay $razorpay,
+        private OrderService $orders,
+        private OrderMailer $mailer,
+    )
     {
     }
 
@@ -75,8 +80,20 @@ class RazorpayWebhookController extends Controller
             'payload'            => $entity,
         ]);
 
-        if ($payment->order) {
-            $this->orders->markPaid($payment->order, 'Payment confirmed by Razorpay');
+        $order = $payment->order;
+
+        if (! $order) {
+            return;
+        }
+
+        // Only when this is the moment it became paid: the browser may have
+        // got here first, and a shopper must not be thanked twice.
+        $wasUnpaid = $order->payment_status !== 'paid';
+
+        $this->orders->markPaid($order, 'Payment confirmed by Razorpay');
+
+        if ($wasUnpaid) {
+            $this->mailer->paid($order);
         }
     }
 

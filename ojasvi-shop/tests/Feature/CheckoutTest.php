@@ -66,6 +66,57 @@ class CheckoutTest extends TestCase
         $this->assertSame($before, Order::count());
     }
 
+    public function test_a_cash_order_emails_the_shopper_and_the_shop(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+
+        $this->bagWith($this->aSaree());
+        $this->post('/checkout', $this->address());
+
+        $order = Order::latest('id')->firstOrFail();
+
+        \Illuminate\Support\Facades\Mail::assertQueued(
+            \App\Mail\OrderPlaced::class,
+            fn ($mail) => $mail->hasTo($order->email) && $mail->order->is($order),
+        );
+
+        \Illuminate\Support\Facades\Mail::assertQueued(\App\Mail\NewOrderForShop::class);
+    }
+
+    public function test_an_smtp_failure_does_not_lose_the_order(): void
+    {
+        // The money is already taken by the time an email is attempted; a bad
+        // mail password must cost the shop an email, never a sale.
+        \Illuminate\Support\Facades\Mail::shouldReceive('to')
+            ->andThrow(new \RuntimeException('535 authentication failed'));
+
+        $this->bagWith($this->aSaree());
+
+        $before = Order::count();
+
+        $this->post('/checkout', $this->address());
+
+        $this->assertSame($before + 1, Order::count());
+        $this->assertSame('confirmed', Order::latest('id')->value('status'));
+    }
+
+    public function test_the_webhook_sends_the_receipt_only_the_first_time(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+
+        [$order] = $this->anUnpaidOnlineOrder();
+
+        $event = [
+            'event' => 'payment.captured',
+            'payload' => ['payment' => ['entity' => ['id' => 'pay_TESTONE', 'order_id' => 'order_TESTONE']]],
+        ];
+
+        $this->webhook($event)->assertOk();
+        $this->webhook($event)->assertOk();
+
+        \Illuminate\Support\Facades\Mail::assertQueued(\App\Mail\OrderPaid::class, 1);
+    }
+
     public function test_an_empty_bag_cannot_be_checked_out(): void
     {
         $this->get('/checkout')->assertRedirect('/bag');

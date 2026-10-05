@@ -7,7 +7,19 @@
 @section('content')
 <div class="od-wrap py-14 md:py-20 max-w-3xl">
     @auth
-        <h1 class="font-display text-4xl">Hello, {{ auth()->user()->name }}</h1>
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+            <h1 class="font-display text-4xl">Hello, {{ auth()->user()->name }}</h1>
+
+            <form method="post" action="{{ route('sign-out') }}">
+                @csrf
+                <button type="submit" class="text-sm text-ink-muted hover:text-ink transition">Sign out</button>
+            </form>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+            <a href="{{ route('account.wishlist') }}" class="od-btn od-btn-ghost">Saved sarees</a>
+            <a href="{{ route('track') }}" class="od-btn od-btn-ghost">Track an order</a>
+        </div>
 
         <h2 class="mt-10 font-head text-2xl">Your orders</h2>
 
@@ -31,8 +43,18 @@
     @else
         <h1 class="font-display text-4xl">Your account</h1>
         <p class="mt-4 text-ink-muted">
-            You can order without one. To look up a parcel,
-            <a href="{{ route('track') }}" class="text-gold hover:text-gold-light">track it here</a>.
+            You can order without one — an account only keeps your orders and
+            saved sarees for next time.
+        </p>
+
+        <div class="mt-7 flex flex-wrap gap-3">
+            <a href="{{ route('sign-in') }}" class="od-btn od-btn-gold">Sign in</a>
+            <a href="{{ route('join') }}" class="od-btn od-btn-ghost">Make an account</a>
+        </div>
+
+        <p class="mt-8 text-sm text-ink-muted">
+            Looking for a parcel?
+            <a href="{{ route('track') }}" class="text-gold hover:text-gold-light">Track it with your order number</a>.
         </p>
     @endauth
 </div>

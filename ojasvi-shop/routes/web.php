@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\BagController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomeController;
@@ -47,7 +49,24 @@ Route::post('/webhooks/razorpay', RazorpayWebhookController::class)
 Route::get('/track', [AccountController::class, 'track'])->name('track');
 Route::post('/track', [AccountController::class, 'find'])->name('track.find');
 
+/*
+ * An account is optional — a shopper can buy without one — so these are for
+ * people who want their orders and saved sarees kept.
+ */
+Route::middleware('guest')->group(function () {
+    Route::get('/sign-in', [SessionController::class, 'create'])->name('sign-in');
+    Route::post('/sign-in', [SessionController::class, 'store']);
+
+    Route::get('/join', [RegisterController::class, 'create'])->name('join');
+    Route::post('/join', [RegisterController::class, 'store']);
+});
+
+Route::post('/sign-out', [SessionController::class, 'destroy'])->name('sign-out');
+
 Route::get('/account', [AccountController::class, 'index'])->name('account');
 Route::get('/account/saved', [AccountController::class, 'wishlist'])->name('account.wishlist');
+Route::post('/account/saved/{product}', [AccountController::class, 'save'])
+    ->middleware('auth')
+    ->name('account.save');
 
 Route::get('/page/{slug}', PageController::class)->name('page');

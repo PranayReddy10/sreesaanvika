@@ -56,7 +56,11 @@ class CartService
         if ($user) {
             $cart = Cart::firstOrNew(['user_id' => $user->id]);
 
-            if (! $cart->exists && ! $create) {
+            // Somebody who filled a bag as a guest and has only now signed in
+            // has no bag of their own yet. Without this they would be told
+            // their bag is empty while still carrying it, because "do not
+            // create one" would have answered before the guest bag was seen.
+            if (! $cart->exists && ! $create && ! $this->guestBagWaiting()) {
                 return null;
             }
 
@@ -82,6 +86,21 @@ class CartService
         }
 
         return $this->resolved = $cart->load('items.product.images', 'items.colourway');
+    }
+
+    /** Is there a guest bag with something in it waiting to be claimed? */
+    protected function guestBagWaiting(): bool
+    {
+        $token = request()->cookie(self::COOKIE);
+
+        if (! $token) {
+            return false;
+        }
+
+        return Cart::where('token', $token)
+            ->whereNull('user_id')
+            ->whereHas('items')
+            ->exists();
     }
 
     /**

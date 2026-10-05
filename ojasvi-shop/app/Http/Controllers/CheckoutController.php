@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\ShippingZone;
 use App\Services\CartService;
+use App\Services\OrderMailer;
 use App\Services\OrderService;
 use App\Services\Payments\Razorpay;
 use App\Support\Shop;
@@ -30,6 +31,7 @@ class CheckoutController extends Controller
     public function __construct(
         private CartService $bag,
         private OrderService $orders,
+        private OrderMailer $mailer,
         private Razorpay $razorpay,
     ) {
     }
@@ -93,6 +95,7 @@ class CheckoutController extends Controller
 
         if ($data['method'] === 'cod') {
             $order->moveTo('confirmed', 'Cash on delivery');
+            $this->mailer->placed($order);
             $this->bag->clear($cart);
             $this->bag->forget();
 
@@ -144,6 +147,7 @@ class CheckoutController extends Controller
         }
 
         $this->orders->markPaid($order);
+        $this->mailer->placed($order);
 
         $cart = $this->bag->current(false);
 
