@@ -114,19 +114,21 @@ class DemoSeeder extends Seeder
         ]);
 
         ShippingZone::create([
-            'name' => 'Rest of India',
-            'pincodes' => [],
-            'rate' => 99, 'free_from' => 2999,
-            'days_min' => 3, 'days_max' => 7,
-            'cod_allowed' => true, 'position' => 2,
-        ]);
-
-        ShippingZone::create([
             'name' => 'North East & islands',
             'pincodes' => ['78', '79', '74', '68'],
             'rate' => 149, 'free_from' => null,
             'days_min' => 6, 'days_max' => 12,
-            'cod_allowed' => false, 'position' => 3,
+            'cod_allowed' => false, 'position' => 2,
+        ]);
+
+        // Last on purpose: a zone with no prefixes matches everything, so the
+        // catch-all placed before a specific zone would swallow it.
+        ShippingZone::create([
+            'name' => 'Rest of India',
+            'pincodes' => [],
+            'rate' => 99, 'free_from' => 2999,
+            'days_min' => 3, 'days_max' => 7,
+            'cod_allowed' => true, 'position' => 3,
         ]);
     }
 
