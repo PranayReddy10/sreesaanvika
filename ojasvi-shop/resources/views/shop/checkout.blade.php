@@ -4,6 +4,22 @@
 
 @section('title', 'Checkout — ' . Shop::name())
 
+@push('tracking')
+@php
+    $track = [
+        'value'  => round($totals->grandTotal, 2),
+        'coupon' => $totals->couponCode,
+        'items'  => $cart->items->map(fn ($item) => [
+            'item_id'   => $item->product?->sku ?: (string) $item->product_id,
+            'item_name' => $item->product?->name,
+            'price'     => round($item->product?->priceFor($item->colourway) ?? 0, 2),
+            'quantity'  => (int) $item->quantity,
+        ])->values(),
+    ];
+@endphp
+<script>odTrack('begin_checkout', {!! \App\Support\Seo::json($track) !!});</script>
+@endpush
+
 @section('content')
 <div class="od-wrap py-10 md:py-14">
     <h1 class="font-display text-3xl md:text-5xl">Checkout</h1>

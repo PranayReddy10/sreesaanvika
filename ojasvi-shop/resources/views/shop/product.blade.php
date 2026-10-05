@@ -55,8 +55,14 @@
     $jsonLd = json_encode($structured, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
 @endphp
 
-@section('title', $product->meta_title ?: $product->name . ' — ' . Shop::name())
-@section('description', $product->meta_description ?: $product->short_description)
+@section('title', $product->meta_title ?: $product->name . ' — ' . \App\Support\Seo::titleSuffix())
+@section('description', $product->meta_description
+    ?: \App\Support\Seo::productDescription($product->name, (string) $product->short_description))
+
+{{-- Without the shade: every shade of one design is one page as far as a
+     search engine is concerned, and three of them competing would be three
+     weaker results instead of one strong one. --}}
+@section('canonical', route('product', $product->slug))
 @section('image', $first?->url ?? asset('brand/icon-512.png'))
 @section('og_type', 'product')
 
@@ -64,6 +70,26 @@
     {{-- So the saree can appear in search with its price and whether it is in
          stock, rather than as a bare link. --}}
     <script type="application/ld+json">{!! $jsonLd !!}</script>
+    <script type="application/ld+json">{!! \App\Support\Seo::json(\App\Support\Seo::breadcrumbs([
+        ['name' => 'Home', 'url' => route('home')],
+        ['name' => 'Sarees', 'url' => route('shop')],
+        ['name' => $product->name, 'url' => route('product', $product->slug)],
+    ])) !!}</script>
+@endpush
+
+@push('tracking')
+@php
+    $track = [
+        'item_id'   => $product->sku ?: (string) $product->id,
+        'item_name' => $product->name,
+        'price'     => round($product->priceFor(), 2),
+        'quantity'  => 1,
+    ];
+@endphp
+<script>
+    window.odItem = {!! \App\Support\Seo::json($track) !!};
+    odTrack('view_item', { value: window.odItem.price, items: [window.odItem] });
+</script>
 @endpush
 
 @section('content')

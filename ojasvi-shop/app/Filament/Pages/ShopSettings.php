@@ -9,6 +9,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -74,6 +75,19 @@ class ShopSettings extends Page implements HasForms
         'shipping_policy'    => ['policy', 'text'],
         'terms'              => ['policy', 'text'],
         'privacy'            => ['policy', 'text'],
+        'story'              => ['policy', 'text'],
+
+        'seo_home_title'          => ['seo', 'string'],
+        'seo_home_description'    => ['seo', 'text'],
+        'seo_title_suffix'        => ['seo', 'string'],
+        'seo_google_verification' => ['seo', 'string'],
+        'seo_bing_verification'   => ['seo', 'string'],
+        'seo_hidden'              => ['seo', 'bool'],
+
+        'analytics_ga4'              => ['analytics', 'string'],
+        'analytics_meta_pixel'       => ['analytics', 'string'],
+        'analytics_google_ads'       => ['analytics', 'string'],
+        'analytics_google_ads_label' => ['analytics', 'string'],
     ];
 
     /** @var array<string, mixed> */
@@ -151,12 +165,100 @@ class ShopSettings extends Page implements HasForms
                     ]),
 
                     Tab::make('What you promise')->schema([
-                        Section::make()->schema([
-                            Textarea::make('returns')->label('Returns')->rows(4),
-                            Textarea::make('shipping_policy')->label('Delivery')->rows(4),
-                            Textarea::make('terms')->label('Terms')->rows(6),
-                            Textarea::make('privacy')->label('Privacy')->rows(6),
-                        ]),
+                        Section::make()
+                            ->description('Leave any of these empty and the shop uses sensible wording of its own. Razorpay will not approve a shop without returns, delivery, terms and privacy, so these are not optional in practice.')
+                            ->schema([
+                                Textarea::make('story')->label('Our story')->rows(5),
+                                Textarea::make('returns')->label('Returns')->rows(5),
+                                Textarea::make('shipping_policy')->label('Delivery')->rows(5),
+                                Textarea::make('terms')->label('Terms')->rows(8),
+                                Textarea::make('privacy')->label('Privacy')->rows(8),
+                            ]),
+                    ]),
+
+                    Tab::make('Found on Google')->schema([
+                        Section::make('How the shop reads in search results')
+                            ->schema([
+                                TextInput::make('seo_home_title')
+                                    ->label('Title of the home page')
+                                    ->maxLength(70)
+                                    ->placeholder(\App\Support\Seo::homeTitle())
+                                    ->helperText('About sixty characters. Google cuts off what is longer. The most valuable line on the whole site — say what you sell and where.'),
+
+                                Textarea::make('seo_home_description')
+                                    ->label('The two lines underneath')
+                                    ->rows(3)
+                                    ->maxLength(300)
+                                    ->placeholder(\App\Support\Seo::homeDescription())
+                                    ->helperText('About a hundred and fifty characters. This is an advertisement, not a summary — it is what makes somebody click you rather than the shop above you.'),
+
+                                TextInput::make('seo_title_suffix')
+                                    ->label('Put after every other page title')
+                                    ->maxLength(40)
+                                    ->placeholder(\App\Support\Shop::name()),
+                            ]),
+
+                        Section::make('Proving the shop is yours')
+                            ->description('Search Console is how you see what people searched for before they found you. Add the site at search.google.com/search-console, choose the HTML tag method, and paste what it gives you here.')
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('seo_google_verification')
+                                    ->label('Google Search Console')
+                                    ->maxLength(300)
+                                    ->placeholder('google-site-verification=…')
+                                    ->helperText('Paste the whole tag or just the code — either works.'),
+
+                                TextInput::make('seo_bing_verification')
+                                    ->label('Bing Webmaster Tools')
+                                    ->maxLength(300),
+                            ]),
+
+                        Section::make('Where to point Google')
+                            ->schema([
+                                Placeholder::make('sitemap')
+                                    ->label('Your sitemap')
+                                    ->content(fn () => url('/sitemap.xml'))
+                                    ->helperText('Give this address to Search Console once. It keeps itself up to date as you add sarees.'),
+
+                                Placeholder::make('feed')
+                                    ->label('Your product feed')
+                                    ->content(fn () => url('/feed/google.xml'))
+                                    ->helperText('For Google Merchant Center and Meta commerce — free listings on Google Shopping, and tagging on Instagram.'),
+
+                                Toggle::make('seo_hidden')
+                                    ->label('Hide the whole shop from search engines')
+                                    ->helperText('For while you are still setting up. Turn it off on the day you open, or nobody will ever find you.'),
+                            ]),
+                    ]),
+
+                    Tab::make('Analytics')->schema([
+                        Section::make()
+                            ->description('Leave any of these empty and nothing is loaded — a shop with no Google Analytics should not be paying for the script that does nothing.')
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('analytics_ga4')
+                                    ->label('Google Analytics')
+                                    ->placeholder('G-XXXXXXXXXX')
+                                    ->maxLength(30)
+                                    ->helperText('analytics.google.com → Admin → Data streams.'),
+
+                                TextInput::make('analytics_meta_pixel')
+                                    ->label('Meta (Facebook) pixel')
+                                    ->placeholder('123456789012345')
+                                    ->maxLength(30)
+                                    ->helperText('Needed for Instagram and Facebook advertising.'),
+
+                                TextInput::make('analytics_google_ads')
+                                    ->label('Google Ads')
+                                    ->placeholder('AW-XXXXXXXXX')
+                                    ->maxLength(30),
+
+                                TextInput::make('analytics_google_ads_label')
+                                    ->label('Google Ads purchase label')
+                                    ->placeholder('abcDEFghIJ')
+                                    ->maxLength(60)
+                                    ->helperText('From the conversion action you made for a purchase.'),
+                            ]),
                     ]),
                 ])->persistTabInQueryString(),
             ]);

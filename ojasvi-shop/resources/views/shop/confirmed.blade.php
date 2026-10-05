@@ -4,6 +4,40 @@
 
 @section('title', 'Thank you — ' . Shop::name())
 
+@push('tracking')
+@php
+    $track = [
+        'order'    => $order->number,
+        'value'    => round((float) $order->grand_total, 2),
+        'shipping' => round((float) $order->shipping_total, 2),
+        'coupon'   => $order->coupon_code,
+        'items'    => $order->items->map(fn ($item) => [
+            'item_id'   => $item->sku ?: (string) $item->product_id,
+            'item_name' => $item->name,
+            'price'     => round((float) $item->unit_price, 2),
+            'quantity'  => (int) $item->quantity,
+        ])->values(),
+    ];
+@endphp
+<script>
+    (function () {
+        // Keyed to the order number: a shopper who refreshes the thank-you
+        // page, or opens the emailed link next week, must not be counted as
+        // having bought it again.
+        var key = 'od-counted-' + @json($order->number);
+
+        try {
+            if (localStorage.getItem(key)) return;
+            localStorage.setItem(key, '1');
+        } catch (e) {
+            // Private browsing. Counting twice is better than not at all.
+        }
+
+        odTrack('purchase', {!! \App\Support\Seo::json($track) !!});
+    })();
+</script>
+@endpush
+
 @section('content')
 <div class="od-wrap py-14 md:py-20 max-w-2xl">
     <p class="od-eyebrow">Order {{ $order->number }}</p>

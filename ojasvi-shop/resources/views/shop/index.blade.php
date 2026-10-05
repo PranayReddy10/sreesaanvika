@@ -2,9 +2,53 @@
 
 @php use App\Support\Shop; @endphp
 
-@section('title', ($q ? '“'.$q.'” — ' : '') . 'Sarees — ' . Shop::name())
-@section('description', 'Handwoven sarees from ' . Shop::name() . '. ' . $products->total() . ' designs, each in one or two shades.')
-@section('canonical', route('shop'))
+@php
+    use App\Support\Seo;
+
+    // Anything beyond a page number makes this a narrowed listing.
+    $narrowed = $chosen !== [] || $onOffer || $q !== '' || request('min') || request('max') || $sort;
+@endphp
+
+@section('title', ($q ? '“' . $q . '” — ' : '') . 'Every saree — ' . Seo::titleSuffix())
+@section('description', 'Handwoven silk and cotton sarees from ' . Shop::name() . '. '
+    . $products->total() . ' designs, each in one or two shades, posted across India.')
+
+{{-- The canonical is the plain listing, and a narrowed one is kept out of the
+     index: the same sarees under every combination of filters is thousands of
+     pages competing with each other for the same words. Followed, though —
+     the sarees behind a filter still want to be found. --}}
+@section('canonical', $narrowed ? route('shop') : ($products->currentPage() > 1 ? $products->url($products->currentPage()) : route('shop')))
+@section('robots', Seo::robotsFor('shop', $narrowed))
+
+@push('head')
+    @php
+        $crumbs = Seo::breadcrumbs([
+            ['name' => 'Home', 'url' => route('home')],
+            ['name' => 'Sarees', 'url' => route('shop')],
+        ]);
+
+        $list = [
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'name' => 'Sarees',
+            'numberOfItems' => $products->total(),
+            'itemListElement' => $products->getCollection()->values()->map(fn ($p, $i) => [
+                '@type' => 'ListItem',
+                'position' => $products->firstItem() + $i,
+                'url' => route('product', $p->slug),
+                'name' => $p->name,
+            ])->all(),
+        ];
+    @endphp
+    <script type="application/ld+json">{!! Seo::json($crumbs) !!}</script>
+    <script type="application/ld+json">{!! Seo::json($list) !!}</script>
+@endpush
+
+@if ($q !== '')
+    @push('tracking')
+        <script>odTrack('search', {!! \App\Support\Seo::json(['search' => $q]) !!});</script>
+    @endpush
+@endif
 
 @section('content')
 <div class="od-wrap py-10 md:py-14">

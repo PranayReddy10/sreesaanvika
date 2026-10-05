@@ -62,6 +62,15 @@ document.addEventListener('alpine:init', () => {
 
                 window.dispatchEvent(new CustomEvent('bag-changed', { detail: { count: data.count } }));
 
+                // Reported from here rather than from the button, so a failed
+                // add is never counted as one.
+                if (window.odTrack && window.odItem) {
+                    window.odTrack('add_to_cart', {
+                        value: window.odItem.price * this.qty,
+                        items: [Object.assign({}, window.odItem, { quantity: this.qty })],
+                    });
+                }
+
                 if (checkout) {
                     window.location = data.checkout;
                     return;

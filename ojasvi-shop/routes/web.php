@@ -5,10 +5,12 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\BagController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\FeedController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Webhooks\RazorpayWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -70,3 +72,12 @@ Route::post('/account/saved/{product}', [AccountController::class, 'save'])
     ->name('account.save');
 
 Route::get('/page/{slug}', PageController::class)->name('page');
+
+/*
+ * What the shop tells search engines and shopping services about itself.
+ * Built on request: the catalogue is small enough that a cached file would
+ * only be one more thing to go quietly stale.
+ */
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
+Route::get('/feed/google.xml', [FeedController::class, 'google'])->name('feed.google');

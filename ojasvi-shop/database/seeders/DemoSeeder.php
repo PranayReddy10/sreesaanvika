@@ -95,7 +95,9 @@ class DemoSeeder extends Seeder
             ['announcement', 'bar_on', '1', 'bool'],
             ['social', 'instagram', 'https://instagram.com/ojasvidrapes', 'string'],
             ['social', 'facebook', '', 'string'],
-            ['policy', 'returns', "Seven days from delivery, unworn and with tags.", 'text'],
+            // The policy pages are left empty on purpose: the shop stands
+            // behind App\Support\Policies until somebody writes its own, and a
+            // one-line stub here would be worse than the wording it replaces.
         ];
 
         foreach ($rows as [$group, $key, $value, $type]) {
