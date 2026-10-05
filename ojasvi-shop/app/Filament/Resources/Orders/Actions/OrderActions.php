@@ -7,6 +7,7 @@ use App\Models\Shipment;
 use App\Services\OrderMailer;
 use App\Services\OrderService;
 use App\Services\Payments\Razorpay;
+use App\Services\Shipping\Delhivery;
 use App\Support\Shop;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -26,6 +27,50 @@ use Filament\Notifications\Notification;
  */
 class OrderActions
 {
+    /**
+     * Book the parcel with Delhivery and let them give us the number.
+     *
+     * Shown only when Delhivery is set up; a shop that books by telephone just
+     * uses "Mark as sent" and types the number in, exactly as before. Nothing
+     * about the courier's API is allowed to stop an order being dealt with.
+     */
+    public static function book(): Action
+    {
+        return Action::make('book')
+            ->label('Book with Delhivery')
+            ->icon('heroicon-o-qr-code')
+            ->color('gray')
+            ->visible(fn (Order $record) => app(Delhivery::class)->configured()
+                && ! $record->shipment?->awb
+                && in_array($record->status, ['pending', 'confirmed', 'packed'], true))
+            ->requiresConfirmation()
+            ->modalDescription(fn (Order $record) => $record->isCod()
+                ? 'Booked as cash on delivery, so the courier will collect ' . Shop::money($record->grand_total) . ' at the door.'
+                : 'Booked as prepaid — the courier collects nothing.')
+            ->action(function (Order $record): void {
+                $result = app(Delhivery::class)->book($record);
+
+                if (! $result['ok']) {
+                    Notification::make()
+                        ->title('Delhivery could not book it')
+                        ->body($result['message'] . ' You can still use “Mark as sent” and type the number in.')
+                        ->danger()
+                        ->persistent()
+                        ->send();
+
+                    return;
+                }
+
+                $record->moveTo('packed', 'Booked with Delhivery — ' . $result['awb'], auth()->id());
+
+                Notification::make()
+                    ->title($result['message'])
+                    ->body('Print the label in the Delhivery panel, then mark it sent when it is collected.')
+                    ->success()
+                    ->send();
+            });
+    }
+
     /** Put in a tracking number, and tell the customer. */
     public static function ship(): Action
     {
@@ -37,6 +82,7 @@ class OrderActions
             ->schema([
                 Select::make('courier')
                     ->label('Carried by')
+                    ->default(fn (Order $record) => $record->shipment?->courier ?? 'delhivery')
                     ->options([
                         'delhivery'  => 'Delhivery',
                         'bluedart'   => 'Blue Dart',
@@ -45,7 +91,6 @@ class OrderActions
                         'xpressbees' => 'XpressBees',
                         'other'      => 'Somebody else',
                     ])
-                    ->default('delhivery')
                     ->required()
                     ->native(false),
 
@@ -53,6 +98,9 @@ class OrderActions
                     ->label('Tracking number')
                     ->required()
                     ->maxLength(60)
+                    // Already there if it was booked through Delhivery, so the
+                    // usual case is reading it rather than typing it.
+                    ->default(fn (Order $record) => $record->shipment?->awb)
                     ->helperText('What the courier gave you. The customer gets this in an email.'),
 
                 DatePicker::make('expected_on')

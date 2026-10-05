@@ -24,6 +24,19 @@
 <div class="od-wrap py-10 md:py-14">
     <h1 class="font-display text-3xl md:text-5xl">Checkout</h1>
 
+    @guest
+        <div class="od-card mt-6 p-4 flex flex-wrap items-center justify-between gap-3">
+            <p class="text-sm text-ink-soft">
+                Have an account with us? Sign in and your address fills itself in.
+            </p>
+            <div class="flex gap-2 shrink-0">
+                <a href="{{ route('sign-in') }}" class="od-btn od-btn-ghost py-2.5 px-5 text-[0.7rem]">Sign in</a>
+                <a href="{{ route('join') }}" class="od-btn od-btn-ghost py-2.5 px-5 text-[0.7rem]">Make one</a>
+            </div>
+        </div>
+        <p class="mt-3 text-xs text-ink-faint">You do not need one — carry on below and order as a guest.</p>
+    @endguest
+
     @if (session('bag_error'))
         <div class="mt-6 rounded-[var(--radius-card)] border border-[color:var(--color-maroon)] bg-[color:var(--color-surface)] p-4 text-sm">
             {{ session('bag_error') }}
@@ -143,6 +156,10 @@
                                 </span>
                             </span>
                         </label>
+                    @elseif ($codWhy)
+                        {{-- Said plainly rather than simply left out, so nobody
+                             hunts for an option that is not there. --}}
+                        <p class="text-sm text-ink-muted px-1">{{ $codWhy }}</p>
                     @endif
 
                     @if (! $online && ! $codOn)

@@ -69,6 +69,12 @@ re-entered — there is nothing for the back button to re-submit and nothing for
 the browser's cache to restore wrongly. The first build of this shop fought
 that bug for a week. A test drives back and forward over it.
 
+**Nothing optional may break the shop.** Email, the courier and analytics are
+each wrapped so that a wrong SMTP password, a courier whose API is down, or a
+blank Google Analytics id costs the shop that one thing and never a sale. The
+Delhivery button says plainly what went wrong and tells the shop to type the
+tracking number in by hand, which is what it did before.
+
 **Nothing about email may break a checkout.** The order is written and the
 money is taken before any email is attempted, so a wrong SMTP password costs
 the shop an email and never a sale.
@@ -86,7 +92,8 @@ one drawn here.
 app/
 ├── Console/Commands/
 │   ├── FetchFonts.php           ojasvi:fonts — self-host the typefaces
-│   └── ReleaseUnpaidOrders.php  ojasvi:release-unpaid — give stock back
+│   ├── ReleaseUnpaidOrders.php  ojasvi:release-unpaid — give stock back
+│   └── TrackParcels.php         ojasvi:track-parcels — ask where each one is
 ├── Filament/                    the admin: sarees, orders, offers, settings
 ├── Http/Controllers/            the shop a customer sees
 ├── Livewire/Bag.php             the bag
@@ -96,7 +103,8 @@ app/
 │   ├── OfferEngine.php          buy-two-get-one and quantity breaks; pure
 │   ├── OrderService.php         turning a bag into an order
 │   ├── OrderMailer.php          every email about an order
-│   └── Payments/Razorpay.php    the gateway; the secret never leaves here
+│   ├── Payments/Razorpay.php    the gateway; the secret never leaves here
+│   └── Shipping/Delhivery.php   booking and tracking; optional throughout
 └── Support/Shop.php             what every page knows about the shop
 ```
 

@@ -25,8 +25,14 @@ class OrderMailer
     {
         $this->send(fn () => Mail::to($order->email)->send(new OrderPlaced($order)), $order, 'placed');
 
-        if ($shop = Shop::email()) {
-            $this->send(fn () => Mail::to($shop)->send(new NewOrderForShop($order)), $order, 'shop copy');
+        // One email to everybody who runs the shop, sent separately so one bad
+        // address cannot stop the others arriving.
+        foreach (Shop::orderRecipients() as $recipient) {
+            $this->send(
+                fn () => Mail::to($recipient)->send(new NewOrderForShop($order)),
+                $order,
+                "shop copy to {$recipient}",
+            );
         }
     }
 

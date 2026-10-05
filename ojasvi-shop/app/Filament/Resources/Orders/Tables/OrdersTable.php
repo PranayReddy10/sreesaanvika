@@ -114,6 +114,7 @@ class OrdersTable
             ->recordActions([
                 ViewAction::make(),
 
+                OrderActions::book(),
                 OrderActions::ship(),
                 OrderActions::delivered(),
 

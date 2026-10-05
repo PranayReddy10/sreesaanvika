@@ -14,6 +14,7 @@ class ViewOrder extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            OrderActions::book(),
             OrderActions::ship(),
             OrderActions::delivered(),
             OrderActions::refund(),

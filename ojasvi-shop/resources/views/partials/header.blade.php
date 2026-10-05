@@ -62,7 +62,22 @@
                 </svg>
             </a>
 
-            <a href="{{ route('account') }}" class="hidden sm:block p-2 text-ink-soft hover:text-gold-light transition"
+            {{-- In words on a wide screen: an outline of a head is not a
+                 sign-in button to most people, and a shopper who cannot find
+                 the way in orders as a guest or does not order at all. --}}
+            <a href="{{ auth()->check() ? route('account') : route('sign-in') }}"
+               class="hidden md:flex items-center gap-2 px-3 py-2 text-ink-soft hover:text-gold-light transition
+                      text-[0.75rem] tracking-[0.12em] uppercase"
+               aria-label="{{ auth()->check() ? 'Your account' : 'Sign in' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"/>
+                </svg>
+                <span>{{ auth()->check() ? \Illuminate\Support\Str::of(auth()->user()->name)->before(' ') : 'Sign in' }}</span>
+            </a>
+
+            <a href="{{ auth()->check() ? route('account') : route('sign-in') }}"
+               class="sm:block md:hidden p-2 text-ink-soft hover:text-gold-light transition"
                aria-label="{{ auth()->check() ? 'Your account' : 'Sign in' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -131,7 +146,7 @@
                 <li><a href="{{ route('shop', ['sort' => 'new']) }}" class="block py-3 border-b border-[color:var(--color-line-soft)]">New in</a></li>
                 <li><a href="{{ route('shop', ['on' => 'offer']) }}" class="block py-3 border-b border-[color:var(--color-line-soft)]">Offers</a></li>
                 <li><a href="{{ route('account.wishlist') }}" class="block py-3 border-b border-[color:var(--color-line-soft)]">Saved sarees</a></li>
-                <li><a href="{{ route('account') }}" class="block py-3 border-b border-[color:var(--color-line-soft)]">{{ auth()->check() ? 'Your account' : 'Sign in' }}</a></li>
+                <li><a href="{{ auth()->check() ? route('account') : route('sign-in') }}" class="block py-3 border-b border-[color:var(--color-line-soft)]">{{ auth()->check() ? 'Your account' : 'Sign in' }}</a></li>
                 <li><a href="{{ route('page', 'story') }}" class="block py-3 border-b border-[color:var(--color-line-soft)]">Our story</a></li>
                 <li><a href="{{ route('page', 'contact') }}" class="block py-3">Contact</a></li>
             </ul>

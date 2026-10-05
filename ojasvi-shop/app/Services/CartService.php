@@ -351,9 +351,24 @@ class CartService
             ? ShippingZone::active()->get()->first(fn (ShippingZone $z) => $z->covers($pincode))
             : null;
 
-        $threshold = $zone?->free_from !== null ? (float) $zone->free_from : $this->freeShippingFrom();
-        $rate      = $zone ? (float) $zone->rate : $this->flatShipping();
+        if ($zone) {
+            /*
+             * A matching area has the last word, including when it says there
+             * is no free delivery here at all. Falling back to the shop-wide
+             * figure for a zone whose own is blank would quietly give free
+             * delivery to exactly the places that cost most to reach — and the
+             * admin already shows that blank as "Never free".
+             */
+            if ($zone->free_from === null) {
+                return (float) $zone->rate;
+            }
 
-        return $threshold > 0 && $goods >= $threshold ? 0.0 : $rate;
+            return $goods >= (float) $zone->free_from ? 0.0 : (float) $zone->rate;
+        }
+
+        // Zero means free for everybody, which is what the setting promises.
+        $threshold = $this->freeShippingFrom();
+
+        return $threshold >= 0 && $goods >= $threshold ? 0.0 : $this->flatShipping();
     }
 }

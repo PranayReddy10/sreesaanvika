@@ -46,12 +46,15 @@ class CheckoutController extends Controller
 
         $address = auth()->user()?->defaultAddress;
 
+        $totals = $this->bag->totals($cart);
+
         return view('shop.checkout', [
             'cart'    => $cart,
-            'totals'  => $this->bag->totals($cart),
+            'totals'  => $totals,
             'address' => $address,
-            'codOn'   => Shop::codOn(),
-            'online'  => $this->razorpay->configured(),
+            'codOn'   => $this->codAllowedFor($totals->grandTotal),
+            'codWhy'  => $this->codRefusedBecause($totals->grandTotal),
+            'online'  => Shop::onlineOn(),
         ]);
     }
 
@@ -80,10 +83,27 @@ class CheckoutController extends Controller
             'pincode.regex' => 'A six-digit pincode, please.',
         ]);
 
-        if ($data['method'] === 'cod' && ! $this->codAllowedAt($data['pincode'])) {
-            return back()
-                ->withInput()
-                ->withErrors(['method' => 'Cash on delivery is not offered at that pincode.']);
+        /*
+         * Checked again here, not only on the page. The form says which way
+         * they want to pay, and a form is a suggestion — somebody can post
+         * "cod" at a shop that has switched it off.
+         */
+        $totals = $this->bag->totals($cart, $data['pincode']);
+
+        if ($data['method'] === 'razorpay' && ! Shop::onlineOn()) {
+            return back()->withInput()
+                ->withErrors(['method' => 'Card and UPI payments are not available at the moment.']);
+        }
+
+        if ($data['method'] === 'cod') {
+            if ($why = $this->codRefusedBecause($totals->grandTotal)) {
+                return back()->withInput()->withErrors(['method' => $why]);
+            }
+
+            if (! $this->codAllowedAt($data['pincode'])) {
+                return back()->withInput()
+                    ->withErrors(['method' => 'Cash on delivery is not offered at that pincode. Please pay online.']);
+            }
         }
 
         try {
@@ -193,6 +213,28 @@ class CheckoutController extends Controller
             now()->addDays(7),
             ['order' => $order->number],
         );
+    }
+
+    private function codAllowedFor(float $total): bool
+    {
+        return $this->codRefusedBecause($total) === null;
+    }
+
+    /** Why cash on delivery is not on offer, in words a shopper can act on. */
+    private function codRefusedBecause(float $total): ?string
+    {
+        if (! Shop::codOn()) {
+            return 'Cash on delivery is not available at the moment.';
+        }
+
+        $max = Shop::codMax();
+
+        if ($max !== null && $total > $max) {
+            return 'Cash on delivery is only for orders up to ' . Shop::money($max)
+                . '. Please pay online for this one.';
+        }
+
+        return null;
     }
 
     private function codAllowedAt(string $pincode): bool

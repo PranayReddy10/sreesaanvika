@@ -61,6 +61,9 @@ class ShopSettings extends Page implements HasForms
         'flat_rate'          => ['shipping', 'money'],
         'cod_fee'            => ['shipping', 'money'],
         'cod_on'             => ['shipping', 'bool'],
+        'online_on'          => ['shipping', 'bool'],
+        'cod_max'            => ['shipping', 'money'],
+        'order_emails'       => ['general', 'string'],
         'dispatch_days'      => ['shipping', 'int'],
 
         'bar_on'             => ['announcement', 'bool'],
@@ -90,6 +93,22 @@ class ShopSettings extends Page implements HasForms
         'analytics_google_ads_label' => ['analytics', 'string'],
     ];
 
+    /**
+     * What a setting means before anybody has saved it.
+     *
+     * Only for the ones where "never written" is not the same as "off". Cash
+     * on delivery is on until the shop says otherwise — and without this the
+     * toggle would show off while the shop behaved as on, so the very first
+     * save would quietly close the shop's payments.
+     */
+    private const UNSET_MEANS = [
+        'cod_on'        => true,
+        'online_on'     => true,
+        'free_shipping_from' => null,   // null → fall back to the shop's own figure
+        'flat_rate'     => null,
+        'dispatch_days' => null,
+    ];
+
     /** @var array<string, mixed> */
     public array $data = [];
 
@@ -98,7 +117,20 @@ class ShopSettings extends Page implements HasForms
         $values = [];
 
         foreach (array_keys(self::FIELDS) as $key) {
-            $values[$key] = Setting::get($key);
+            $stored = Setting::get($key);
+
+            if ($stored === null && array_key_exists($key, self::UNSET_MEANS)) {
+                $stored = match ($key) {
+                    'cod_on'             => true,
+                    'online_on'          => true,
+                    'free_shipping_from' => \App\Support\Shop::freeShippingFrom(),
+                    'flat_rate'          => \App\Support\Shop::flatShipping(),
+                    'dispatch_days'      => \App\Support\Shop::dispatchDays(),
+                    default              => null,
+                };
+            }
+
+            $values[$key] = $stored;
         }
 
         $this->form->fill($values);
@@ -115,6 +147,13 @@ class ShopSettings extends Page implements HasForms
                             TextInput::make('shop_name')->label('Name')->required()->maxLength(120),
                             TextInput::make('tagline')->label('One line about it')->maxLength(200),
                             TextInput::make('email')->label('Email customers write to')->email()->maxLength(190),
+
+                            TextInput::make('order_emails')
+                                ->label('Also tell these people about new orders')
+                                ->maxLength(500)
+                                ->placeholder('amma@example.in, accounts@example.in')
+                                ->helperText('Separated by commas. Everybody with an admin account is told anyway — this is for anyone else.')
+                                ->columnSpanFull(),
                             TextInput::make('phone')->label('Telephone')->tel()->maxLength(30),
                             TextInput::make('whatsapp')
                                 ->label('WhatsApp number')
@@ -134,18 +173,57 @@ class ShopSettings extends Page implements HasForms
                     ]),
 
                     Tab::make('Delivery & payment')->schema([
-                        Section::make()->columns(2)->schema([
-                            TextInput::make('free_shipping_from')
-                                ->label('Free delivery once the bag reaches')
-                                ->numeric()->prefix('₹')
-                                ->helperText('This is the figure the shop promises on every page, so it must match what checkout charges.'),
-                            TextInput::make('flat_rate')->label('Otherwise delivery costs')->numeric()->prefix('₹'),
-                            TextInput::make('cod_fee')->label('Extra for cash on delivery')->numeric()->prefix('₹'),
-                            TextInput::make('dispatch_days')
-                                ->label('Posted within')
-                                ->numeric()->suffix('working days')->minValue(0)->maxValue(30),
-                            Toggle::make('cod_on')->label('Offer cash on delivery')->columnSpanFull(),
-                        ]),
+                        Section::make('What delivery costs')
+                            ->description('These two figures are quoted all over the shop, so they have to be the ones checkout actually charges. Change them here and every page follows.')
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('free_shipping_from')
+                                    ->label('Free delivery once the bag reaches')
+                                    ->numeric()->prefix('₹')->minValue(0)
+                                    ->helperText('Set it to 0 to give free delivery on everything.'),
+
+                                TextInput::make('flat_rate')
+                                    ->label('Otherwise delivery costs')
+                                    ->numeric()->prefix('₹')->minValue(0),
+
+                                TextInput::make('dispatch_days')
+                                    ->label('Posted within')
+                                    ->numeric()->suffix('working days')->minValue(0)->maxValue(30),
+
+                                Placeholder::make('zones')
+                                    ->label('Charging differently by area?')
+                                    ->content('Delivery areas sets a rate and a free-delivery figure per group of pincodes, and those win over the two above.')
+                                    ->helperText('Shop → Delivery areas.'),
+                            ]),
+
+                        Section::make('How people may pay')
+                            ->description('Turn either off and it stops being offered at checkout at once. With both off, nothing can be ordered — which is the honest way to close the shop for a week.')
+                            ->columns(2)
+                            ->schema([
+                                Toggle::make('online_on')
+                                    ->label('Card, UPI and net banking')
+                                    ->default(true)
+                                    ->helperText('Needs the Razorpay keys in .env. Without them this stays off however it is set here.'),
+
+                                Toggle::make('cod_on')
+                                    ->label('Cash on delivery')
+                                    ->default(true)
+                                    ->live()
+                                    ->helperText('Can also be refused for particular pincodes under Delivery areas.'),
+
+                                TextInput::make('cod_fee')
+                                    ->label('Extra charged for cash on delivery')
+                                    ->numeric()->prefix('₹')->minValue(0)
+                                    ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('cod_on'))
+                                    ->helperText('Shown to the shopper before they place the order, never added afterwards.'),
+
+                                TextInput::make('cod_max')
+                                    ->label('And not offered above a bag of')
+                                    ->numeric()->prefix('₹')->minValue(0)
+                                    ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('cod_on'))
+                                    ->placeholder('No limit')
+                                    ->helperText('A bridal silk sent out on trust is a large loss when it is refused at the door.'),
+                            ]),
                     ]),
 
                     Tab::make('The bar at the top')->schema([

@@ -14,6 +14,13 @@ Artisan::command('inspire', function () {
  */
 Schedule::command('ojasvi:release-unpaid')->everyFifteenMinutes()->withoutOverlapping();
 
+/*
+ * Where every parcel has got to. Hourly, because a courier scans a parcel a
+ * few times a day and asking more often only spends the shop's rate limit.
+ * Does nothing at all until Delhivery is set up.
+ */
+Schedule::command('ojasvi:track-parcels')->hourly()->withoutOverlapping();
+
 // No daemon on shared hosting, so the queue is worked in short bursts rather
 // than by a supervisor that cannot exist here.
 Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=3')

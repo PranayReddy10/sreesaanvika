@@ -213,6 +213,34 @@ the order should say **Paid**. If it says unpaid, the webhook is not arriving.
 
 ---
 
+## 6b. Delhivery (optional)
+
+The shop works without this — the tracking number is typed in by hand under
+**Mark as sent**, which is what most shops this size do. Set it up and the
+booking, the number and the tracking happen by themselves.
+
+In `.env`:
+
+```ini
+DELHIVERY_TOKEN=...
+DELHIVERY_BASE=https://track.delhivery.com
+# Exactly as your warehouse is named in the Delhivery panel. A booking is
+# refused outright if this does not match, character for character.
+DELHIVERY_PICKUP_NAME=OJASVI Hyderabad
+```
+
+Then, in the admin, an order gains a **Book with Delhivery** button. It gets a
+tracking number, marks the order packed, and the hourly job follows the parcel
+from then on: the customer is emailed when it is picked up, the order is
+marked delivered when it arrives, and a cash order counts as paid at that
+moment because that is when the money changed hands.
+
+Nothing about the courier can stop an order being dealt with. If their API is
+down, the button says so and tells you to book it in their panel and type the
+number in — and everything else works exactly as before.
+
+---
+
 ## 7. Going live
 
 ```sh
@@ -229,9 +257,13 @@ Then, in hPanel, turn on the free SSL certificate and force HTTPS.
 
 Last, in the admin at `/admin`:
 
-- **Shop → Settings** — the name, the telephone number, the free-delivery
-  figure, the bar across the top. The free-delivery figure is quoted all over
-  the shop, so it must be the one checkout actually charges.
+- **Shop → Settings → Delivery & payment** — the free-delivery figure, the
+  flat delivery charge, how long you take to post, and the two switches for
+  how people may pay. The free-delivery figure is quoted all over the shop,
+  so it must be the one checkout actually charges; it is.
+- **Shop → Settings → The shop** — the name, the telephone number, and who
+  else should be emailed when an order comes in. Everybody with an admin
+  account is told anyway.
 - **Shop → Delivery areas** — your pincodes and rates. Leave the catch-all
   zone (the one with no pincodes) **last**: a zone with no pincodes matches
   everything, so anything after it is never reached.
