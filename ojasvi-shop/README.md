@@ -1,58 +1,143 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# OJASVI
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+The shop at [ojasvidrapes.in](https://ojasvidrapes.in): handwoven sarees, sold
+one design at a time.
 
-## About Laravel
+Laravel 13, MySQL, Filament for the admin, Livewire for the bag, Razorpay and
+cash on delivery for the money. Built to run on Hostinger's shared hosting,
+which has no Redis, no Node and no long-running processes — every choice below
+that looks conservative is because of one of those three.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```sh
+composer install
+npm install && npm run build
+cp .env.example .env && php artisan key:generate
+php artisan migrate
+php artisan db:seed                       # your admin account
+php artisan db:seed --class=DemoSeeder    # a shop full of example sarees
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+The admin is at `/admin`. The account it makes comes from `ADMIN_EMAIL` and
+`ADMIN_PASSWORD` in `.env`.
 
-## Contributing
+To put it on a server, read [DEPLOYMENT.md](DEPLOYMENT.md).
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## What the shop is
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**There are no categories.** The shop sells sarees and nothing else, so a
+category menu would be a menu of one. A saree is one design, in one or two
+shades; fabric, weave, occasion and shade are facts about it, not a hierarchy
+it sits in, so they narrow the listing as query parameters and never appear in
+a web address. `Category` still exists in the database as *Collections* — a
+way to point an offer at a group of designs — and is hidden from the shop by
+default.
 
-## Security Vulnerabilities
+**A saree lives at `/saree/{slug}` and nowhere else.** One listing, at
+`/sarees`. A path that promises a hierarchy the shop does not have is one that
+breaks the day it changes.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## The decisions worth knowing before you change anything
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**Every figure is worked out on the server, twice.** Once for the page, and
+again from the products when the order is written. Nothing the browser sends
+about price, discount or delivery is believed. A test posts a form claiming an
+order is worth one rupee and checks it is ignored.
+
+**An order is a record, not a view.** Each line keeps its own copy of the
+name, the design code and the price, so a saree renamed or repriced next month
+cannot rewrite what somebody bought today.
+
+**Stock is taken when the order is written, not when the payment lands.** Two
+shoppers must not both be sold the last Patola because one was slower through
+the bank. The price of that is orders started and abandoned, so
+`ojasvi:release-unpaid` gives their stock back after ninety minutes — never a
+cash order, which is unpaid by design, and never a paid one.
+
+**The webhook is the authority, not the browser.** A shopper whose phone dies
+on the bank's page has still paid. `/webhooks/razorpay` can mark an order paid
+on its own; both paths end in the same `markPaid()`, which does nothing the
+second time.
+
+**Adding to the bag answers a POST with a redirect, never a page.** The bag
+itself is Livewire, so quantities change over the wire and the page is never
+re-entered — there is nothing for the back button to re-submit and nothing for
+the browser's cache to restore wrongly. The first build of this shop fought
+that bug for a week. A test drives back and forward over it.
+
+**Nothing about email may break a checkout.** The order is written and the
+money is taken before any email is attempted, so a wrong SMTP password costs
+the shop an email and never a sale.
+
+**The shop makes no third-party request on a page view.** Fonts are fetched
+once by `php artisan ojasvi:fonts` and served from our own domain; Filament's
+default avatar, which asks ui-avatars.com on every admin page, is replaced by
+one drawn here.
+
+---
+
+## Where things are
+
+```
+app/
+├── Console/Commands/
+│   ├── FetchFonts.php           ojasvi:fonts — self-host the typefaces
+│   └── ReleaseUnpaidOrders.php  ojasvi:release-unpaid — give stock back
+├── Filament/                    the admin: sarees, orders, offers, settings
+├── Http/Controllers/            the shop a customer sees
+├── Livewire/Bag.php             the bag
+├── Models/
+├── Services/
+│   ├── CartService.php          every rule about what is in a bag
+│   ├── OfferEngine.php          buy-two-get-one and quantity breaks; pure
+│   ├── OrderService.php         turning a bag into an order
+│   ├── OrderMailer.php          every email about an order
+│   └── Payments/Razorpay.php    the gateway; the secret never leaves here
+└── Support/Shop.php             what every page knows about the shop
+```
+
+`config/shop.php` holds the fallbacks. Anything the shop owner should be able
+to change lives in **Settings** in the admin instead.
+
+---
+
+## The admin
+
+| | |
+|---|---|
+| **Catalogue** | Sarees (with shades and a gallery per shade), Collections, Fabric & weave |
+| **Selling** | Orders, Offers, Coupons |
+| **Storefront** | Front page (the rows of the home page, reorderable), Reviews |
+| **Shop** | Customers, Delivery areas, Settings |
+
+Orders can be read and moved along but never invented: an order typed into an
+admin has no payment behind it and no stock taken for it.
+
+The front page is rows in the database, so the shop can rearrange and retitle
+its own home page. That is the lesson of the WordPress build this replaced,
+where every change meant a developer.
+
+---
+
+## Tests
+
+```sh
+php artisan test
+```
+
+117 of them. Most of the storefront and admin ones do nothing cleverer than
+open a page, which is the point: a Blade template or a Filament schema is only
+checked when it renders, and Filament resolves closure arguments by name, so
+a perfectly valid `fn (string $s) => ...` fails only when somebody opens the
+page. The rest are about money — whether the shop can be made to give away a
+saree, or to charge for one it cannot send.
+
+The things worth reading first:
+
+- `CheckoutTest` — the money path, including the webhook arriving twice.
+- `OfferEngineTest` — the cheapest qualifying piece is the one given away.
+- `CartServiceTest` — what happens when somebody asks for more than there is.
