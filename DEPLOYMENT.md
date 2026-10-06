@@ -187,10 +187,17 @@ Then, over SSH or through hPanel's terminal:
 ```sh
 cd ~/ojasvi
 php artisan key:generate
-php artisan migrate --force
-php artisan db:seed --force        # makes your admin account
+php artisan migrate --force        # makes the tables — always first
+php artisan db:seed --force        # puts the first row in: your admin account
 php artisan storage:link
 ```
+
+The order matters and only one way round works: migrating makes the tables,
+seeding puts rows in them. Run `db:seed` first and it will tell you so rather
+than failing with a SQL error.
+
+If `migrate` says **"Base table or view not found"**, that is this mistake —
+run `php artisan migrate --force` and then seed again.
 
 `storage:link` has to point at the real document root. If it refuses or the
 symlink does not work on your plan, make the folder by hand instead:

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * What a fresh install needs to be usable: one account that can sign in to the
@@ -21,6 +22,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! $this->tablesExist()) {
+            return;
+        }
+
         $email = (string) config('shop.admin.email');
 
         $admin = User::withTrashed()->firstWhere('email', $email);
@@ -41,5 +46,33 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->command?->info("Admin created: {$email}");
+    }
+
+    /**
+     * Has anybody run the migrations yet?
+     *
+     * Asked plainly, because without it the first command somebody runs on a
+     * new server answers with SQLSTATE[42S02] and a table name — which tells a
+     * shop owner nothing at all, least of all that the fix is one command they
+     * have not run yet.
+     */
+    private function tablesExist(): bool
+    {
+        if (Schema::hasTable('users')) {
+            return true;
+        }
+
+        $this->command?->getOutput()->writeln('');
+        $this->command?->error('  The database is empty — the tables have not been made yet.');
+        $this->command?->getOutput()->writeln('');
+        $this->command?->line('  Run this first, then try again:');
+        $this->command?->getOutput()->writeln('');
+        $this->command?->line('      <fg=yellow>php artisan migrate --force</>');
+        $this->command?->getOutput()->writeln('');
+        $this->command?->line('  <fg=gray>Seeding puts the first rows in. Migrating makes the tables</>');
+        $this->command?->line('  <fg=gray>for them to go in, so it always comes first.</>');
+        $this->command?->getOutput()->writeln('');
+
+        return false;
     }
 }

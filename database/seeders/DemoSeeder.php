@@ -38,6 +38,12 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('products')) {
+            $this->command?->error('  The database is empty — run `php artisan migrate --force` first.');
+
+            return;
+        }
+
         $this->images();
         $this->settings();
         $this->shipping();
