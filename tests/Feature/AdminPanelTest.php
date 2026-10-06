@@ -237,6 +237,59 @@ class AdminPanelTest extends TestCase
         $this->assertSame(3499.0, \App\Models\Setting::get('free_shipping_from'));
     }
 
+    public function test_the_seeder_refuses_to_make_an_account_nobody_can_sign_in_to(): void
+    {
+        \App\Models\User::query()->forceDelete();
+
+        /*
+         * A blank ADMIN_PASSWORD in .env is an empty string, not the fallback,
+         * because env() only falls back when the key is absent. Seeding it
+         * hashed an empty string and made an account that could never be
+         * signed in to, since the login form will not submit one.
+         */
+        config(['shop.admin.password' => '']);
+
+        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+
+        $this->assertSame(0, \App\Models\User::count(), 'Better no admin than an unusable one.');
+    }
+
+    public function test_an_admin_password_can_be_set_from_the_command_line(): void
+    {
+        \App\Models\User::query()->forceDelete();
+
+        $this->artisan('ojasvi:admin', [
+            '--email' => 'owner@example.test',
+            '--password' => 'a-real-password',
+            '--name' => 'Owner',
+        ])->assertSuccessful();
+
+        $admin = \App\Models\User::firstWhere('email', 'owner@example.test');
+
+        $this->assertNotNull($admin);
+        $this->assertTrue($admin->is_admin);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('a-real-password', $admin->password));
+
+        // And it is the way back in for an account that already exists.
+        $this->artisan('ojasvi:admin', [
+            '--email' => 'owner@example.test',
+            '--password' => 'a-different-password',
+        ])->assertSuccessful();
+
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('a-different-password', $admin->fresh()->password));
+        $this->assertSame(1, \App\Models\User::where('email', 'owner@example.test')->count());
+    }
+
+    public function test_a_password_too_short_to_be_safe_is_refused(): void
+    {
+        \App\Models\User::query()->forceDelete();
+
+        $this->artisan('ojasvi:admin', ['--email' => 'owner@example.test', '--password' => 'short'])
+            ->assertFailed();
+
+        $this->assertSame(0, \App\Models\User::count());
+    }
+
     public function test_a_customer_cannot_open_the_admin(): void
     {
         $customer = User::firstWhere('is_admin', false);

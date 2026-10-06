@@ -196,6 +196,13 @@ ADMIN_EMAIL=you@ojasvidrapes.in
 ADMIN_PASSWORD=something-long-and-not-this
 ```
 
+`ADMIN_PASSWORD` must be a real password of at least 8 characters. Left blank,
+seeding makes no admin at all and says so — which is deliberate: an account
+with an empty password is one nobody can ever sign in to, because the login
+form will not submit an empty field. If you would rather not keep the password
+in `.env`, leave it out and make the account afterwards with
+`php artisan ojasvi:admin` (below).
+
 Then, over SSH or through hPanel's terminal:
 
 ```sh
@@ -212,6 +219,24 @@ than failing with a SQL error.
 
 If `migrate` says **"Base table or view not found"**, that is this mistake —
 run `php artisan migrate --force` and then seed again.
+
+### Adding an admin, or changing a password
+
+```sh
+php artisan ojasvi:admin
+```
+
+It asks for the email address and then the password, without echoing it. An
+account with that address has its password replaced; if there is none, one is
+made. It is the way back in when nobody can sign in, and it works whether or
+not seeding was ever run.
+
+To do it in one line — on your own machine, not a shared server, where the
+shell keeps a history:
+
+```sh
+php artisan ojasvi:admin --email=you@ojasvidrapes.in --password=... --name="Your name"
+```
 
 **`storage:link` will not run on Hostinger.** It answers
 
@@ -491,6 +516,18 @@ port 465 with SSL, not 587.
 **Orders say unpaid after a successful payment.** The Razorpay webhook is not
 reaching the shop. Check the URL in the dashboard and that
 `RAZORPAY_WEBHOOK_SECRET` matches exactly.
+
+**The admin password does not work.** Almost always `ADMIN_PASSWORD` was
+blank in `.env` when `db:seed` ran, so the account was made with an empty
+password and no password will open it. Set one:
+
+```sh
+php artisan ojasvi:admin
+```
+
+Give it the address in `ADMIN_EMAIL` and a new password. Then sign in at
+`/admin`. (Seeding now refuses to make such an account, so this only affects
+sites first seeded before that.)
 
 **A setting changed in the admin has no effect.** `php artisan config:clear`,
 then cache again.

@@ -27,6 +27,36 @@ class DatabaseSeeder extends Seeder
         }
 
         $email = (string) config('shop.admin.email');
+        $password = (string) config('shop.admin.password');
+
+        /*
+         * A blank ADMIN_PASSWORD in .env is an empty string, not the fallback
+         * — env() only falls back when the key is absent altogether. Seeding
+         * it hashed an empty string and made an account nobody could ever sign
+         * in to, because the login form will not submit an empty password.
+         * Refuse, and say how to set one.
+         */
+        if (strlen($password) < 8) {
+            $this->command?->getOutput()->writeln('');
+            $this->command?->error('  No admin was created: ADMIN_PASSWORD is '
+                . ($password === '' ? 'empty' : 'shorter than 8 characters') . '.');
+            $this->command?->getOutput()->writeln('');
+            $this->command?->line('  Either put one in <fg=yellow>.env</> and run this again:');
+            $this->command?->getOutput()->writeln('');
+            $this->command?->line('      ADMIN_EMAIL=you@ojasvidrapes.in');
+            $this->command?->line('      ADMIN_PASSWORD=something-long-and-not-this');
+            $this->command?->getOutput()->writeln('');
+            $this->command?->line('  <fg=gray>(then `php artisan config:clear`, because a cached');
+            $this->command?->line('  config ignores .env entirely)</>');
+            $this->command?->getOutput()->writeln('');
+            $this->command?->line('  Or set one directly, which asks for it rather than');
+            $this->command?->line('  leaving it in your shell history:');
+            $this->command?->getOutput()->writeln('');
+            $this->command?->line('      <fg=yellow>php artisan ojasvi:admin</>');
+            $this->command?->getOutput()->writeln('');
+
+            return;
+        }
 
         $admin = User::withTrashed()->firstWhere('email', $email);
 
@@ -40,7 +70,7 @@ class DatabaseSeeder extends Seeder
         User::create([
             'name' => (string) config('shop.admin.name'),
             'email' => $email,
-            'password' => (string) config('shop.admin.password'),
+            'password' => $password,
             'is_admin' => true,
             'email_verified_at' => now(),
         ]);
