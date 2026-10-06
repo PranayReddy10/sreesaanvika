@@ -96,6 +96,18 @@ RewriteRule ^ojasvi/(?!public/) - [F,L]
 
 That is a second-best arrangement. Prefer the first.
 
+**How to tell which you have.** Open `https://ojasvidrapes.in/.env` in a
+browser. You should get a 404 or a 403. If you see the file — your database
+password, your Razorpay secret and your `APP_KEY` — stop, move the application
+out of the web root, and then change every one of those secrets, because they
+have been readable by anybody who asked.
+
+The application ships a root `.htaccess` that refuses `.env`, `composer.json`,
+the logs and the whole of `app/`, `config/`, `storage/` and `vendor/`. It costs
+nothing when the layout is right, and it is the difference between a mistake
+and a disaster when it is not. It is not a substitute for the right layout: a
+server with `AllowOverride None` ignores it entirely.
+
 ### Composer
 
 If SSH is available (Business plans and up):
@@ -105,8 +117,32 @@ cd ~/ojasvi
 composer install --no-dev --optimize-autoloader
 ```
 
-If it is not, run that command on your own machine and upload the `vendor`
-folder with the rest. It is large but it only changes when dependencies do.
+`--no-dev` matters: the testing tools are not wanted on a live site and they
+drag in packages the shop never runs.
+
+If SSH is not available, run that command on your own machine and upload the
+`vendor` folder with the rest. It is large but it only changes when
+dependencies do.
+
+**If Composer refuses with "Your lock file does not contain a compatible set
+of packages"**, it is telling you the lock was built against a newer PHP than
+the server runs. `composer.json` pins the resolution to PHP 8.3 so this does
+not happen:
+
+```json
+"config": {
+    "platform": {
+        "php": "8.3.0"
+    }
+}
+```
+
+If you ever raise the server's PHP and want newer packages, change that number
+to match and run `composer update` **on a machine running at least that PHP**,
+then commit the new `composer.lock`. Never run `composer update` on a machine
+with a different PHP from the server's and ship the result — that is exactly
+how the lock and the server fall out of step. `composer install` is always
+safe; it only reads the lock.
 
 ---
 
