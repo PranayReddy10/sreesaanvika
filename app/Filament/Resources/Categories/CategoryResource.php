@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Support\AddressedByTheSameKey;
 
 /**
  * Collections, not categories.
@@ -24,6 +25,8 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class CategoryResource extends Resource
 {
+    use AddressedByTheSameKey;
+
     protected static ?string $model = Category::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Support\AddressedByTheSameKey;
 
 /**
  * Orders are made at checkout, never by hand — so this resource reads and
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class OrderResource extends Resource
 {
+    use AddressedByTheSameKey;
+
     protected static ?string $model = Order::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;

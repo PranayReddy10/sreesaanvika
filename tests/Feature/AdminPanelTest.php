@@ -108,6 +108,49 @@ class AdminPanelTest extends TestCase
         $this->get("/admin/{$resource}/1/edit")->assertOk();
     }
 
+    /**
+     * Every link the admin writes to a record, followed.
+     *
+     * Opening /admin/products/1/edit by hand proves nothing about the button
+     * the shop actually presses, and that was the gap. Filament builds a
+     * record's address from the model's own route key — the slug for a saree,
+     * the number for an order, because that is what the shop's public
+     * addresses are made of — while a resource that sets $recordRouteKeyName
+     * looks the record up by something else. Nothing reconciles the two, so
+     * every Edit and View link on those resources pointed where nothing could
+     * be found and answered 404, while a test typing the id straight in
+     * passed.
+     *
+     * Swept over the whole panel rather than listed, so a resource added later
+     * cannot bring it back quietly.
+     */
+    public function test_every_link_the_admin_writes_to_a_record_opens(): void
+    {
+        $followed = 0;
+
+        foreach (Filament::getPanel('admin')->getResources() as $resource) {
+            $record = $resource::getModel()::query()->first();
+
+            if (! $record) {
+                continue;
+            }
+
+            foreach (['view', 'edit'] as $page) {
+                if (! $resource::hasPage($page)) {
+                    continue;
+                }
+
+                $url = $resource::getUrl($page, ['record' => $record]);
+
+                $this->assertSame(200, $this->get($url)->getStatusCode(), $url);
+
+                $followed++;
+            }
+        }
+
+        $this->assertGreaterThan(5, $followed, 'no links were followed, so this proves nothing');
+    }
+
     public function test_an_order_can_be_read(): void
     {
         // Every order the seeder makes, because each status renders different
