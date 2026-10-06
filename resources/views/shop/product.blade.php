@@ -343,8 +343,8 @@
         </section>
     @endif
 
-    @if ($reviews->isNotEmpty())
-        <section id="reviews" class="mt-20 scroll-mt-28">
+    <section id="reviews" class="mt-20 scroll-mt-28">
+        @if ($reviews->isNotEmpty())
             <h2 class="font-display text-2xl md:text-3xl">What people said</h2>
             <div class="mt-7 grid gap-5 md:grid-cols-2">
                 @foreach ($reviews as $review)
@@ -365,8 +365,102 @@
                     </article>
                 @endforeach
             </div>
-        </section>
-    @endif
+        @endif
+
+        {{--
+            And a way to add one.
+
+            Open to anybody, not only to somebody signed in: most people here
+            buy as a guest and come back weeks later to say what they thought,
+            and a shop that will only hear from account holders hears from
+            almost nobody. Nothing appears until OJASVI has read it.
+        --}}
+        @if (session('review') || session('review_error'))
+            <p class="mt-8 max-w-2xl rounded-[var(--radius-card)] border px-4 py-3 text-sm
+                      {{ session('review_error')
+                          ? 'border-[color:var(--color-maroon)] text-ink'
+                          : 'border-[color:var(--color-line)] text-gold' }}">
+                {{ session('review_error') ?: session('review') }}
+            </p>
+        @endif
+
+        <div x-data="{ open: {{ $errors->hasAny(['rating', 'body', 'name', 'email', 'website']) ? 'true' : 'false' }}, rating: {{ (int) old('rating', 0) }} }" class="mt-10">
+            <template x-if="!open">
+                <button type="button" @click="open = true" class="od-btn od-btn-ghost">
+                    {{ $reviews->isNotEmpty() ? 'Write a review' : 'Be the first to say something' }}
+                </button>
+            </template>
+
+            <form x-show="open" x-cloak method="post" action="{{ route('review.store', $product->slug) }}"
+                  class="od-card p-6 md:p-8 max-w-2xl">
+                @csrf
+
+                <h2 class="font-head text-xl">What did you think of it?</h2>
+
+                <div class="mt-5">
+                    <span class="od-label">Out of five</span>
+                    <div class="flex items-center gap-1">
+                        <template x-for="n in 5" :key="n">
+                            <button type="button" @click="rating = n"
+                                    class="p-1 text-2xl leading-none transition"
+                                    :class="n <= rating ? 'text-gold' : 'text-ink-faint hover:text-gold'"
+                                    :aria-label="n + ' out of five'"
+                                    :aria-pressed="n <= rating">
+                                <span x-text="n <= rating ? '★' : '☆'"></span>
+                            </button>
+                        </template>
+                    </div>
+                    <input type="hidden" name="rating" :value="rating">
+                    @error('rating')<p class="mt-1.5 text-sm text-[color:var(--color-marigold)]">{{ $message }}</p>@enderror
+                </div>
+
+                @guest
+                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="od-label" for="review-name">Your name</label>
+                            <input id="review-name" name="name" class="od-input" value="{{ old('name') }}" maxlength="80" required>
+                            @error('name')<p class="mt-1.5 text-sm text-[color:var(--color-marigold)]">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="od-label" for="review-email">Your email</label>
+                            <input id="review-email" name="email" type="email" class="od-input" value="{{ old('email') }}" required>
+                            <p class="mt-1.5 text-xs text-ink-faint">Never shown. Used to mark the review as a real purchase.</p>
+                            @error('email')<p class="mt-1.5 text-sm text-[color:var(--color-marigold)]">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+                @endguest
+
+                <div class="mt-5">
+                    <label class="od-label" for="review-title">A line to sum it up</label>
+                    <input id="review-title" name="title" class="od-input" value="{{ old('title') }}"
+                           maxlength="120" placeholder="Wore it to my sister's wedding">
+                </div>
+
+                <div class="mt-5">
+                    <label class="od-label" for="review-body">And the rest</label>
+                    <textarea id="review-body" name="body" rows="5" class="od-input"
+                              placeholder="How it felt, how it fell, whether the colour is as it looks here."
+                              required>{{ old('body') }}</textarea>
+                    @error('body')<p class="mt-1.5 text-sm text-[color:var(--color-marigold)]">{{ $message }}</p>@enderror
+                </div>
+
+                {{-- Not for people. --}}
+                <div class="hidden" aria-hidden="true">
+                    <label>Website<input name="website" tabindex="-1" autocomplete="off"></label>
+                </div>
+
+                <div class="mt-6 flex items-center gap-4">
+                    <button type="submit" class="od-btn od-btn-gold">Send it</button>
+                    <button type="button" @click="open = false" class="text-sm text-ink-muted hover:text-ink">Not now</button>
+                </div>
+
+                <p class="mt-4 text-xs text-ink-faint">
+                    We read every one before it goes up, and we do not take them down for being unkind —
+                    only for being about something other than the saree.
+                </p>
+            </form>
+        </div>
+    </section>
 
     @if ($alsoLike->isNotEmpty())
         <section class="mt-20">
