@@ -45,8 +45,13 @@ class AdminPanelProvider extends PanelProvider
                 'Storefront',
                 'Shop',
             ])
-            // A shared host has no Redis; the session is where this belongs.
-            ->databaseNotifications()
+            /*
+             * No notification bell. Nothing in the shop sends a stored
+             * notification — every message raised in the admin is a flash one,
+             * shown and gone — so the bell would always be empty, and Filament
+             * would ask the server every 30 seconds whether it still is.
+             * Requests are the scarce thing on shared hosting.
+             */
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Filament\Facades\Filament;
+use Livewire\Livewire;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -288,6 +290,42 @@ class AdminPanelTest extends TestCase
             ->assertFailed();
 
         $this->assertSame(0, \App\Models\User::count());
+    }
+
+    /**
+     * Nothing in the admin asks the server for anything by itself.
+     *
+     * Filament polls a chart every 5 seconds and the notification bell every
+     * 30 unless both are turned off. On shared hosting that is how an admin
+     * tab left open on the dashboard spends the account's request allowance
+     * and gets the whole site answered 429 — shoppers included. Written down
+     * as a test because the cost is invisible: the page looks identical
+     * either way, and a widget added later brings the 5 seconds back with it.
+     *
+     * The widgets are rendered rather than asked, because the polling is only
+     * ever visible in the markup — and only after the lazy placeholder has
+     * given way to the real thing, which is what the browser ends up holding.
+     */
+    public function test_no_admin_page_polls_the_server(): void
+    {
+        $panel = Filament::getPanel('admin');
+
+        $this->assertFalse(
+            $panel->hasDatabaseNotifications(),
+            'the notification bell asks the server every 30 seconds whether it is still empty',
+        );
+
+        $widgets = $panel->getWidgets();
+
+        $this->assertNotEmpty($widgets, 'no widgets found, so this test is proving nothing');
+
+        Livewire::withoutLazyLoading();
+
+        foreach ($widgets as $widget) {
+            $html = Livewire::test($widget)->html();
+
+            $this->assertStringNotContainsString('wire:poll', $html, $widget.' polls the server');
+        }
     }
 
     public function test_a_customer_cannot_open_the_admin(): void

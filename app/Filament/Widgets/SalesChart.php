@@ -13,6 +13,16 @@ class SalesChart extends ChartWidget
 {
     protected static ?int $sort = 2;
 
+    /*
+     * Filament polls a chart every 5 seconds unless told not to. On a shared
+     * host that is 12 requests a minute, each one booting the whole framework,
+     * for a number that changes when an order arrives — a few times a day. Left
+     * on, an admin tab forgotten on the dashboard spends the account's request
+     * allowance all by itself, and the host answers 429 to whoever asks next,
+     * shoppers included. Reload the page to see today's takings.
+     */
+    protected ?string $pollingInterval = null;
+
     protected ?string $heading = 'Taken by day';
 
     protected int|string|array $columnSpan = 'full';

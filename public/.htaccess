@@ -18,8 +18,56 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
+    # Marks the built CSS and JS, which carry a content hash in their
+    # filename. Set before the front-controller rule, and with no substitution,
+    # so it only labels the request and does not change where it goes.
+    RewriteRule ^build/ - [E=OD_HASHED:1]
+
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# How long a browser may keep what it has already been given.
+#
+# This is about the number of requests, not about speed. A saree page asks for
+# a stylesheet, a script, the fonts and a dozen photographs; without these
+# headers it asks for all of them again on the next page, and again tomorrow.
+# Shared hosting counts requests per address and answers 429 — "too many
+# requests" — when there are too many at once, so a page that asks for forty
+# files is a page that can be refused outright. It is also most of what a
+# shopper on a phone waits for.
+#
+# Nothing here touches a page itself: Laravel sends its own no-cache headers
+# with every response, and a page whose prices or stock were stale would be
+# worse than a slow one.
+<IfModule mod_headers.c>
+    # Built assets. Vite writes a hash into the filename, so a changed file is
+    # a different URL — these can never go stale, and a year is safe.
+    Header set Cache-Control "public, max-age=31536000, immutable" env=OD_HASHED
+
+    # Everything else that is a file on disk rather than a page: photographs,
+    # films, fonts, the favicon. A week, because these keep their names when
+    # they are replaced, and a shop that changes a photograph should not wait
+    # a year to be rid of the old one.
+    <FilesMatch "\.(jpe?g|png|webp|avif|gif|svg|ico|mp4|webm|mov|woff2?|ttf|otf|eot)$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+
+    # Named on its own: it is a stylesheet without a hash, so it gets the
+    # shorter life rather than the immutable one above.
+    <Files "fonts.css">
+        Header set Cache-Control "public, max-age=604800"
+    </Files>
+</IfModule>
+
+# Sent compressed where the browser says it can take it. Photographs and films
+# are left out on purpose — they are already compressed, and running them
+# through again costs the server time for nothing.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE application/xml application/rss+xml
+    AddOutputFilterByType DEFLATE image/svg+xml font/ttf font/otf
 </IfModule>

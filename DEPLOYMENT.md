@@ -532,7 +532,28 @@ sites first seeded before that.)
 **A setting changed in the admin has no effect.** `php artisan config:clear`,
 then cache again.
 
-**HTTP 429.** Too many requests in too short a time, from the host's own
-limiter rather than from the shop. It passes; if it keeps happening, look at
-what is making repeated requests — a tab left open on a page that polls, or a
-plugin on another site sharing the account.
+**HTTP 429, a bare "This page isn't working".** Too many requests in too
+short a time, refused by Hostinger's own limiter — not by the shop, which
+never answers 429 anywhere. The empty page is the giveaway: the shop's own
+errors are rendered pages.
+
+It clears by itself in a minute or two. What matters is what spent the
+requests:
+
+- **An admin tab left open.** This was the shop's own fault until the
+  dashboard stopped polling (one request every 5 seconds for the chart,
+  another every 30 for a notification bell nothing filled — around 840 an
+  hour from a tab nobody was looking at). If you are seeing 429 on a site
+  that has not pulled that change, pull it.
+- **A page asking for forty files.** `public/.htaccess` now tells browsers
+  how long they may keep the stylesheet, the fonts and the photographs, so a
+  second page view asks for almost nothing. If you have replaced that file
+  with an older one, those headers go with it.
+- **Something else on the account.** The limit is per address and per
+  account, so another site, a backup plugin, or a crawler on the same hosting
+  spends the same allowance.
+- **You, with a loop.** A refresh held down, or a script polling the site.
+
+If it keeps happening with none of those true, Hostinger support can say what
+the limit is on your plan and what tripped it — they can see the refusals and
+you cannot.
