@@ -305,7 +305,7 @@
                             <span class="font-head text-lg">Delivery &amp; returns</span>
                             <span class="text-gold transition group-open:rotate-45">+</span>
                         </summary>
-                        <div class="pb-5 text-sm text-ink-muted leading-relaxed whitespace-pre-line">{{ Shop::policy('returns') ?: 'Seven days from delivery, unworn and with tags.' }}</div>
+                        <div class="pb-5 text-sm text-ink-muted leading-relaxed whitespace-pre-line">{{ \App\Models\Page::says('returns') ?: 'Seven days from delivery, unworn and with tags.' }}</div>
                     </details>
                 </div>
             @endif

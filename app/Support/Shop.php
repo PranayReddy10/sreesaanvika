@@ -170,11 +170,6 @@ class Shop
         ]);
     }
 
-    public static function policy(string $key): string
-    {
-        return (string) Setting::get($key);
-    }
-
     /** ₹1,24,500 — Indian grouping, because that is who the shop sells to. */
     public static function money(float|int|string|null $amount, bool $paise = false): string
     {

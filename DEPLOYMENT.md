@@ -437,10 +437,12 @@ Settings → Found on Google** and **Analytics**.
    saree in an Instagram post. The pixel id goes in the Analytics tab and is
    what makes advertising measurable.
 
-5. **Check the policy pages read the way you would say it.** Returns,
-   delivery, terms and privacy are written for you already and are true of the
-   shop as built, but they are in our words. Razorpay reads them during
-   approval, and so will your customers.
+5. **Check the policy pages read the way you would say it.** Under
+   **Storefront → Pages**. Returns, delivery, terms and privacy are written
+   for you already and are true of the shop as built, but they are in our
+   words. Razorpay reads them during approval, and so will your customers.
+   Those six pages cannot be deleted or taken down, for that reason; any page
+   you add yourself can be.
 
 6. **Turn off "Hide the whole shop from search engines"** on the day you open,
    if you turned it on while building. Nothing else on this list matters until

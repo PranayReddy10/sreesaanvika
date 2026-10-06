@@ -231,7 +231,7 @@ class SeoTest extends TestCase
 
     public function test_what_the_shop_writes_wins_over_the_standard_wording(): void
     {
-        Setting::put('returns', 'We take nothing back, ever.', 'text', 'policy');
+        \App\Models\Page::where('slug', 'returns')->update(['body' => 'We take nothing back, ever.']);
 
         $this->get('/page/returns')
             ->assertOk()
@@ -241,7 +241,7 @@ class SeoTest extends TestCase
 
     public function test_policy_text_cannot_put_markup_on_the_page(): void
     {
-        Setting::put('terms', 'Hello <script>alert(1)</script> there', 'text', 'policy');
+        \App\Models\Page::where('slug', 'terms')->update(['body' => 'Hello <script>alert(1)</script> there']);
 
         $this->get('/page/terms')
             ->assertOk()

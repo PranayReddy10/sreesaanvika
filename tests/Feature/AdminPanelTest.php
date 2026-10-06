@@ -53,6 +53,7 @@ class AdminPanelTest extends TestCase
             'offers'         => ['/admin/offers'],
             'coupons'        => ['/admin/coupons'],
             'front page'     => ['/admin/sections'],
+            'pages'          => ['/admin/pages'],
             'reviews'        => ['/admin/reviews'],
             'customers'      => ['/admin/users'],
             'delivery areas' => ['/admin/shipping-zones'],

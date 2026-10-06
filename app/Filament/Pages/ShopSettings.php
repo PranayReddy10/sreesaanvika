@@ -74,12 +74,6 @@ class ShopSettings extends Page implements HasForms
         'facebook'           => ['social', 'string'],
         'youtube'            => ['social', 'string'],
 
-        'returns'            => ['policy', 'text'],
-        'shipping_policy'    => ['policy', 'text'],
-        'terms'              => ['policy', 'text'],
-        'privacy'            => ['policy', 'text'],
-        'story'              => ['policy', 'text'],
-
         'seo_home_title'          => ['seo', 'string'],
         'seo_home_description'    => ['seo', 'text'],
         'seo_title_suffix'        => ['seo', 'string'],
@@ -240,18 +234,6 @@ class ShopSettings extends Page implements HasForms
                             TextInput::make('facebook')->label('Facebook')->url()->maxLength(300),
                             TextInput::make('youtube')->label('YouTube')->url()->maxLength(300),
                         ]),
-                    ]),
-
-                    Tab::make('What you promise')->schema([
-                        Section::make()
-                            ->description('Leave any of these empty and the shop uses sensible wording of its own. Razorpay will not approve a shop without returns, delivery, terms and privacy, so these are not optional in practice.')
-                            ->schema([
-                                Textarea::make('story')->label('Our story')->rows(5),
-                                Textarea::make('returns')->label('Returns')->rows(5),
-                                Textarea::make('shipping_policy')->label('Delivery')->rows(5),
-                                Textarea::make('terms')->label('Terms')->rows(8),
-                                Textarea::make('privacy')->label('Privacy')->rows(8),
-                            ]),
                     ]),
 
                     Tab::make('Found on Google')->schema([

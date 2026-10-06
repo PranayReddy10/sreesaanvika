@@ -43,8 +43,15 @@ class SitemapController extends Controller
             ];
         }
 
-        foreach (['story', 'contact', 'shipping', 'returns', 'terms', 'privacy'] as $slug) {
-            $urls[] = ['loc' => route('page', $slug), 'priority' => '0.3', 'freq' => 'monthly'];
+        // Whatever the shop has written, rather than six names fixed here —
+        // a page added last week is a page Google should know about.
+        foreach (\App\Models\Page::visible()->get(['slug', 'updated_at']) as $page) {
+            $urls[] = [
+                'loc'      => route('page', $page->slug),
+                'priority' => '0.3',
+                'freq'     => 'monthly',
+                'lastmod'  => $this->stamp($page->updated_at),
+            ];
         }
 
         return $this->xml(view('seo.sitemap', ['urls' => $urls])->render());

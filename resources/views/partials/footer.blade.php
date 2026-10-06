@@ -70,10 +70,13 @@
         <div>
             <h2 class="od-eyebrow mb-4">Help</h2>
             <ul class="space-y-2.5 text-sm text-ink-soft">
-                <li><a href="{{ route('page', 'shipping') }}" class="hover:text-gold-light transition">Delivery</a></li>
-                <li><a href="{{ route('page', 'returns') }}" class="hover:text-gold-light transition">Returns</a></li>
+                {{-- Whatever the shop has ticked for the footer, in its own
+                     order — so a page written next month appears here without
+                     anyone editing this file. --}}
+                @foreach (\App\Models\Page::inFooter()->get() as $page)
+                    <li><a href="{{ route('page', $page->slug) }}" class="hover:text-gold-light transition">{{ $page->title }}</a></li>
+                @endforeach
                 <li><a href="{{ route('track') }}" class="hover:text-gold-light transition">Track an order</a></li>
-                <li><a href="{{ route('page', 'contact') }}" class="hover:text-gold-light transition">Contact</a></li>
             </ul>
         </div>
 
