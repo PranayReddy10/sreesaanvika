@@ -37,8 +37,10 @@ class AddressTest extends TestCase
 
     private function order(User $customer, array $address = []): void
     {
-        $saree = Product::published()->where('track_stock', false)->first()
-            ?? Product::published()->firstOrFail();
+        // Always the same saree: published() has no order of its own, and a
+        // different one each run means a different stock situation each run.
+        $saree = Product::published()->where('track_stock', false)->orderBy('id')->first()
+            ?? Product::published()->orderBy('id')->firstOrFail();
 
         $this->actingAs($customer)->post('/bag/add', ['product_id' => $saree->id, 'quantity' => 1]);
 
@@ -124,12 +126,23 @@ class AddressTest extends TestCase
 
         $first = $customer->addresses()->where('line1', '4-2-18 Sultan Bazaar')->firstOrFail();
 
-        $this->actingAs($customer)->post(route('account.address.use', $first))->assertRedirect();
+        /*
+         * Checked for where it went, not merely that it went somewhere. The
+         * auth middleware answers an unauthenticated post with a redirect too,
+         * so a bare assertRedirect() passes while nothing at all has happened.
+         */
+        $this->actingAs($customer)
+            ->post(route('account.address.use', $first))
+            ->assertRedirect()
+            ->assertSessionHas('bag');
 
         $this->assertTrue($first->fresh()->is_default);
         $this->assertSame(1, $customer->addresses()->where('is_default', true)->count());
 
-        $this->actingAs($customer)->delete(route('account.address.forget', $first))->assertRedirect();
+        $this->actingAs($customer)
+            ->delete(route('account.address.forget', $first))
+            ->assertRedirect()
+            ->assertSessionHas('bag');
 
         $this->assertSame(1, $customer->addresses()->count());
     }

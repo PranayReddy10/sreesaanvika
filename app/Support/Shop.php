@@ -170,6 +170,37 @@ class Shop
         ]);
     }
 
+    /**
+     * The one message the shop puts in front of a shopper, if it wants one.
+     *
+     * Off unless switched on, and off entirely when there is nothing written
+     * in it — a popup with no words is a shop interrupting somebody to show
+     * them a blank square.
+     *
+     * @return array{on: bool, heading: string, text: string, label: string, url: string, image: ?string, after: int, again: int, ask: bool}
+     */
+    public static function popup(): array
+    {
+        $heading = trim((string) Setting::get('popup_heading'));
+        $text = trim((string) Setting::get('popup_text'));
+
+        return [
+            'on'      => (bool) Setting::get('popup_on') && ($heading !== '' || $text !== ''),
+            'heading' => $heading,
+            'text'    => $text,
+            'label'   => trim((string) Setting::get('popup_label')),
+            'url'     => trim((string) Setting::get('popup_url')),
+            'image'   => ($image = trim((string) Setting::get('popup_image'))) !== ''
+                ? \Illuminate\Support\Facades\Storage::disk('public')->url($image)
+                : null,
+            // Long enough that she has seen the shop first. A popup before the
+            // page has painted is an advertisement, not an invitation.
+            'after'   => max(1, (int) (Setting::get('popup_after') ?: 6)),
+            'again'   => max(1, (int) (Setting::get('popup_again') ?: 30)),
+            'ask'     => (bool) Setting::get('popup_ask'),
+        ];
+    }
+
     /** ₹1,24,500 — Indian grouping, because that is who the shop sells to. */
     public static function money(float|int|string|null $amount, bool $paise = false): string
     {

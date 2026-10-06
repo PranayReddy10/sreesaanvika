@@ -93,6 +93,16 @@ class ShopSettings extends Page implements HasForms
 
         'meta_ad_account'             => ['analytics', 'string'],
         'meta_access_token'           => ['analytics', 'text'],
+
+        'popup_on'      => ['popup', 'bool'],
+        'popup_heading' => ['popup', 'string'],
+        'popup_text'    => ['popup', 'text'],
+        'popup_label'   => ['popup', 'string'],
+        'popup_url'     => ['popup', 'string'],
+        'popup_image'   => ['popup', 'string'],
+        'popup_after'   => ['popup', 'string'],
+        'popup_again'   => ['popup', 'string'],
+        'popup_ask'     => ['popup', 'bool'],
     ];
 
     /**
@@ -296,6 +306,69 @@ class ShopSettings extends Page implements HasForms
                                 Toggle::make('seo_hidden')
                                     ->label('Hide the whole shop from search engines')
                                     ->helperText('For while you are still setting up. Turn it off on the day you open, or nobody will ever find you.'),
+                            ]),
+                    ]),
+
+                    Tab::make('Popup')->schema([
+                        Section::make()
+                            ->description('One message, over the front of the shop. Used well — a sale, a new weave, the list — it works; used for nothing in particular it is the thing people close without reading. It stays shut for a month once somebody has closed it.')
+                            ->columns(2)
+                            ->schema([
+                                Toggle::make('popup_on')
+                                    ->label('Show it')
+                                    ->helperText('Off, and nothing appears at all.')
+                                    ->columnSpanFull(),
+
+                                TextInput::make('popup_heading')
+                                    ->label('Heading')
+                                    ->maxLength(80)
+                                    ->placeholder('Ten new weaves, this Friday'),
+
+                                TextInput::make('popup_label')
+                                    ->label('Button')
+                                    ->maxLength(40)
+                                    ->placeholder('See them first'),
+
+                                Textarea::make('popup_text')
+                                    ->label('And a line or two')
+                                    ->rows(3)
+                                    ->maxLength(300)
+                                    ->columnSpanFull(),
+
+                                TextInput::make('popup_url')
+                                    ->label('Where the button goes')
+                                    ->maxLength(300)
+                                    ->placeholder('/sarees?sort=new')
+                                    ->helperText('A path on this shop, or a whole address.'),
+
+                                FileUpload::make('popup_image')
+                                    ->label('A photograph beside it')
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('popup')
+                                    ->imageEditor()
+                                    ->maxSize(2048),
+
+                                TextInput::make('popup_after')
+                                    ->label('Seconds before it appears')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(120)
+                                    ->default(6)
+                                    ->helperText('Long enough that she has seen the shop first.'),
+
+                                TextInput::make('popup_again')
+                                    ->label('Days before asking again')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(365)
+                                    ->default(30)
+                                    ->helperText('After somebody closes it.'),
+
+                                Toggle::make('popup_ask')
+                                    ->label('Ask for an email address in it')
+                                    ->helperText('Adds the mailing-list box. The address goes on the same list as the one in the footer.')
+                                    ->columnSpanFull(),
                             ]),
                     ]),
 

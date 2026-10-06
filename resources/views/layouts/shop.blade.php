@@ -74,6 +74,8 @@
 
     @include('partials.footer')
 
+    @include('partials.popup')
+
     @livewireScripts
     @stack('scripts')
     @stack('tracking')
