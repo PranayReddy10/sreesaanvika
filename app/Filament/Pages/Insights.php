@@ -52,6 +52,7 @@ class Insights extends Page
     public function getHeaderWidgets(): array
     {
         return [
+            \App\Filament\Widgets\WhereTheOrdersAre::class,
             \App\Filament\Widgets\ShopOverview::class,
             \App\Filament\Widgets\SalesChart::class,
             \App\Filament\Widgets\OrdersNeedingWork::class,

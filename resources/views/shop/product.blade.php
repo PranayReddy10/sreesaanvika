@@ -296,6 +296,60 @@
                 </p>
             @endauth
 
+            {{--
+                Sending it to somebody.
+
+                This is how a saree is actually bought here: it goes to a
+                sister, a mother, a group, and comes back with a verdict. The
+                phone's own share sheet where there is one — which puts
+                WhatsApp first on the phones this shop sells to — and a plain
+                copy of the address where there is not.
+            --}}
+            <div class="mt-3" x-data="{ copied: false,
+                async send() {
+                    const url = window.location.href;
+                    const title = @js($product->name);
+
+                    if (navigator.share) {
+                        try { await navigator.share({ title, text: title, url }); return; } catch (e) { if (e.name === 'AbortError') return; }
+                    }
+
+                    try {
+                        await navigator.clipboard.writeText(url);
+                    } catch (e) {
+                        // Older browsers, and any page not served over https.
+                        window.prompt('Copy this address', url);
+                        return;
+                    }
+
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2500);
+                },
+            }">
+                <button type="button" @click="send()"
+                        class="text-sm text-ink-muted hover:text-gold-light transition inline-flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"/>
+                    </svg>
+                    <span x-show="!copied">Share this saree</span>
+                    <span x-show="copied" x-cloak class="text-gold">Address copied</span>
+                </button>
+
+                {{-- Always shown, and nothing to do with the shop's own
+                     WhatsApp number: this opens the shopper's WhatsApp for her
+                     to choose who to send it to. Works with no JavaScript at
+                     all, and is the one people reach for anyway. --}}
+                <a href="https://wa.me/?text={{ rawurlencode($product->name.' — '.route('product', $product->slug)) }}"
+                       target="_blank" rel="noopener"
+                   class="ml-4 text-sm text-ink-muted hover:text-gold-light transition inline-flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91C21.95 6.45 17.5 2 12.04 2Zm5.8 14.17c-.25.69-1.45 1.32-2 1.36-.51.04-1.16.22-3.76-.78-3.16-1.21-5.17-4.42-5.33-4.63-.15-.21-1.26-1.68-1.26-3.2s.8-2.27 1.08-2.58c.28-.31.61-.39.82-.39.2 0 .41 0 .59.01.19.01.44-.7.69.53.25.6.86 2.11.94 2.26.08.16.13.34.03.55-.1.21-.15.34-.3.52-.15.18-.32.4-.45.54-.15.15-.31.32-.13.63.18.31.79 1.3 1.69 2.11 1.17 1.04 2.15 1.36 2.46 1.51.31.16.49.13.67-.08.18-.21.77-.9.98-1.21.21-.31.41-.26.69-.16.28.1 1.79.84 2.1.99.31.16.51.23.59.36.08.13.08.76-.17 1.45Z"/>
+                    </svg>
+                    WhatsApp
+                </a>
+            </div>
+
             <div class="mt-7 grid gap-3 text-sm text-ink-muted">
                 <p class="flex items-center gap-2.5">
                     <span class="text-gold">✦</span>
@@ -307,46 +361,99 @@
                 <p class="flex items-center gap-2.5"><span class="text-gold">✦</span> Unstitched blouse piece included.</p>
             </div>
 
-            @if ($specs->isNotEmpty() || $product->description)
-                <div class="mt-9 divide-y divide-[color:var(--color-line-soft)] border-y border-[color:var(--color-line-soft)]">
-                    @if ($product->description)
-                        <details class="group" open>
-                            <summary class="flex items-center justify-between py-4 cursor-pointer list-none">
-                                <span class="font-head text-lg">About this saree</span>
-                                <span class="text-gold transition group-open:rotate-45">+</span>
-                            </summary>
-                            <div class="pb-5 prose-sm text-ink-muted leading-relaxed [&_p]:mb-3">{!! $product->description !!}</div>
-                        </details>
-                    @endif
-
-                    @if ($specs->isNotEmpty())
-                        <details class="group">
-                            <summary class="flex items-center justify-between py-4 cursor-pointer list-none">
-                                <span class="font-head text-lg">The details</span>
-                                <span class="text-gold transition group-open:rotate-45">+</span>
-                            </summary>
-                            <dl class="pb-5 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5 text-sm">
-                                @foreach ($specs as $heading => $value)
-                                    <dt class="text-ink-faint">{{ $heading }}</dt>
-                                    <dd class="text-ink-soft">{{ $value }}</dd>
-                                @endforeach
-                                @if ($product->weight_g)
-                                    <dt class="text-ink-faint">Weight</dt>
-                                    <dd class="text-ink-soft">{{ $product->weight_g }} g</dd>
-                                @endif
-                            </dl>
-                        </details>
-                    @endif
-
-                    <details class="group">
+            {{-- Always, not only when this saree happens to have a description:
+                 delivery, returns and how to reach a person belong on every
+                 saree's page, and the sections inside decide for themselves
+                 whether they have anything to say. --}}
+            <div class="mt-9 divide-y divide-[color:var(--color-line-soft)] border-y border-[color:var(--color-line-soft)]">
+                @if ($product->description)
+                    <details class="group" open>
                         <summary class="flex items-center justify-between py-4 cursor-pointer list-none">
-                            <span class="font-head text-lg">Delivery &amp; returns</span>
+                            <span class="font-head text-lg">About this saree</span>
                             <span class="text-gold transition group-open:rotate-45">+</span>
                         </summary>
-                        <div class="pb-5 text-sm text-ink-muted leading-relaxed whitespace-pre-line">{{ \App\Models\Page::says('returns') ?: 'Seven days from delivery, unworn and with tags.' }}</div>
+                        <div class="pb-5 prose-sm text-ink-muted leading-relaxed [&_p]:mb-3">{!! $product->description !!}</div>
                     </details>
-                </div>
-            @endif
+                @endif
+
+                @if ($specs->isNotEmpty())
+                    <details class="group">
+                        <summary class="flex items-center justify-between py-4 cursor-pointer list-none">
+                            <span class="font-head text-lg">The details</span>
+                            <span class="text-gold transition group-open:rotate-45">+</span>
+                        </summary>
+                        <dl class="pb-5 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5 text-sm">
+                            @foreach ($specs as $heading => $value)
+                                <dt class="text-ink-faint">{{ $heading }}</dt>
+                                <dd class="text-ink-soft">{{ $value }}</dd>
+                            @endforeach
+                            @if ($product->weight_g)
+                                <dt class="text-ink-faint">Weight</dt>
+                                <dd class="text-ink-soft">{{ $product->weight_g }} g</dd>
+                            @endif
+                        </dl>
+                    </details>
+                @endif
+
+                <details class="group">
+                    <summary class="flex items-center justify-between py-4 cursor-pointer list-none">
+                        <span class="font-head text-lg">Delivery &amp; returns</span>
+                        <span class="text-gold transition group-open:rotate-45">+</span>
+                    </summary>
+                    <div class="pb-5 text-sm text-ink-muted leading-relaxed whitespace-pre-line">{{ \App\Models\Page::says('returns') ?: 'Seven days from delivery, unworn and with tags.' }}</div>
+                </details>
+
+                {{-- And how to ask a person.
+
+                     A saree is bought on a judgement about weight, fall
+                     and colour that a photograph cannot settle, and the
+                     moment that doubt arrives is here — not on a contact
+                     page two taps away. Every line comes from Settings, so
+                     there is one telephone number in this shop and it is
+                     the one in the admin. --}}
+                @if (Shop::phone() || Shop::whatsapp() || Shop::email())
+                    <details class="group">
+                        <summary class="flex items-center justify-between py-4 cursor-pointer list-none">
+                            <span class="font-head text-lg">Ask us about this saree</span>
+                            <span class="text-gold transition group-open:rotate-45">+</span>
+                        </summary>
+                        <div class="pb-5 text-sm text-ink-muted leading-relaxed space-y-2.5">
+                            <p>A person answers — about the weave, the weight, or how it will look on you.</p>
+
+                            @if (Shop::whatsapp())
+                                <p class="flex items-center gap-2.5">
+                                    <span class="text-gold">✦</span>
+                                    <a href="https://wa.me/{{ Shop::whatsapp() }}?text={{ rawurlencode('About '.$product->name.' — '.route('product', $product->slug)) }}"
+                                       target="_blank" rel="noopener" class="text-gold hover:text-gold-light">
+                                        WhatsApp us about this one
+                                    </a>
+                                </p>
+                            @endif
+
+                            @if (Shop::phone())
+                                <p class="flex items-center gap-2.5">
+                                    <span class="text-gold">✦</span>
+                                    <a href="tel:{{ preg_replace('/\s/', '', Shop::phone()) }}" class="text-gold hover:text-gold-light">{{ Shop::phone() }}</a>
+                                    <span class="text-ink-faint">Ten to seven, Monday to Saturday</span>
+                                </p>
+                            @endif
+
+                            @if (Shop::email())
+                                <p class="flex items-center gap-2.5">
+                                    <span class="text-gold">✦</span>
+                                    <a href="mailto:{{ Shop::email() }}?subject={{ rawurlencode('About '.$product->name) }}"
+                                       class="text-gold hover:text-gold-light break-all">{{ Shop::email() }}</a>
+                                </p>
+                            @endif
+
+                            <p class="pt-1">
+                                Or <a href="{{ route('page', 'contact') }}" class="text-gold hover:text-gold-light">write to us</a>
+                                and we will answer within two working days.
+                            </p>
+                        </div>
+                    </details>
+                @endif
+            </div>
         </div>
     </div>
 

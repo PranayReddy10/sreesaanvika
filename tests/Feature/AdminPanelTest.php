@@ -152,6 +152,64 @@ class AdminPanelTest extends TestCase
         $this->assertGreaterThan(5, $followed, 'no links were followed, so this proves nothing');
     }
 
+    /**
+     * The piles of work, and the numbers on the front page that open them.
+     *
+     * A shop opening the admin in the morning wants the orders it has to do
+     * something about, not every order it has ever taken with a filter to set
+     * up first.
+     */
+    public function test_the_orders_screen_has_a_pile_for_each_stage(): void
+    {
+        $toPack = \App\Models\Order::where('status', 'confirmed')->pluck('id');
+        $elsewhere = \App\Models\Order::whereNotIn('status', ['confirmed'])->pluck('id');
+
+        $this->assertNotEmpty($toPack, 'needs an order waiting to be packed');
+        $this->assertNotEmpty($elsewhere);
+
+        Livewire::test(\App\Filament\Resources\Orders\Pages\ListOrders::class, ['activeTab' => 'to-pack'])
+            ->assertCanSeeTableRecords(\App\Models\Order::whereIn('id', $toPack)->get())
+            ->assertCanNotSeeTableRecords(\App\Models\Order::whereIn('id', $elsewhere)->get());
+
+        // And the one that matters most: everything still needing a hand.
+        Livewire::test(\App\Filament\Resources\Orders\Pages\ListOrders::class, ['activeTab' => 'needs-you'])
+            ->assertCanSeeTableRecords(\App\Models\Order::whereIn('status', ['pending', 'confirmed', 'packed'])->get())
+            ->assertCanNotSeeTableRecords(\App\Models\Order::whereIn('status', ['delivered', 'cancelled', 'refunded'])->get());
+    }
+
+    /**
+     * The stage tiles are on the front page, and they lead somewhere.
+     *
+     * The link has to carry `tab`, which is what Filament binds the active tab
+     * to — `activeTab` is the property behind it, is accepted in silence, and
+     * shows every order.
+     */
+    public function test_the_front_page_counts_the_orders_at_each_stage(): void
+    {
+        $this->get('/admin')
+            ->assertOk()
+            ->assertSee('Widgets\\WhereTheOrdersAre', false);
+
+        $widget = Livewire::test(\App\Filament\Widgets\WhereTheOrdersAre::class);
+
+        $widget->assertSee('Waiting to be paid')
+            ->assertSee('To pack')
+            ->assertSee('Packed, to post')
+            ->assertSee('On its way');
+
+        $html = $widget->html();
+
+        foreach (['waiting-to-be-paid', 'to-pack', 'to-post', 'on-its-way'] as $tab) {
+            $this->assertStringContainsString('tab='.$tab, $html, "the {$tab} tile leads nowhere");
+        }
+
+        // The counts are the real ones, not a hopeful nought.
+        $this->assertStringContainsString(
+            '>'.\App\Models\Order::where('status', 'confirmed')->count().'<',
+            preg_replace('/\s+/', '', $html),
+        );
+    }
+
     public function test_an_order_can_be_read(): void
     {
         // Every order the seeder makes, because each status renders different
