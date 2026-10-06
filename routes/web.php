@@ -9,6 +9,7 @@ use App\Http\Controllers\FeedController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ShopController;
@@ -29,6 +30,8 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/sarees', ShopController::class)->name('shop');
 Route::get('/saree/{product:slug}', ProductController::class)->name('product');
 Route::post('/saree/{product:slug}/review', [ReviewController::class, 'store'])->name('review.store');
+
+Route::post('/contact', [EnquiryController::class, 'store'])->name('enquiry.store');
 
 Route::get('/bag', [BagController::class, 'show'])->name('bag');
 Route::post('/bag/add', [BagController::class, 'add'])->name('bag.add');
