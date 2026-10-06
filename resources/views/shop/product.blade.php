@@ -17,7 +17,7 @@
         'off'    => $product->discountPercent($c),
         'stock'  => $product->stockFor($c),
         'order'  => $product->canOrder(1, $c),
-        'images' => $product->imagesFor($c)->map(fn ($i) => ['url' => $i->url, 'alt' => $i->alt ?: $product->name])->values(),
+        'images' => $product->imagesFor($c)->map(fn ($i) => ['id' => $i->id, 'url' => $i->url, 'alt' => $i->alt ?: $product->name])->values(),
     ])->values();
 
     $reviews = $product->approvedReviews;
@@ -96,8 +96,12 @@
 <div
     x-data="saree({
         shades: {{ Illuminate\Support\Js::from($shades) }},
-        fallback: {{ Illuminate\Support\Js::from($images->map(fn ($i) => ['url' => $i->url, 'alt' => $i->alt ?: $product->name])->values()) }},
+        fallback: {{ Illuminate\Support\Js::from($images->map(fn ($i) => ['id' => $i->id, 'url' => $i->url, 'alt' => $i->alt ?: $product->name])->values()) }},
         start: {{ (int) ($chosen?->id ?? 0) }},
+        {{-- Which photograph to open on, when the front page linked to one of
+             them. By its id rather than its place in the list, because the
+             list a shopper gets depends on the shade she arrives with. --}}
+        photo: {{ (int) request('photo', 0) }},
     })"
     class="od-wrap py-8 md:py-12"
 >

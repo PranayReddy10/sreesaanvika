@@ -137,6 +137,46 @@ class StorefrontTest extends TestCase
     }
 
     /**
+     * The small photographs on the front page are doors, not decoration.
+     *
+     * They looked exactly like thumbnails and did nothing when pressed, which
+     * is worse than showing no photograph at all. Each opens the saree on that
+     * photograph — and shows one the page will actually have, which it did not
+     * before: the page opens on the first shade, and a shade with photographs
+     * of its own shows those rather than the saree's general ones.
+     */
+    public function test_the_extra_photographs_on_the_front_page_open_the_saree(): void
+    {
+        $saree = Product::published()->has('images', '>=', 2)->orderBy('id')->firstOrFail();
+
+        $opensWith = $saree->colourways->where('is_visible', true)->first();
+        $gallery = $saree->imagesFor($opensWith);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // Only sarees the front page actually features are on it, so this
+        // proves nothing unless one of them is the one examined.
+        if (! str_contains($html, route('product', $saree))) {
+            $this->markTestSkipped('this saree is not on the front page');
+        }
+
+        $second = $gallery->get(1);
+
+        $this->assertNotNull($second, 'needs a second photograph to link to');
+
+        $this->assertStringContainsString(
+            route('product', [$saree, 'photo' => $second->id]),
+            $html,
+            'the extra photograph must link to the saree, at that photograph',
+        );
+
+        // And the page takes the instruction.
+        $this->get(route('product', [$saree, 'photo' => $second->id]))
+            ->assertOk()
+            ->assertSee('photo: '.$second->id, false);
+    }
+
+    /**
      * Every slide holds the front page open, not only the first.
      *
      * The slides used to be the first one in the flow of the page with the

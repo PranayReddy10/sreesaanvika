@@ -24,8 +24,19 @@
     <div class="mt-12 space-y-16 md:space-y-24">
         @foreach ($picks as $i => $product)
             @php
-                $image = $product->firstImage();
-                $extra = $product->imagesFor()->slice(1, 2);
+                /*
+                 * The same photographs the saree's own page opens with.
+                 *
+                 * That page starts on the first shade, and a shade with
+                 * photographs of its own shows those rather than the saree's
+                 * general ones — so taking the general ones here meant the
+                 * thumbnail a shopper pressed was not among the photographs
+                 * she then landed on.
+                 */
+                $opensWith = $product->colourways->where('is_visible', true)->first();
+                $gallery = $product->imagesFor($opensWith);
+                $image = $gallery->first();
+                $extra = $gallery->slice(1, 2);
                 $flip = $i % 2 === 1;
             @endphp
 
@@ -72,11 +83,23 @@
 
                     <a href="{{ route('product', $product) }}" class="od-btn od-btn-ghost mt-7">See this saree</a>
 
+                    {{-- The saree's other photographs, each one a way in to it.
+
+                         They were decoration before — aria-hidden, dimmed, not
+                         clickable — and a picture that looks like a thumbnail
+                         and does nothing when pressed is worse than no picture
+                         at all. Each opens the saree on that photograph. --}}
                     @if ($extra->isNotEmpty())
                         <div class="mt-7 hidden md:flex gap-3">
                             @foreach ($extra as $thumb)
-                                <img src="{{ $thumb->url }}" alt=""
-                                     class="w-20 h-24 object-cover rounded-md opacity-80" loading="lazy" aria-hidden="true">
+                                <a href="{{ route('product', [$product, 'photo' => $thumb->id]) }}"
+                                   class="block overflow-hidden rounded-md border border-transparent
+                                          hover:border-[color:var(--color-brand)] transition">
+                                    <img src="{{ $thumb->url }}"
+                                         alt="{{ $product->name }}, another view"
+                                         class="w-20 h-24 object-cover opacity-85 hover:opacity-100 transition"
+                                         loading="lazy" decoding="async">
+                                </a>
                             @endforeach
                         </div>
                     @endif

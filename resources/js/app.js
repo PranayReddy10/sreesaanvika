@@ -9,12 +9,36 @@
 
 document.addEventListener('alpine:init', () => {
     /** The saree page: shade buttons, the gallery, and adding to the bag. */
-    Alpine.data('saree', ({ shades, fallback, start }) => ({
+    Alpine.data('saree', ({ shades, fallback, start, photo }) => ({
         shades,
         chosen: start || (shades[0] ? shades[0].id : null),
         active: 0,
         qty: 1,
         busy: false,
+
+        /*
+         * Open on the photograph that was linked to, if there was one.
+         *
+         * Matched by id rather than by position: the front page shows the
+         * saree's own photographs, and a shopper arriving with a shade chosen
+         * is looking at that shade's instead. If it is not among them, the
+         * first one is no worse than it ever was.
+         */
+        init() {
+            if (! photo) return;
+
+            // A photograph of one particular shade brings its shade with it,
+            // so the price and the stock on the page are that shade's too.
+            if (this.gallery.findIndex((image) => image.id === photo) < 0) {
+                const owner = this.shades.find((s) => (s.images || []).some((i) => i.id === photo));
+
+                if (owner) this.chosen = owner.id;
+            }
+
+            const wanted = this.gallery.findIndex((image) => image.id === photo);
+
+            this.active = wanted > 0 ? wanted : 0;
+        },
 
         get shade() {
             return this.shades.find((s) => s.id === this.chosen) || null;
