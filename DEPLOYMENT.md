@@ -34,7 +34,6 @@ Hostinger has no Node, so the stylesheet and scripts have to be built on your
 own machine and uploaded with everything else.
 
 ```sh
-cd ojasvi-shop
 npm install
 npm run build          # writes public/build — commit it
 php artisan ojasvi:fonts   # only if you change the fonts
