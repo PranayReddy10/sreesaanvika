@@ -27,12 +27,17 @@ document.addEventListener('alpine:init', () => {
         init() {
             if (! photo) return;
 
-            // A photograph of one particular shade brings its shade with it,
-            // so the price and the stock on the page are that shade's too.
             if (this.gallery.findIndex((image) => image.id === photo) < 0) {
+                // A photograph of one particular shade brings its shade with
+                // it, so the price and the stock on the page are that shade's.
                 const owner = this.shades.find((s) => (s.images || []).some((i) => i.id === photo));
 
-                if (owner) this.chosen = owner.id;
+                if (owner) {
+                    this.chosen = owner.id;
+                } else if (fallback.some((i) => i.id === photo)) {
+                    // One of the shop's own, which the front page shows.
+                    this.showBase = true;
+                }
             }
 
             const wanted = this.gallery.findIndex((image) => image.id === photo);
@@ -44,15 +49,28 @@ document.addEventListener('alpine:init', () => {
             return this.shades.find((s) => s.id === this.chosen) || null;
         },
 
+        /*
+         * showBase: the shop's own photographs rather than the chosen shade's.
+         *
+         * Only ever set by arriving on a link to one of them — the front page
+         * shows what the shop put under Photographs, and pressing one of those
+         * must land on that picture even though the page opens with a shade
+         * already chosen. The shade stays chosen, because the price and the
+         * stock beside it are still that shade's.
+         */
+        showBase: false,
+
         get gallery() {
             const own = this.shade && this.shade.images.length ? this.shade.images : null;
 
-            return own || fallback;
+            return (this.showBase ? null : own) || fallback;
         },
 
         pick(id) {
             this.chosen = id;
             this.active = 0;
+            // Asking for a shade means wanting to see that shade.
+            this.showBase = false;
 
             // The shade in the address bar, so a shopper can send someone the
             // indigo one rather than "the blue one, third row".

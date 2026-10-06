@@ -25,16 +25,17 @@
         @foreach ($picks as $i => $product)
             @php
                 /*
-                 * The same photographs the saree's own page opens with.
+                 * The saree's own photographs, in the order the shop put them
+                 * in under Photographs — the first one large, the next two
+                 * beside the button. The same list the cards on /sarees use,
+                 * so one saree does not wear two faces on two pages.
                  *
-                 * That page starts on the first shade, and a shade with
-                 * photographs of its own shows those rather than the saree's
-                 * general ones — so taking the general ones here meant the
-                 * thumbnail a shopper pressed was not among the photographs
-                 * she then landed on.
+                 * Not the first shade's photographs, which is what this showed
+                 * for an afternoon: a shade with pictures of its own then
+                 * replaced what the shop had chosen as the saree's first
+                 * picture, and nothing in the admin said so.
                  */
-                $opensWith = $product->colourways->where('is_visible', true)->first();
-                $gallery = $product->imagesFor($opensWith);
+                $gallery = $product->imagesFor();
                 $image = $gallery->first();
                 $extra = $gallery->slice(1, 2);
                 $flip = $i % 2 === 1;

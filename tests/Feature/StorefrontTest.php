@@ -141,16 +141,19 @@ class StorefrontTest extends TestCase
      *
      * They looked exactly like thumbnails and did nothing when pressed, which
      * is worse than showing no photograph at all. Each opens the saree on that
-     * photograph — and shows one the page will actually have, which it did not
-     * before: the page opens on the first shade, and a shade with photographs
-     * of its own shows those rather than the saree's general ones.
+     * photograph.
+     *
+     * And they are the saree's own photographs, in the order the shop put them
+     * in under Photographs — the same ones the cards on /sarees show. For an
+     * afternoon this showed the first shade's instead, so a shade with
+     * pictures of its own quietly replaced what the shop had chosen as the
+     * saree's first picture.
      */
     public function test_the_extra_photographs_on_the_front_page_open_the_saree(): void
     {
         $saree = Product::published()->has('images', '>=', 2)->orderBy('id')->firstOrFail();
 
-        $opensWith = $saree->colourways->where('is_visible', true)->first();
-        $gallery = $saree->imagesFor($opensWith);
+        $gallery = $saree->imagesFor();
 
         $html = $this->get('/')->assertOk()->getContent();
 
@@ -164,6 +167,14 @@ class StorefrontTest extends TestCase
 
         $this->assertNotNull($second, 'needs a second photograph to link to');
 
+        /*
+         * By id rather than by address: the seeder gives a shade and the
+         * saree itself the same photograph file, so comparing what is on the
+         * page by its URL passes whichever list the page took it from. The id
+         * is the only thing that tells them apart — which is why this is the
+         * test that catches the list being swapped, and a comparison of the
+         * pictures on two pages is not.
+         */
         $this->assertStringContainsString(
             route('product', [$saree, 'photo' => $second->id]),
             $html,
