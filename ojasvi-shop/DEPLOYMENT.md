@@ -15,6 +15,11 @@ In hPanel:
 - **Websites → Manage → Advanced → PHP Configuration**: set PHP to **8.3** or
   later, and turn on the extensions `bcmath`, `intl`, `zip`, `gd`, `pdo_mysql`
   and `mbstring`. Set `max_execution_time` to at least 120.
+- While you are on that screen, raise **`upload_max_filesize`** and
+  **`post_max_size`** to at least **64M** if you intend to upload films of
+  sarees. The admin reads the real limit and tells you what it is, so if the
+  upload box says "up to about 2 MB" this is the screen that fixes it. Films
+  larger than the limit go on a bucket instead, and you paste the address.
 - **Databases → MySQL Databases**: make a database and a user, and give the
   user every permission on it. Write down the database name, the user and the
   password — they are not shown again.
@@ -268,6 +273,12 @@ Last, in the admin at `/admin`:
   zone (the one with no pincodes) **last**: a zone with no pincodes matches
   everything, so anything after it is never reached.
 - **Catalogue → Sarees** — your pieces, their shades and their photographs.
+  Each one has a **Films** tab: fifteen to thirty seconds of it being worn,
+  held portrait, does more for a sale than another photograph. They play
+  muted as the shopper scrolls to them, and she turns the sound on if she
+  wants it.
+- **Storefront → Films** — the reel along the bottom of the front page. A film
+  can be in the reel, on a saree's page, or both.
 - **Storefront → Front page** — the rows of the home page, in order.
 
 ---

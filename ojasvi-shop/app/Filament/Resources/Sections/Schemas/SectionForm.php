@@ -24,6 +24,7 @@ class SectionForm
         'featured'   => 'A chosen few — the sarees you want seen first',
         'collection' => 'Everything — the full grid of sarees',
         'lookbook'   => 'Lookbook — large photographs, little text',
+        'reels'      => 'Films — short videos of sarees being worn',
         'band'       => 'A band of words — why shop here, how it is posted',
     ];
 
@@ -60,10 +61,10 @@ class SectionForm
                     ]),
 
                 FormSection::make('How many to show')
-                    ->visible(fn (Get $get) => in_array($get('key'), ['featured', 'collection', 'lookbook'], true))
+                    ->visible(fn (Get $get) => in_array($get('key'), ['featured', 'collection', 'lookbook', 'reels'], true))
                     ->schema([
                         TextInput::make('settings.limit')
-                            ->label('Number of sarees')
+                            ->label(fn (Get $get) => $get('key') === 'reels' ? 'Number of films' : 'Number of sarees')
                             ->numeric()
                             ->minValue(1)
                             ->maxValue(48)

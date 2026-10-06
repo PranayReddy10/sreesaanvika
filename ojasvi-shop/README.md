@@ -79,6 +79,14 @@ tracking number in by hand, which is what it did before.
 money is taken before any email is attempted, so a wrong SMTP password costs
 the shop an email and never a sale.
 
+**Films play for the shopper, not at her.** Muted, because every browser
+refuses to start a film with sound and one that silently never plays is worse
+than none. Only while on screen, and nothing downloads until it is nearly
+there, because most of this shop's customers are on a phone paying for their
+data. Not at all for somebody who has asked their machine to stop moving
+things. The sound is hers to turn on, and turning it on hushes every other
+film on the page.
+
 **The shop makes no third-party request on a page view.** Fonts are fetched
 once by `php artisan ojasvi:fonts` and served from our own domain; Filament's
 default avatar, which asks ui-avatars.com on every admin page, is replaced by
@@ -119,7 +127,7 @@ to change lives in **Settings** in the admin instead.
 |---|---|
 | **Catalogue** | Sarees (with shades and a gallery per shade), Collections, Fabric & weave |
 | **Selling** | Orders, Offers, Coupons |
-| **Storefront** | Front page (the rows of the home page, reorderable), Reviews |
+| **Storefront** | Front page (the rows of the home page, reorderable), Films, Reviews |
 | **Shop** | Customers, Delivery areas, Mailing list, Analysis, Settings |
 
 Orders can be read and moved along but never invented: an order typed into an

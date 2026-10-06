@@ -79,6 +79,18 @@ class Product extends Model
         return $this->belongsToMany(Offer::class);
     }
 
+    /** Short films of this saree, shown at the foot of its page. */
+    public function videos()
+    {
+        return $this->hasMany(Video::class)->where('is_visible', true)->orderBy('position');
+    }
+
+    /** Every film, hidden ones included — what the admin edits through. */
+    public function allVideos()
+    {
+        return $this->hasMany(Video::class)->orderBy('position');
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);

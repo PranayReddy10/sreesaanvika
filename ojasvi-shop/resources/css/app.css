@@ -216,6 +216,13 @@
     }
 }
 
+@layer components {
+    /* The play badge goes once the film is actually running. */
+    .od-video.is-playing .od-video-play { opacity: 0; pointer-events: none; }
+    .od-video-play { opacity: 1; transition: opacity .3s ease; }
+    .od-video-play:hover { background: rgba(20, 10, 18, 0.2); }
+}
+
 @layer utilities {
     .od-fade-up {
         animation: od-fade-up 0.5s ease both;

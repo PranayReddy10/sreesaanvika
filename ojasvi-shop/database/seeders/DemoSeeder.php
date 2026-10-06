@@ -19,6 +19,7 @@ use App\Models\Setting;
 use App\Models\ShippingZone;
 use App\Models\Slide;
 use App\Models\User;
+use App\Models\Video;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -43,6 +44,7 @@ class DemoSeeder extends Seeder
         $attributes = $this->attributes();
         $collections = $this->collections();
         $products = $this->sarees($attributes, $collections);
+        $this->videos($products);
         $this->offers($products, $collections);
         $this->coupons();
         $this->content();
@@ -74,6 +76,58 @@ class DemoSeeder extends Seeder
             if (! $disk->exists($target)) {
                 $disk->put($target, (string) file_get_contents($file));
             }
+        }
+    }
+
+    /**
+     * The example films, copied out of the seeder the same way the
+     * photographs are. Short, portrait and small, which is the shape a real
+     * one should be too.
+     */
+    private function videos(array $products): void
+    {
+        $from = database_path('seeders/demo-videos');
+
+        if (! is_dir($from)) {
+            return;
+        }
+
+        $disk = Storage::disk('public');
+
+        // slug => [which saree it is of, what to call it, a line under it]
+        $plan = [
+            'kanjivaram-indigo' => [0, 'Draped three ways', 'Pure silk, pure zari'],
+            'banarasi-gold'     => [1, 'The pallu, close up', 'Woven on a handloom in Varanasi'],
+            'mysore-emerald'    => [2, 'How a soft silk falls', 'Light enough for a whole day'],
+            'linen-blush'       => [6, 'Worn to work', 'Linen softens after the first wash'],
+        ];
+
+        $position = 0;
+
+        foreach ($plan as $slug => [$index, $title, $caption]) {
+            $file = "{$from}/{$slug}.webm";
+
+            if (! is_file($file)) {
+                continue;
+            }
+
+            $target = "videos/{$slug}.webm";
+
+            if (! $disk->exists($target)) {
+                $disk->put($target, (string) file_get_contents($file));
+            }
+
+            $product = $products[$index] ?? null;
+
+            Video::create([
+                'product_id' => $product?->id,
+                'on_home'    => true,
+                'title'      => $title,
+                'caption'    => $caption,
+                'path'       => $target,
+                'position'   => $position++,
+                'is_visible' => true,
+            ]);
         }
     }
 
@@ -462,11 +516,20 @@ class DemoSeeder extends Seeder
         ]);
 
         Section::create([
+            'key' => 'reels',
+            'eyebrow' => 'In motion',
+            'heading' => 'Seen worn',
+            'subheading' => 'A photograph cannot show how a silk falls. These can.',
+            'settings' => ['limit' => 6],
+            'position' => 4, 'is_visible' => true,
+        ]);
+
+        Section::create([
             'key' => 'band',
             'eyebrow' => 'Why OJASVI',
             'heading' => 'Woven, checked, folded, sent',
             'subheading' => 'Every piece is photographed in daylight, checked for a pulled thread, and posted within two working days.',
-            'position' => 4, 'is_visible' => true,
+            'position' => 5, 'is_visible' => true,
         ]);
     }
 

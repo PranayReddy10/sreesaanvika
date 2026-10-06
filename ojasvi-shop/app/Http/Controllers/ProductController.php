@@ -28,6 +28,7 @@ class ProductController extends Controller
             'matches.images',
             'matches.colourways',
             'approvedReviews.user',
+            'videos',
         ]);
 
         // Counted without touching updated_at: a view is not an edit, and a
