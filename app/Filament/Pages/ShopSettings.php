@@ -11,6 +11,7 @@ use Filament\Forms\Components\Textarea;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -18,6 +19,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
@@ -103,7 +105,32 @@ class ShopSettings extends Page implements HasForms
         'popup_after'   => ['popup', 'string'],
         'popup_again'   => ['popup', 'string'],
         'popup_ask'     => ['popup', 'bool'],
+
+        'storage_driver'  => ['storage', 'string'],
+        'spaces_key'      => ['storage', 'string'],
+        'spaces_secret'   => ['storage', 'secret'],
+        'spaces_bucket'   => ['storage', 'string'],
+        'spaces_region'   => ['storage', 'string'],
+        'spaces_endpoint' => ['storage', 'string'],
+        'spaces_url'      => ['storage', 'string'],
+
+        'mail_host'       => ['email', 'string'],
+        'mail_port'       => ['email', 'string'],
+        'mail_encryption' => ['email', 'string'],
+        'mail_username'   => ['email', 'string'],
+        'mail_password'   => ['email', 'secret'],
+        'mail_from'       => ['email', 'string'],
+        'mail_from_name'  => ['email', 'string'],
     ];
+
+    /**
+     * The ones never sent back to the browser.
+     *
+     * A password that is filled into a form is a password in the page source,
+     * in the browser's cache and in anything that records a screen. These are
+     * saved and never shown again; left empty, the one already saved stays.
+     */
+    private const SECRETS = ['spaces_secret', 'mail_password'];
 
     /**
      * What a setting means before anybody has saved it.
@@ -129,6 +156,13 @@ class ShopSettings extends Page implements HasForms
         $values = [];
 
         foreach (array_keys(self::FIELDS) as $key) {
+            if (in_array($key, self::SECRETS, true)) {
+                // Blank, always. The helper text under the box says so.
+                $values[$key] = '';
+
+                continue;
+            }
+
             $stored = Setting::get($key);
 
             if ($stored === null && array_key_exists($key, self::UNSET_MEANS)) {
@@ -309,6 +343,141 @@ class ShopSettings extends Page implements HasForms
                             ]),
                     ]),
 
+                    Tab::make('Email')->schema([
+                        Section::make('How the shop sends email')
+                            ->description('Order confirmations, the shipped notice, and anything written from the contact page. Leave the host empty and the shop uses whatever is in .env, which is how it worked before this screen existed.')
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('mail_host')
+                                    ->label('SMTP host')
+                                    ->placeholder('smtp.hostinger.com')
+                                    ->maxLength(190)
+                                    ->helperText('From whoever provides the mailbox.'),
+
+                                Select::make('mail_encryption')
+                                    ->label('Security')
+                                    ->options([
+                                        'ssl'  => 'SSL — usually port 465',
+                                        'tls'  => 'TLS — usually port 587',
+                                        'none' => 'None',
+                                    ])
+                                    ->default('ssl')
+                                    ->native(false),
+
+                                TextInput::make('mail_port')
+                                    ->label('Port')
+                                    ->numeric()
+                                    ->placeholder('465')
+                                    ->helperText('Leave empty and the shop uses the usual one for the security above.'),
+
+                                TextInput::make('mail_username')
+                                    ->label('Username')
+                                    ->maxLength(190)
+                                    ->placeholder('care@ojasvidrapes.in')
+                                    ->helperText('Usually the whole address.'),
+
+                                TextInput::make('mail_password')
+                                    ->label('Password')
+                                    ->password()
+                                    ->revealable()
+                                    ->maxLength(190)
+                                    ->helperText('Kept encrypted. Leave empty to keep the one already saved.')
+                                    ->columnSpanFull(),
+
+                                TextInput::make('mail_from')
+                                    ->label('Send from this address')
+                                    ->email()
+                                    ->maxLength(190)
+                                    ->placeholder('care@ojasvidrapes.in')
+                                    ->helperText('What a customer sees in her inbox. It normally has to be an address on the same mailbox as the username above, or the mail is refused as a forgery.'),
+
+                                TextInput::make('mail_from_name')
+                                    ->label('And under this name')
+                                    ->maxLength(120)
+                                    ->placeholder('OJASVI'),
+                            ]),
+
+                        Section::make()
+                            ->schema([
+                                Placeholder::make('mail_check')
+                                    ->hiddenLabel()
+                                    ->content(new HtmlString(
+                                        'Save first, then send yourself one with '
+                                        . '<code>php artisan ojasvi:test-email you@example.in</code> — '
+                                        . 'it reports what the mail server said rather than failing silently '
+                                        . 'at the next order.'
+                                    )),
+                            ]),
+                    ]),
+
+                    Tab::make('Photograph storage')->schema([
+                        Section::make('Where the photographs are kept')
+                            ->description('On this server, or on DigitalOcean Spaces. The paths stored against each saree are the same either way, so moving is copying the files up and changing this — nothing in the database changes.')
+                            ->schema([
+                                Select::make('storage_driver')
+                                    ->label('Keep them')
+                                    ->options([
+                                        ''       => 'On this server (as set in .env)',
+                                        'spaces' => 'On DigitalOcean Spaces',
+                                    ])
+                                    ->default('')
+                                    ->native(false)
+                                    ->live(),
+
+                                TextInput::make('spaces_bucket')
+                                    ->label('Space name')
+                                    ->maxLength(120)
+                                    ->placeholder('ojasvi')
+                                    ->visible(fn (Get $get) => $get('storage_driver') === 'spaces'),
+
+                                TextInput::make('spaces_region')
+                                    ->label('Region')
+                                    ->maxLength(20)
+                                    ->default('blr1')
+                                    ->placeholder('blr1')
+                                    ->helperText('blr1 is Bangalore. The shop sells in India; its photographs should not travel to Amsterdam and back.')
+                                    ->visible(fn (Get $get) => $get('storage_driver') === 'spaces'),
+
+                                TextInput::make('spaces_key')
+                                    ->label('Access key')
+                                    ->maxLength(190)
+                                    ->visible(fn (Get $get) => $get('storage_driver') === 'spaces'),
+
+                                TextInput::make('spaces_secret')
+                                    ->label('Secret')
+                                    ->password()
+                                    ->revealable()
+                                    ->maxLength(190)
+                                    ->helperText('Kept encrypted. Leave empty to keep the one already saved.')
+                                    ->visible(fn (Get $get) => $get('storage_driver') === 'spaces'),
+
+                                TextInput::make('spaces_url')
+                                    ->label('CDN address')
+                                    ->maxLength(300)
+                                    ->placeholder('https://ojasvi.blr1.cdn.digitaloceanspaces.com')
+                                    ->helperText('From the Space\'s settings, if its CDN is switched on. Leave empty and the files are served straight from the Space, which works and is slower.')
+                                    ->visible(fn (Get $get) => $get('storage_driver') === 'spaces'),
+
+                                TextInput::make('spaces_endpoint')
+                                    ->label('Endpoint')
+                                    ->maxLength(300)
+                                    ->placeholder('https://blr1.digitaloceanspaces.com')
+                                    ->helperText('Worked out from the region. Only fill this in for a Space somewhere unusual.')
+                                    ->visible(fn (Get $get) => $get('storage_driver') === 'spaces'),
+
+                                Placeholder::make('storage_note')
+                                    ->hiddenLabel()
+                                    ->content(new HtmlString(
+                                        '<strong>The files do not move by themselves.</strong> Copy what is '
+                                        . 'already in storage up to the Space first, keeping the same paths '
+                                        . '(<code>products/…</code>, <code>videos/…</code>), or every '
+                                        . 'photograph already on the shop becomes a broken square. '
+                                        . 'DEPLOYMENT.md has the steps.'
+                                    ))
+                                    ->visible(fn (Get $get) => $get('storage_driver') === 'spaces'),
+                            ]),
+                    ]),
+
                     Tab::make('Popup')->schema([
                         Section::make()
                             ->description('One message, over the front of the shop. Used well — a sale, a new weave, the list — it works; used for nothing in particular it is the thing people close without reading. It stays shut for a month once somebody has closed it.')
@@ -484,7 +653,16 @@ class ShopSettings extends Page implements HasForms
         $state = $this->form->getState();
 
         foreach (self::FIELDS as $key => [$group, $type]) {
-            Setting::put($key, $state[$key] ?? '', $type, $group);
+            $value = $state[$key] ?? '';
+
+            // Leaving a password box empty means "keep the one you have", not
+            // "forget it" — otherwise every save of any other setting would
+            // quietly empty them.
+            if (in_array($key, self::SECRETS, true) && trim((string) $value) === '') {
+                continue;
+            }
+
+            Setting::put($key, $value, $type, $group);
         }
 
         Notification::make()

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Models\Order;
+use Filament\Support\Icons\Heroicon;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
@@ -36,10 +37,27 @@ class OrderInfolist
                 TextEntry::make('grand_total')->label('Total')->money('INR')->weight('bold'),
             ]),
 
-            Section::make('Who')->columns(3)->schema([
+            Section::make('Who')->columns(4)->schema([
                 TextEntry::make('shipping_address.name')->label('Name'),
                 TextEntry::make('phone')->label('Phone')->copyable(),
                 TextEntry::make('email')->label('Email')->copyable(),
+
+                /*
+                 * Most of a saree shop's after-sale talk happens on WhatsApp
+                 * rather than by email — "it is packed", "the courier tried
+                 * you at four" — and the number is right there to be typed out
+                 * by hand otherwise. The order number is already in the
+                 * message, so nobody has to ask which one.
+                 */
+                TextEntry::make('whatsapp')
+                    ->label('WhatsApp')
+                    ->state(fn (Order $record) => $record->whatsappUrl() ? 'Message them' : null)
+                    ->placeholder('No usable number')
+                    ->badge()
+                    ->color('success')
+                    ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
+                    ->url(fn (Order $record) => $record->whatsappUrl())
+                    ->openUrlInNewTab(),
             ]),
 
             Section::make('Where it is going')->columns(2)->schema([
@@ -106,7 +124,28 @@ class OrderInfolist
 
             Section::make('Delivery')->columns(4)->collapsible()->schema([
                 TextEntry::make('shipment.courier')->label('Courier')->placeholder('Not booked'),
-                TextEntry::make('shipment.awb')->label('Tracking number')->copyable()->placeholder('—'),
+                /*
+                 * The number, and a way to follow it.
+                 *
+                 * Still copyable, because a courier whose address pattern is
+                 * not known here leaves nothing but the number — and a link
+                 * that goes to a courier's home page having lost the number is
+                 * worse than no link.
+                 */
+                TextEntry::make('shipment.awb')
+                    ->label('Tracking number')
+                    ->copyable()
+                    ->placeholder('—')
+                    ->url(fn (Order $record) => $record->shipment?->trackingUrl())
+                    ->openUrlInNewTab()
+                    ->color(fn (Order $record) => $record->shipment?->trackingUrl() ? 'primary' : null)
+                    ->icon(fn (Order $record) => $record->shipment?->trackingUrl()
+                        ? Heroicon::OutlinedArrowTopRightOnSquare
+                        : null)
+                    ->iconPosition(\Filament\Support\Enums\IconPosition::After)
+                    ->helperText(fn (Order $record) => $record->shipment?->trackingUrl()
+                        ? 'Opens '.$record->shipment->courier
+                        : null),
                 TextEntry::make('shipment.status')->label('Where it is')
                     ->formatStateUsing(fn (?string $state) => $state ? (\App\Models\Shipment::STATUSES[$state] ?? $state) : '—'),
                 TextEntry::make('shipment.expected_on')->label('Expected')->date('d M Y')->placeholder('—'),

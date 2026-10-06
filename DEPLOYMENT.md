@@ -196,6 +196,24 @@ ADMIN_EMAIL=you@ojasvidrapes.in
 ADMIN_PASSWORD=something-long-and-not-this
 ```
 
+The `MAIL_*` lines are the fallback. The same settings can be filled in from
+the admin at **Shop → Settings → Email** — host, security, port, username,
+password, and which address mail is sent from — and what is set there wins over
+`.env`. Leave the host empty there and the shop runs on these lines exactly as
+before. The password is written to the database **encrypted with `APP_KEY`**, so
+a copy of the table on its own is no use to anybody — and changing `APP_KEY`
+blanks it, which is the one time you have to type it again.
+
+Either way, prove it before the first order rather than after:
+
+```sh
+php artisan ojasvi:test-email you@gmail.com
+```
+
+That sends one message there and then, without the queue, and prints whatever
+the mail server said if it refuses — which is how you find out it was the port
+and not the password.
+
 `ADMIN_PASSWORD` must be a real password of at least 8 characters. Left blank,
 seeding makes no admin at all and says so — which is deliberate: an account
 with an empty password is one nobody can ever sign in to, because the login
@@ -288,7 +306,21 @@ for good: nothing is kept on this box, so there is nothing to link to.
    Switch the CDN on while you are there.
 2. **API → Spaces Keys → Generate New Key.** You get a key and a secret, and
    the secret is shown once.
-3. In `.env`:
+3. In the admin at **Shop → Settings → Photograph storage**, set *Keep them* to
+   **On DigitalOcean Spaces** and fill in the Space name, the region (`blr1`),
+   the access key, the secret, and the CDN address. The CDN address is the one
+   in the Space's own settings; leave it empty and the files are served straight
+   from the Space, which works and is slower.
+
+   The secret is stored **encrypted with `APP_KEY`**, and is never shown again —
+   the box comes up blank and leaving it blank keeps what is already saved. Half
+   filled in is treated as not configured at all: without a key, a secret and a
+   Space name the shop stays on this server rather than pointing every
+   photograph at a bucket it cannot reach.
+
+   If you would rather keep it in `.env` — a shop that deploys from git and
+   never opens the admin, say — these do the same thing, and the admin wins
+   where both are set:
 
    ```ini
    SHOP_UPLOADS_ON_SPACES=true
@@ -298,9 +330,6 @@ for good: nothing is kept on this box, so there is nothing to link to.
    SPACES_REGION=blr1
    SPACES_URL=https://ojasvi.blr1.cdn.digitaloceanspaces.com
    ```
-
-   `SPACES_URL` is the CDN address from the Space's settings. Leave it empty and
-   the files are served straight from the Space, which works and is slower.
 4. Copy what is already there up to the Space, keeping the same paths —
    `products/…`, `videos/…`. Any S3 tool will do it; `s3cmd sync` or
    DigitalOcean's own uploader are both fine. The paths stored against each
@@ -416,6 +445,9 @@ Last, in the admin at `/admin`:
 - **Shop → Settings → The shop** — the name, the telephone number, and who
   else should be emailed when an order comes in. Everybody with an admin
   account is told anyway.
+- **Shop → Settings → Email** — the SMTP host, port, username, password and the
+  address mail is sent from, if you are not keeping them in `.env`. Then
+  `php artisan ojasvi:test-email you@gmail.com` and wait for it to arrive.
 - **Shop → Delivery areas** — your pincodes and rates. Leave the catch-all
   zone (the one with no pincodes) **last**: a zone with no pincodes matches
   everything, so anything after it is never reached.
@@ -628,9 +660,27 @@ needs setting up: the email is sent the moment an order is placed, queued like
 every other, and goes out on the next run of the cron in step 5. The order's
 own address is the reply-to, so pressing Reply answers the customer.
 
-**No emails.** Check the cron entry (step 5), then
-`php artisan queue:work --once` by hand and read what it says. Hostinger needs
-port 465 with SSL, not 587.
+**No emails.** First find out whether the shop can send at all:
+
+```sh
+php artisan ojasvi:test-email you@gmail.com
+```
+
+It sends immediately, outside the queue, and prints the mail server's own
+refusal. Nothing arrives and no error — then it left the shop and the problem is
+at the other end (spam, or the address). An error about the connection is the
+host and port: Hostinger wants **465 with SSL**; 587 is TLS, and the two are not
+interchangeable. Set them in **Settings → Email**, which overrides `.env`.
+
+If the test message arrives but order confirmations do not, it is the queue:
+check the cron entry (step 5), then `php artisan queue:work --once` by hand and
+read what it says.
+
+**Email stopped after APP_KEY changed.** The SMTP password and the Spaces
+secret are encrypted with `APP_KEY`, so a new key leaves both unreadable — they
+read as empty and the boxes in Settings come up blank. Type them in again and
+save. (Never regenerate `APP_KEY` on a live shop for any other reason: it also
+ends every session.)
 
 **Orders say unpaid after a successful payment.** The Razorpay webhook is not
 reaching the shop. Check the URL in the dashboard and that

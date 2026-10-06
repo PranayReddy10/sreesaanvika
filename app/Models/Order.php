@@ -129,6 +129,40 @@ class Order extends Model
         return in_array($this->status, ['pending', 'confirmed'], true);
     }
 
+    /**
+     * WhatsApp for this customer, about this order.
+     *
+     * Most of a saree shop's after-sale talk happens here rather than by
+     * email: "it is packed", "the courier tried you at four". The order number
+     * goes in the message so nobody has to ask which one.
+     *
+     * Null when there is no number, or when what is there cannot be a
+     * telephone number — a wa.me link built from rubbish opens WhatsApp on an
+     * error, which looks like the shop's fault.
+     */
+    public function whatsappUrl(?string $message = null): ?string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $this->phone) ?? '';
+
+        // A ten-digit Indian number needs its country code; one that already
+        // has it is left alone.
+        $number = match (true) {
+            strlen($digits) === 10 => '91'.$digits,
+            strlen($digits) === 12 && str_starts_with($digits, '91') => $digits,
+            strlen($digits) === 11 && str_starts_with($digits, '0') => '91'.substr($digits, 1),
+            strlen($digits) >= 11 && strlen($digits) <= 15 => $digits,
+            default => null,
+        };
+
+        if ($number === null) {
+            return null;
+        }
+
+        $message ??= 'Hello, this is '.\App\Support\Shop::name().' about your order '.$this->number.'.';
+
+        return 'https://wa.me/'.$number.'?text='.rawurlencode($message);
+    }
+
     public function getRouteKeyName(): string
     {
         return 'number';
