@@ -4,7 +4,19 @@
     use App\Support\Shop;
 
     $images = $product->imagesFor();
-    $first = $images->first();
+
+    /*
+     * The photograph the page opens on, worked out here rather than left to
+     * the browser.
+     *
+     * A shade is chosen for the page whether or not anybody asked for one, so
+     * that the price and the stock have something to show. Its photographs are
+     * only the right ones to open on when it was actually asked for — before
+     * that, what shows is what the shop put first under Photographs, which is
+     * also what its card showed in the listing it was pressed from.
+     */
+    $opening = request('shade') ? $product->imagesFor($chosen) : $images;
+    $first = $opening->first();
 
     // Everything the shade buttons need, worked out on the server so the page
     // never shows a price the server would not charge.
@@ -98,6 +110,9 @@
         shades: {{ Illuminate\Support\Js::from($shades) }},
         fallback: {{ Illuminate\Support\Js::from($images->map(fn ($i) => ['id' => $i->id, 'url' => $i->url, 'alt' => $i->alt ?: $product->name])->values()) }},
         start: {{ (int) ($chosen?->id ?? 0) }},
+        {{-- Whether a shade was actually asked for, as against one being
+             chosen for the page so the price has something to show. --}}
+        shadeAsked: {{ request('shade') ? 'true' : 'false' }},
         {{-- Which photograph to open on, when the front page linked to one of
              them. By its id rather than its place in the list, because the
              list a shopper gets depends on the shade she arrives with. --}}
@@ -123,6 +138,17 @@
         <div class="min-w-0">
             <div class="lg:hidden -mx-4">
                 <div class="flex gap-3 overflow-x-auto od-scroll snap-x snap-mandatory px-4 pb-3">
+                    {{-- Painted before Alpine has booted, so the thing the page
+                         is for is on the screen at once — and the only
+                         photograph a browser with JavaScript off ever sees.
+                         Alpine takes the rail over the moment it is ready. --}}
+                    @if ($first)
+                        <img src="{{ $first->url }}" alt="{{ $first->alt ?: $product->name }}"
+                             x-show="false"
+                             class="snap-center shrink-0 w-[86vw] od-shot rounded-[var(--radius-card)]"
+                             width="600" height="800" fetchpriority="high" decoding="async">
+                    @endif
+
                     <template x-for="(img, k) in gallery" :key="k">
                         <img :src="img.url" :alt="img.alt"
                              class="snap-center shrink-0 w-[86vw] od-shot rounded-[var(--radius-card)]"
@@ -132,7 +158,11 @@
             </div>
 
             <div class="hidden lg:block">
-                <img :src="gallery[active]?.url" :alt="gallery[active]?.alt"
+                {{-- Likewise: a real address on it, so the browser starts
+                     fetching the photograph with the page rather than after
+                     the scripts. Alpine replaces it as shades are picked. --}}
+                <img src="{{ $first?->url }}" alt="{{ $first?->alt ?: $product->name }}"
+                     :src="gallery[active]?.url" :alt="gallery[active]?.alt"
                      class="od-shot rounded-[var(--radius-card)]" width="900" height="1200" fetchpriority="high">
 
                 <div class="mt-3 grid grid-cols-5 gap-3" x-show="gallery.length > 1">

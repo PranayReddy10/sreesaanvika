@@ -188,6 +188,68 @@ class StorefrontTest extends TestCase
     }
 
     /**
+     * A saree's page opens on the same photograph its card showed.
+     *
+     * It used to open pre-switched to the first shade's own photographs,
+     * although nobody had picked a shade — one is chosen for the page so the
+     * price and the stock have something to show, and that is all it was for.
+     * A shopper saw one picture on /sarees, pressed it, and landed on another.
+     *
+     * The shade's photographs are exactly right once a shade is picked, or
+     * named in the address, and that is when they show.
+     */
+    public function test_a_saree_opens_on_the_photograph_its_card_showed(): void
+    {
+        $saree = Product::published()->has('colourways')->has('images')->orderBy('id')->firstOrFail();
+        $shade = $saree->colourways->where('is_visible', true)->first();
+
+        /*
+         * A photograph of that shade's own, and one no other list holds. The
+         * seeder gives a shade and the saree the same picture files, so with
+         * its data the two lists are impossible to tell apart on the page —
+         * which is how the fault got out in the first place.
+         */
+        \App\Models\ProductImage::where('colourway_id', $shade->id)->delete();
+
+        \App\Models\ProductImage::create([
+            'product_id'   => $saree->id,
+            'colourway_id' => $shade->id,
+            'path'         => 'products/only-this-shade.jpg',
+            'position'     => 0,
+        ]);
+
+        $saree->refresh();
+
+        $card = $saree->firstImage();
+        $shadeFirst = $saree->imagesFor($shade)->first();
+
+        $this->assertSame('products/only-this-shade.jpg', $shadeFirst->path);
+        $this->assertNotSame($card->url, $shadeFirst->url);
+
+        $this->get(route('shop'))->assertOk()->assertSee($card->url, false);
+
+        /*
+         * On the src of the photograph itself rather than anywhere in the
+         * page: every photograph's address is in the page — in the gallery the
+         * script is handed, and in the structured data — so looking for one
+         * loosely proves nothing about which is shown.
+         */
+        $opens = fn (string $url): string => 'src="'.$url.'"';
+
+        // Nobody asked for a shade, so the page opens on what the shop put
+        // first: the picture whose card was pressed.
+        $this->get(route('product', $saree))
+            ->assertOk()
+            ->assertSee($opens($card->url), false)
+            ->assertDontSee($opens($shadeFirst->url), false);
+
+        // Asked for in the address — a link somebody sent — counts as picked.
+        $this->get(route('product', [$saree, 'shade' => $shade->name]))
+            ->assertOk()
+            ->assertSee($opens($shadeFirst->url), false);
+    }
+
+    /**
      * Every slide holds the front page open, not only the first.
      *
      * The slides used to be the first one in the flow of the page with the

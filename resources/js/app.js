@@ -9,7 +9,7 @@
 
 document.addEventListener('alpine:init', () => {
     /** The saree page: shade buttons, the gallery, and adding to the bag. */
-    Alpine.data('saree', ({ shades, fallback, start, photo }) => ({
+    Alpine.data('saree', ({ shades, fallback, start, photo, shadeAsked }) => ({
         shades,
         chosen: start || (shades[0] ? shades[0].id : null),
         active: 0,
@@ -25,6 +25,10 @@ document.addEventListener('alpine:init', () => {
          * first one is no worse than it ever was.
          */
         init() {
+            // Asked for in the address — a link somebody sent — counts as
+            // picked.
+            this.showBase = ! shadeAsked;
+
             if (! photo) return;
 
             if (this.gallery.findIndex((image) => image.id === photo) < 0) {
@@ -52,13 +56,17 @@ document.addEventListener('alpine:init', () => {
         /*
          * showBase: the shop's own photographs rather than the chosen shade's.
          *
-         * Only ever set by arriving on a link to one of them — the front page
-         * shows what the shop put under Photographs, and pressing one of those
-         * must land on that picture even though the page opens with a shade
-         * already chosen. The shade stays chosen, because the price and the
-         * stock beside it are still that shade's.
+         * On by default, because the page opens with a shade chosen without
+         * anybody having chosen it — one is needed so the price and the stock
+         * have something to show — and a shade with photographs of its own
+         * then replaced the picture the shop put first under Photographs. The
+         * card in a listing showed one picture and the page it opened showed
+         * another.
+         *
+         * A shade's own photographs are exactly right once a shade has been
+         * picked, or asked for in the address, and that is when they show.
          */
-        showBase: false,
+        showBase: true,
 
         get gallery() {
             const own = this.shade && this.shade.images.length ? this.shade.images : null;
