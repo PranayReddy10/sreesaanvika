@@ -222,6 +222,27 @@
     .od-video-play { opacity: 1; transition: opacity .3s ease; }
     .od-video-play:hover { background: rgba(20, 10, 18, 0.2); }
 
+    /* The film itself is invisible until there is a frame in it.
+       A <video> element with nothing decoded paints flat black, whatever is
+       behind it and whatever it is told about backgrounds — that black
+       rectangle is the element, not the page. So it is held back until the
+       browser says it has a frame, and what shows meanwhile is the still
+       underneath. */
+    .od-video-film { opacity: 0; transition: opacity .45s ease; }
+    .od-video.is-ready .od-video-film { opacity: 1; }
+
+    /* A film that will not play at all: a file that is no longer there, or one
+       in a format this browser cannot decode — an iPhone .mov on an Android
+       phone, most often. The still stays, the buttons go, and the page reads
+       as a photograph rather than as something broken. */
+    .od-video.is-broken .od-video-film,
+    .od-video.is-broken .od-video-play,
+    .od-video.is-broken .od-video-sound {
+        /* !important because the buttons carry Tailwind's `grid`, and a
+           utility beats a component rule however specific this one is. */
+        display: none !important;
+    }
+
     /* Instagram's embed carries its own header, caption and buttons, so the
        box has to grow once theirs is in or half of it is cropped away. */
     .od-reel.is-embedded {

@@ -29,21 +29,41 @@
         style="aspect-ratio: {{ $ratio }}"
         data-od-video
     >
+        {{--
+            Behind the film, always. A <video> with nothing decoded yet paints
+            flat black — there is no way to style that away — so an uploaded
+            film with no cover frame, or one still arriving over a slow line,
+            or one the browser cannot decode, is a black rectangle in the
+            middle of the page. This is what is underneath instead, and the
+            film is only faded in once there is actually a frame to show.
+        --}}
+        @if ($poster)
+            <img src="{{ $poster }}" alt="" aria-hidden="true"
+                 class="od-video-rest absolute inset-0 w-full h-full object-cover"
+                 loading="{{ $eager ? 'eager' : 'lazy' }}" decoding="async">
+        @else
+            <div class="od-video-rest absolute inset-0 grid place-items-center
+                        bg-gradient-to-br from-[color:var(--color-surface-2)] to-[color:var(--color-surface-3)]">
+                <span class="od-eyebrow text-gold-light/50">OJASVI</span>
+            </div>
+        @endif
+
         <video
-            class="w-full h-full object-cover"
+            class="od-video-film relative w-full h-full object-cover"
             muted
             loop
             playsinline
             disablepictureinpicture
             preload="{{ $eager ? 'metadata' : 'none' }}"
-            @if ($poster) poster="{{ $poster }}" @endif
             aria-label="{{ $video->label() }}"
         >
             <source src="{{ $src }}" type="{{ $video->mime() }}">
         </video>
 
         {{-- Shown until it is actually playing, so a film that never starts —
-             a slow line, a browser that said no — still looks deliberate. --}}
+             a slow line, a browser that said no — still looks deliberate. Taken
+             away altogether if the film turns out not to be playable at all: a
+             play button that does nothing when pressed is worse than none. --}}
         <button type="button"
                 class="od-video-play absolute inset-0 grid place-items-center bg-[color:var(--color-page)]/35 transition"
                 aria-label="Play {{ $video->label() }}">

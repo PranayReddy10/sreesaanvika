@@ -500,6 +500,25 @@ storage:link` has not been run, or the symlink it makes is not being followed.
 Run it, and if the images are still refused, add `Options +FollowSymLinks` at
 the top of `public_html/.htaccess`.
 
+**A film shows as a black square.** Look at **Storefront → Films** in the
+admin: the Plays column says which ones are not working and why. Two things
+cause it, and both look identical on the page.
+
+- *The file is missing.* It was uploaded somewhere the shop is no longer
+  looking — usually after the `storage` link was changed or
+  `SHOP_UPLOADS_IN_PUBLIC` was turned on without moving what was already
+  there. See step 4. Upload the film again and it will be put in the right
+  place.
+- *HEVC — most browsers cannot play it.* The film came off an iPhone, which
+  records HEVC unless told otherwise. It plays on that phone and on almost
+  nothing else. Export it as MP4 (H.264) and upload that; on the phone,
+  Settings → Camera → Formats → **Most Compatible** fixes it for everything
+  filmed from then on. New uploads in this format are now refused with that
+  explanation, so this only affects films uploaded before.
+
+Either way the page itself no longer shows black: a film that will not play
+shows its still, or a plain panel, with no play button on it.
+
 **A blank white page.** Look in `storage/logs/laravel-*.log`. Nine times in
 ten it is a permission on `storage/`, or `APP_KEY` never generated.
 

@@ -3,11 +3,13 @@
 namespace App\Filament\Shared;
 
 use App\Models\Video;
+use App\Support\Film;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\HtmlString;
 
 /**
@@ -37,9 +39,38 @@ class VideoFields
                 ->label('The film')
                 ->disk('public')
                 ->directory('videos')
-                ->acceptedFileTypes(['video/mp4', 'video/webm', 'video/quicktime'])
+                // application/mp4 as well: a film with no sound track — a stock
+                // clip, something trimmed — is named that by the server's own
+                // detector, and is an ordinary playable film.
+                ->acceptedFileTypes(['video/mp4', 'application/mp4', 'video/webm', 'video/quicktime'])
                 ->maxSize(self::uploadCeiling())
                 ->helperText(self::sizeAdvice())
+                /*
+                 * Read before it is accepted. A film straight off an iPhone is
+                 * usually HEVC, which plays on that phone and on no Android
+                 * phone and no Windows browser — the upload works, the file is
+                 * there, and every shopper gets a black rectangle. Said here,
+                 * where it can still be fixed, rather than discovered later by
+                 * a customer.
+                 */
+                ->rule(fn () => function (string $attribute, $value, $fail) {
+                    $file = $value instanceof UploadedFile ? $value->getRealPath() : null;
+
+                    if (! $file || ! is_file($file)) {
+                        return;
+                    }
+
+                    $codec = Film::unplayableCodec($file);
+
+                    if ($codec === null) {
+                        return;
+                    }
+
+                    $fail("This film is {$codec}, which most browsers cannot play — it would show as "
+                        . 'a black square to anyone not on an iPhone. Save or export it as MP4 (H.264) '
+                        . 'and upload that. On an iPhone: Settings → Camera → Formats → Most Compatible '
+                        . 'films in H.264 from then on.');
+                })
                 ->columnSpanFull(),
 
             TextInput::make('url')

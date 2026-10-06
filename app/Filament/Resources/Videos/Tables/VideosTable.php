@@ -56,6 +56,16 @@ class VideosTable
                     ->description(fn (Video $record) => $record->isEmbed() ? 'Needs one tap' : 'Plays on its own')
                     ->tooltip(fn (Video $record) => $record->path ?: $record->url),
 
+                // A film that has stopped working looks exactly like one that
+                // has not, both here and on the page — a black rectangle is
+                // all a shopper gets. This is the only place it is ever said.
+                TextColumn::make('plays')
+                    ->label('Plays')
+                    ->badge()
+                    ->state(fn (Video $record) => $record->problem() ?? 'Yes')
+                    ->color(fn ($state) => $state === 'Yes' ? 'success' : 'danger')
+                    ->wrap(),
+
                 IconColumn::make('is_visible')
                     ->label('Showing')
                     ->boolean(),

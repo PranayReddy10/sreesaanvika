@@ -149,6 +149,35 @@ function watchVideos() {
             }
         };
 
+        /*
+         * Shown only once there is a frame to show. Until then the film is
+         * transparent and the still behind it is what the shopper sees, which
+         * is the whole reason a film arriving slowly is not a black box.
+         */
+        const ready = () => figure.classList.add('is-ready');
+
+        if (video.readyState >= 2) ready();
+        video.addEventListener('loadeddata', ready);
+
+        /*
+         * Not playable at all. The video element does not fire this itself
+         * when its <source> is what failed — it quietly gives up instead, with
+         * no error on the element — so the source is listened to directly, and
+         * error does not bubble, so it has to be bound to the source itself.
+         *
+         * Reached by a file that is no longer where the shop thinks it is, and
+         * by a film in a format this browser cannot decode: an iPhone .mov is
+         * usually HEVC, which plays on the phone it was filmed on and nowhere
+         * else. Either way the shopper gets the still and no dead button.
+         */
+        const broken = () => {
+            figure.classList.add('is-broken');
+            figure.classList.remove('is-playing');
+        };
+
+        video.addEventListener('error', broken);
+        figure.querySelector('source')?.addEventListener('error', broken);
+
         video.addEventListener('playing', () => figure.classList.add('is-playing'));
         video.addEventListener('pause', () => figure.classList.remove('is-playing'));
 

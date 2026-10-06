@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Film;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -62,6 +63,33 @@ class Video extends Model
         }
 
         return $m[1];
+    }
+
+    /**
+     * What is wrong with this film, in a sentence, or null if nothing is.
+     *
+     * Only for a film the shop holds. There are two ways one stops working
+     * after it was uploaded perfectly well, and neither shows anywhere unless
+     * it is looked for: the file is no longer where the shop thinks it is, and
+     * the file is in a format browsers will not play. Both look identical to a
+     * shopper — a black rectangle — and identical in the admin too, which is a
+     * list of films that all look fine.
+     */
+    public function problem(): ?string
+    {
+        if (! $this->path) {
+            return null;
+        }
+
+        $disk = Storage::disk('public');
+
+        if (! $disk->exists($this->path)) {
+            return 'The file is missing';
+        }
+
+        $codec = Film::unplayableCodec($disk->path($this->path));
+
+        return $codec ? $codec.' — most browsers cannot play it' : null;
     }
 
     /** Is this played by Instagram rather than by us? */

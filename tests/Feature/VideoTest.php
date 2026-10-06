@@ -33,6 +33,28 @@ class VideoTest extends TestCase
         return Product::published()->firstOrFail();
     }
 
+    private function anAdmin(): User
+    {
+        return User::create([
+            'name' => 'OJASVI', 'email' => 'owner@example.test',
+            'password' => 'long-enough-for-this', 'is_admin' => true,
+        ]);
+    }
+
+    /**
+     * One of the real films in tests/Fixtures, handed over as an upload.
+     *
+     * A real one, with the bytes an encoder actually wrote. A fake file would
+     * prove nothing about a check whose whole job is to read the bytes.
+     */
+    private function aFilm(string $name): \Illuminate\Http\Testing\File
+    {
+        return new \Illuminate\Http\Testing\File(
+            $name,
+            fopen(__DIR__.'/../Fixtures/films/'.$name, 'rb'),
+        );
+    }
+
     /* --------------------------------------------------- where they appear */
 
     public function test_the_front_page_shows_the_reel(): void
@@ -170,6 +192,136 @@ class VideoTest extends TestCase
         $this->assertSame('video/mp4', (new Video(['path' => 'videos/a.mp4']))->mime());
         $this->assertSame('video/mp4', (new Video(['url' => 'https://cdn.example.in/a.MP4?v=2']))->mime());
         $this->assertSame('video/quicktime', (new Video(['url' => 'https://cdn.example.in/a.mov']))->mime());
+    }
+
+    /* ------------------------------------------ films that do not play */
+
+    /**
+     * A film in a format browsers will not play is refused at the door.
+     *
+     * This is the commonest way a shop ends up with a black rectangle on its
+     * front page: a saree filmed on an iPhone is HEVC unless the phone has
+     * been told otherwise, it uploads perfectly, and it plays for the one
+     * person who filmed it and for nobody else.
+     */
+    public function test_a_film_the_browser_cannot_play_is_refused(): void
+    {
+        $form = \Livewire\Livewire::actingAs($this->anAdmin())
+            ->test(\App\Filament\Resources\Videos\Pages\CreateVideo::class)
+            ->fillForm([
+                'title' => 'Filmed on a phone',
+                'path' => $this->aFilm('hevc.mp4'),
+                'position' => 0,
+            ])
+            ->call('create')
+            ->assertHasFormErrors(['path']);
+
+        // The reason is named, so this cannot pass because the upload was
+        // refused for something else entirely — a size, a mime type — while
+        // what it is actually about goes unchecked.
+        $this->assertStringContainsString('HEVC', implode(' ', $form->errors()->get('data.path')));
+
+        $this->assertDatabaseMissing('videos', ['title' => 'Filmed on a phone']);
+    }
+
+    public function test_an_ordinary_film_is_accepted(): void
+    {
+        \Livewire\Livewire::actingAs($this->anAdmin())
+            ->test(\App\Filament\Resources\Videos\Pages\CreateVideo::class)
+            ->fillForm([
+                'title' => 'Filmed properly',
+                'path' => $this->aFilm('h264.mp4'),
+                'position' => 0,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('videos', ['title' => 'Filmed properly']);
+    }
+
+    public function test_a_webm_is_never_questioned(): void
+    {
+        \Livewire\Livewire::actingAs($this->anAdmin())
+            ->test(\App\Filament\Resources\Videos\Pages\CreateVideo::class)
+            ->fillForm([
+                'title' => 'A webm',
+                'path' => $this->aFilm('vp9.webm'),
+                'position' => 0,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+    }
+
+    /** What the parser makes of real files, rather than of the extension. */
+    public function test_what_is_inside_a_film_is_read_not_guessed(): void
+    {
+        $films = __DIR__.'/../Fixtures/films/';
+
+        $this->assertSame('avc1', \App\Support\Film::videoCodec($films.'h264.mp4'));
+        $this->assertSame('hev1', \App\Support\Film::videoCodec($films.'hevc.mp4'));
+
+        $this->assertNull(\App\Support\Film::unplayableCodec($films.'h264.mp4'));
+        $this->assertSame('HEVC', \App\Support\Film::unplayableCodec($films.'hevc.mp4'));
+
+        // A WebM is not this format at all, and holds nothing unplayable.
+        $this->assertNull(\App\Support\Film::videoCodec($films.'vp9.webm'));
+        $this->assertNull(\App\Support\Film::unplayableCodec($films.'vp9.webm'));
+
+        // Nothing readable, and nothing to say about it. A file this cannot
+        // make sense of is never refused on a guess.
+        $this->assertNull(\App\Support\Film::unplayableCodec($films.'nothing-here.mp4'));
+        $this->assertNull(\App\Support\Film::unplayableCodec(__DIR__.'/VideoTest.php'));
+    }
+
+    /**
+     * A film that has stopped working says so where the shop will see it.
+     *
+     * Both of these look identical on the page — a black rectangle — and
+     * identical in the admin's list too, unless it is asked.
+     */
+    public function test_the_admin_is_told_when_a_film_has_stopped_working(): void
+    {
+        \Illuminate\Support\Facades\Storage::disk('public')
+            ->put('videos/real.mp4', file_get_contents(__DIR__.'/../Fixtures/films/h264.mp4'));
+        \Illuminate\Support\Facades\Storage::disk('public')
+            ->put('videos/iphone.mp4', file_get_contents(__DIR__.'/../Fixtures/films/hevc.mp4'));
+
+        $this->assertNull((new Video(['path' => 'videos/real.mp4']))->problem());
+        $this->assertSame('The file is missing', (new Video(['path' => 'videos/gone.mp4']))->problem());
+        $this->assertStringContainsString(
+            'HEVC',
+            (string) (new Video(['path' => 'videos/iphone.mp4']))->problem(),
+        );
+
+        // Not ours to judge: Instagram plays its own, and a film on somebody
+        // else's bucket cannot be read from here.
+        $this->assertNull((new Video(['url' => 'https://www.instagram.com/reel/C8xYzExAbCd/']))->problem());
+        $this->assertNull((new Video(['url' => 'https://cdn.example.in/a.mp4']))->problem());
+    }
+
+    /**
+     * Nothing on the page is ever a bare video element.
+     *
+     * A <video> with no frame decoded paints flat black — the element itself,
+     * which no amount of styling behind it changes. So there is always a still
+     * or a panel underneath, and the film is faded in once there is something
+     * to show.
+     */
+    public function test_a_film_still_loading_is_not_a_black_rectangle(): void
+    {
+        Video::query()->delete();
+
+        Video::create([
+            'title' => 'Not of any saree',
+            'path' => 'videos/kanjivaram-indigo.webm',
+            'on_home' => true,
+            'is_visible' => true,
+        ]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('od-video-rest', $html, 'a film with nothing behind it');
+        $this->assertStringContainsString('od-video-film', $html);
     }
 
     /* ------------------------------------------------------------ the admin */
