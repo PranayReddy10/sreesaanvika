@@ -396,18 +396,6 @@ class ShopSettings extends Page implements HasForms
                                     ->maxLength(120)
                                     ->placeholder('OJASVI'),
                             ]),
-
-                        Section::make()
-                            ->schema([
-                                Placeholder::make('mail_check')
-                                    ->hiddenLabel()
-                                    ->content(new HtmlString(
-                                        'Save first, then send yourself one with '
-                                        . '<code>php artisan ojasvi:test-email you@example.in</code> — '
-                                        . 'it reports what the mail server said rather than failing silently '
-                                        . 'at the next order.'
-                                    )),
-                            ]),
                     ]),
 
                     Tab::make('Photograph storage')->schema([
@@ -463,17 +451,6 @@ class ShopSettings extends Page implements HasForms
                                     ->maxLength(300)
                                     ->placeholder('https://blr1.digitaloceanspaces.com')
                                     ->helperText('Worked out from the region. Only fill this in for a Space somewhere unusual.')
-                                    ->visible(fn (Get $get) => $get('storage_driver') === 'spaces'),
-
-                                Placeholder::make('storage_note')
-                                    ->hiddenLabel()
-                                    ->content(new HtmlString(
-                                        '<strong>The files do not move by themselves.</strong> Copy what is '
-                                        . 'already in storage up to the Space first, keeping the same paths '
-                                        . '(<code>products/…</code>, <code>videos/…</code>), or every '
-                                        . 'photograph already on the shop becomes a broken square. '
-                                        . 'DEPLOYMENT.md has the steps.'
-                                    ))
                                     ->visible(fn (Get $get) => $get('storage_driver') === 'spaces'),
                             ]),
                     ]),
