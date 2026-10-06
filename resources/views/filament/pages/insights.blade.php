@@ -1,5 +1,6 @@
 @php
     $h = $this->headline();
+    $google = $this->google();
     $discounts = $this->discounts();
     $empty = $this->emptySearches();
     $cold = $this->lookedAtNotBought();
@@ -23,7 +24,7 @@
             cursor: pointer; transition: background .15s, color .15s;
         }
         .od-period:hover { background: rgb(244 244 245); }
-        .od-period[aria-pressed="true"] { background: #a8781f; border-color: #a8781f; color: #fff; }
+        .od-period[aria-pressed="true"] { background: #8a6c50; border-color: #8a6c50; color: #fff; }
 
         .od-stats { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .od-two   { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
@@ -42,7 +43,7 @@
         }
         .od-row:last-child { border-bottom: 0; }
         .od-row a { color: inherit; }
-        .od-row a:hover { color: #a8781f; }
+        .od-row a:hover { color: #8a6c50; }
         .od-row-right { flex-shrink: 0; text-align: right; white-space: nowrap; }
         .od-muted { color: rgb(113 113 122); }
         .od-strong { font-weight: 500; }
@@ -221,6 +222,119 @@
                     </span>
                 </div>
             @endforeach
+        @endif
+    </x-filament::section>
+
+    <x-filament::section>
+        <x-slot name="heading">What Google knows</x-slot>
+        <x-slot name="description">
+            Who arrived, and what was typed in to find the shop — over the same stretch as everything above.
+        </x-slot>
+
+        @if (! $google['set'])
+            <p class="od-empty">
+                Not set up yet. Settings → Analytics → <strong>Reading the figures back</strong> takes three
+                things: the key file Google gives a service account, the Analytics property number, and the
+                Search Console property. The shop works perfectly well without them; this panel is the only
+                thing that goes without.
+            </p>
+        @else
+            @if ($google['visitors'])
+                <div class="od-stats">
+                    <div>
+                        <div class="od-stat-label">People</div>
+                        <div class="od-stat-value">{{ number_format($google['visitors']['people']) }}</div>
+                        <div class="od-stat-note">Last {{ $google['days'] }} days</div>
+                    </div>
+                    <div>
+                        <div class="od-stat-label">Visits</div>
+                        <div class="od-stat-value">{{ number_format($google['visitors']['visits']) }}</div>
+                    </div>
+                    <div>
+                        <div class="od-stat-label">Pages looked at</div>
+                        <div class="od-stat-value">{{ number_format($google['visitors']['pages']) }}</div>
+                    </div>
+                    <div>
+                        <div class="od-stat-label">Orders from them</div>
+                        <div class="od-stat-value">{{ number_format($h['orders']) }}</div>
+                        <div class="od-stat-note">
+                            @if ($google['visitors']['visits'] > 0)
+                                {{ number_format($h['orders'] / $google['visitors']['visits'] * 100, 2) }}% of visits
+                            @else
+                                —
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                @if ($google['visitors']['from'])
+                    <div style="margin-top: 1.25rem">
+                        <div class="od-stat-label" style="margin-bottom:.25rem">Where they came from</div>
+                        @foreach ($google['visitors']['from'] as $row)
+                            <div class="od-row">
+                                <span>{{ $row['name'] }}</span>
+                                <span class="od-row-right od-muted">{{ number_format($row['visits']) }} visits</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            @else
+                <p class="od-empty">
+                    No visitor figures. Either the Analytics property number is wrong, or that service account
+                    has not been given Viewer on the property — Analytics → Admin → Property access management.
+                </p>
+            @endif
+
+            @if ($google['search'])
+                <div style="margin-top: 1.5rem">
+                    <div class="od-stats">
+                        <div>
+                            <div class="od-stat-label">Clicks from Google</div>
+                            <div class="od-stat-value">{{ number_format($google['search']['clicks']) }}</div>
+                        </div>
+                        <div>
+                            <div class="od-stat-label">Times shown</div>
+                            <div class="od-stat-value">{{ number_format($google['search']['impressions']) }}</div>
+                        </div>
+                        <div>
+                            <div class="od-stat-label">Clicked</div>
+                            <div class="od-stat-value">{{ number_format($google['search']['ctr'], 1) }}%</div>
+                            <div class="od-stat-note">Of the times it was shown</div>
+                        </div>
+                        <div>
+                            <div class="od-stat-label">Average position</div>
+                            <div class="od-stat-value">{{ number_format($google['search']['position'], 1) }}</div>
+                            <div class="od-stat-note">1 is the top of the first page</div>
+                        </div>
+                    </div>
+
+                    @if ($google['search']['queries'])
+                        <div style="margin-top: 1.25rem">
+                            <div class="od-stat-label" style="margin-bottom:.25rem">What they typed</div>
+                            @foreach ($google['search']['queries'] as $row)
+                                <div class="od-row">
+                                    <span>{{ $row['words'] }}</span>
+                                    <span class="od-row-right od-muted">
+                                        {{ number_format($row['clicks']) }} {{ \Illuminate\Support\Str::plural('click', $row['clicks']) }}
+                                        · shown {{ number_format($row['impressions']) }} · position {{ $row['position'] }}
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <p class="od-foot" style="margin-top:1rem">
+                        Google's own search figures run about three days behind, so this stops three days ago.
+                    </p>
+                </div>
+            @else
+                <p class="od-empty" style="margin-top:1rem">
+                    No search figures. Either the Search Console property is spelled differently there —
+                    it wants <span class="od-mono">sc-domain:ojasvidrapes.in</span> or
+                    <span class="od-mono">https://ojasvidrapes.in/</span>, exactly as Search Console has it —
+                    or that service account has not been added as a user of it.
+                </p>
+            @endif
         @endif
     </x-filament::section>
 

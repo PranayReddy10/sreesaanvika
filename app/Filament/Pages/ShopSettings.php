@@ -8,6 +8,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -85,6 +86,10 @@ class ShopSettings extends Page implements HasForms
         'analytics_meta_pixel'       => ['analytics', 'string'],
         'analytics_google_ads'       => ['analytics', 'string'],
         'analytics_google_ads_label' => ['analytics', 'string'],
+
+        'google_service_account'      => ['analytics', 'text'],
+        'google_ga4_property'         => ['analytics', 'string'],
+        'google_search_console_site'  => ['analytics', 'string'],
     ];
 
     /**
@@ -318,6 +323,49 @@ class ShopSettings extends Page implements HasForms
                                     ->placeholder('abcDEFghIJ')
                                     ->maxLength(60)
                                     ->helperText('From the conversion action you made for a purchase.'),
+                            ]),
+
+                        Section::make('Reading the figures back')
+                            ->description('The boxes above send figures to Google. These three bring them back, so Analysis shows visitors and what people searched for without leaving the shop. All three are needed, and none of them is needed for the shop to work.')
+                            ->collapsed()
+                            ->schema([
+                                Textarea::make('google_service_account')
+                                    ->label('The key file')
+                                    ->rows(5)
+                                    ->autosize(false)
+                                    ->helperText(new HtmlString(
+                                        'Paste the whole JSON file Google gave you. '
+                                        . 'Cloud console → IAM → Service accounts → Keys → Add key → JSON. '
+                                        . 'Then give that account’s address <strong>Viewer</strong> on the '
+                                        . 'Analytics property, and add it as a user in Search Console. '
+                                        . 'It is a password: anybody who can open this screen can read it.'
+                                    ))
+                                    ->rule(fn () => function (string $attribute, $value, $fail) {
+                                        if (blank($value)) {
+                                            return;
+                                        }
+
+                                        $key = json_decode((string) $value, true);
+
+                                        if (! is_array($key) || blank($key['client_email'] ?? null) || blank($key['private_key'] ?? null)) {
+                                            $fail('That is not the key file — it should be JSON with a client_email and a private_key in it.');
+                                        }
+                                    }),
+
+                                TextInput::make('google_ga4_property')
+                                    ->label('Analytics property number')
+                                    ->placeholder('123456789')
+                                    ->maxLength(40)
+                                    ->helperText('Analytics → Admin → Property settings. A number, not the G- code above.'),
+
+                                TextInput::make('google_search_console_site')
+                                    ->label('Search Console property')
+                                    ->placeholder('sc-domain:ojasvidrapes.in')
+                                    ->maxLength(120)
+                                    ->helperText(new HtmlString(
+                                        'Exactly as Search Console spells it: <code>sc-domain:ojasvidrapes.in</code> '
+                                        . 'for a domain property, or <code>https://ojasvidrapes.in/</code> for a URL one.'
+                                    )),
                             ]),
                     ]),
                 ])->persistTabInQueryString(),

@@ -243,6 +243,40 @@ class Insights extends Page
         return ['offers' => $offers->all(), 'coupons' => $coupons->all()];
     }
 
+    /* ------------------------------------------------------ what Google knows */
+
+    /**
+     * Visitors, and what was typed into Google to find the shop.
+     *
+     * Two separate things that people run together. Analytics counts who
+     * arrived; Search Console says what the shop was shown for and whether
+     * anybody clicked — which is where a shop learns it comes up for
+     * "banarasi saree hyderabad" and nobody clicks, and that no amount of
+     * looking at its own database would ever tell it.
+     *
+     * Everything here can be null, and the page says so plainly rather than
+     * showing zeroes: Google being slow, or a key not yet pasted, must not
+     * read as nobody having visited.
+     *
+     * @return array{set: bool, days: int, visitors: ?array, search: ?array}
+     */
+    public function google(): array
+    {
+        $stats = new \App\Services\Google\GoogleStats;
+        $days = max(1, (int) $this->period);
+
+        if (! $stats->configured()) {
+            return ['set' => false, 'days' => $days, 'visitors' => null, 'search' => null];
+        }
+
+        return [
+            'set'      => true,
+            'days'     => $days,
+            'visitors' => $stats->visitors($days),
+            'search'   => $stats->search($days),
+        ];
+    }
+
     public function money(float|int|null $amount): string
     {
         return Shop::money((float) $amount);

@@ -444,7 +444,32 @@ Settings → Found on Google** and **Analytics**.
    Those six pages cannot be deleted or taken down, for that reason; any page
    you add yourself can be.
 
-6. **Turn off "Hide the whole shop from search engines"** on the day you open,
+6. **Bring the figures back into the admin** (optional). Analysis can show
+   visitors and what people typed into Google, beside the shop's own numbers.
+   It needs a Google service account, because nobody is sitting at the admin
+   when the figures are fetched:
+
+   1. console.cloud.google.com → **IAM & Admin → Service accounts → Create**.
+      No roles are needed on the project itself.
+   2. On that account: **Keys → Add key → JSON**. Keep the file; Google will
+      not show it again.
+   3. Enable two APIs on the project: **Google Analytics Data API** and
+      **Search Console API**.
+   4. Analytics → **Admin → Property access management** → add the service
+      account's address as a **Viewer**.
+   5. Search Console → **Settings → Users and permissions** → add the same
+      address.
+   6. Paste the whole JSON file into **Settings → Analytics → Reading the
+      figures back**, with the Analytics property number (a number, not the
+      G- code) and the Search Console property spelled exactly as Search
+      Console spells it — `sc-domain:ojasvidrapes.in` or
+      `https://ojasvidrapes.in/`.
+
+   The figures are kept for half an hour before being asked for again. Search
+   Console's own numbers run about three days behind, so that panel stops
+   three days ago and says so.
+
+7. **Turn off "Hide the whole shop from search engines"** on the day you open,
    if you turned it on while building. Nothing else on this list matters until
    you do.
 
