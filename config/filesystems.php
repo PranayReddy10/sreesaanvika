@@ -52,7 +52,34 @@ return [
          * paths stored against each saree are relative to this root either
          * way, so nothing in the database changes; only the files move.
          */
-        'public' => [
+        'public' => env('SHOP_UPLOADS_ON_SPACES', false) ? [
+            /*
+             * Off the shop's own disk altogether.
+             *
+             * DigitalOcean Spaces speaks S3, so this is the s3 driver pointed
+             * at their endpoint. Worth it when the shop outgrows a shared
+             * host's disk, or wants its photographs served from a CDN rather
+             * than from one box in one data centre — and it ends the symlink
+             * business below for good, because nothing is stored locally to
+             * link to.
+             *
+             * The paths against each saree are the same either way, so moving
+             * is copying the files up and setting this to true. Nothing in the
+             * database changes.
+             */
+            'driver' => 's3',
+            'key' => env('SPACES_KEY'),
+            'secret' => env('SPACES_SECRET'),
+            'region' => env('SPACES_REGION', 'blr1'),
+            'bucket' => env('SPACES_BUCKET'),
+            'endpoint' => env('SPACES_ENDPOINT', 'https://'.env('SPACES_REGION', 'blr1').'.digitaloceanspaces.com'),
+            // The CDN address where there is one, so a saree photograph is
+            // served from the edge rather than from Bangalore every time.
+            'url' => rtrim((string) env('SPACES_URL', ''), '/') ?: null,
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ] : [
             'driver' => 'local',
             'root' => env('SHOP_UPLOADS_IN_PUBLIC', false)
                 ? public_path('uploads')

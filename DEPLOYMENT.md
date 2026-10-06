@@ -277,6 +277,43 @@ php artisan config:clear && php artisan config:cache
 The paths recorded against each saree are relative to whichever of the two is
 in use, so nothing in the database changes — only the files move.
 
+### Or keep the photographs on DigitalOcean Spaces
+
+A third option, and the one to reach for when the shop outgrows this disk or
+wants its pictures served from a CDN. It also ends the symlink business above
+for good: nothing is kept on this box, so there is nothing to link to.
+
+1. In DigitalOcean: **Spaces → Create**, region **Bangalore (blr1)** — the shop
+   sells in India and its photographs should not travel to Amsterdam and back.
+   Switch the CDN on while you are there.
+2. **API → Spaces Keys → Generate New Key.** You get a key and a secret, and
+   the secret is shown once.
+3. In `.env`:
+
+   ```ini
+   SHOP_UPLOADS_ON_SPACES=true
+   SPACES_KEY=...
+   SPACES_SECRET=...
+   SPACES_BUCKET=ojasvi
+   SPACES_REGION=blr1
+   SPACES_URL=https://ojasvi.blr1.cdn.digitaloceanspaces.com
+   ```
+
+   `SPACES_URL` is the CDN address from the Space's settings. Leave it empty and
+   the files are served straight from the Space, which works and is slower.
+4. Copy what is already there up to the Space, keeping the same paths —
+   `products/…`, `videos/…`. Any S3 tool will do it; `s3cmd sync` or
+   DigitalOcean's own uploader are both fine. The paths stored against each
+   saree do not change, so nothing in the database needs touching.
+5. `php artisan config:clear && php artisan config:cache`.
+
+The files must be **public** in the Space, or every photograph is a broken
+square. New uploads from the admin are marked public automatically.
+
+The AWS SDK this uses ships support for 449 services; `composer.json` prunes
+it to S3 alone on every install, which is the difference between about twenty
+megabytes and several hundred — worth knowing on a host that counts disk.
+
 ### Permissions
 
 ```sh
@@ -583,6 +620,13 @@ somewhere wrong. See step 4.
 
 **The shop has no styling.** `public/build` was not uploaded, or `npm run
 build` was never run. See step 2.
+
+**Who gets told about a new order?** Everybody with an admin account, plus
+the shop's own email address, plus anyone else listed in **Settings → General →
+"Also tell these people about new orders"** (commas between them). Nothing else
+needs setting up: the email is sent the moment an order is placed, queued like
+every other, and goes out on the next run of the cron in step 5. The order's
+own address is the reply-to, so pressing Reply answers the customer.
 
 **No emails.** Check the cron entry (step 5), then
 `php artisan queue:work --once` by hand and read what it says. Hostinger needs
