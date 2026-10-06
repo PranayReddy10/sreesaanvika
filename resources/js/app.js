@@ -41,14 +41,30 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        async addToBag(form) {
+        /*
+         * `pressed` is the button the shopper actually pressed, which the form
+         * hands over as $event.submitter.
+         *
+         * Taking it from document.activeElement instead was why Buy it now put
+         * the saree in the bag and left her there: pressing a button does not
+         * focus it on a touchscreen, so nothing was ever read as the checkout
+         * button. It had a second half too — FormData(form) leaves out the
+         * pressed button's own name and value, so the shop was never told
+         * either, and the address it sent back was the bag's.
+         */
+        async addToBag(form, pressed) {
             if (this.busy) return;
 
             this.busy = true;
 
             try {
-                const body = new FormData(form);
-                const checkout = document.activeElement?.value === 'checkout';
+                // The second argument is what puts then=checkout in the post.
+                const body = new FormData(form, pressed);
+                const checkout = pressed?.value === 'checkout';
+
+                // Older browsers ignore that argument. Said again by hand, so
+                // the shop is told on those too.
+                if (checkout && ! body.has('then')) body.append('then', 'checkout');
 
                 const response = await fetch(form.action, {
                     method: 'POST',

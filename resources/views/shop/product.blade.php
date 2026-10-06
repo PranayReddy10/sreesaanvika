@@ -215,7 +215,7 @@
                 </p>
             </template>
 
-            <form method="post" action="{{ route('bag.add') }}" class="mt-7" @submit.prevent="addToBag($el)">
+            <form method="post" action="{{ route('bag.add') }}" class="mt-7" @submit.prevent="addToBag($el, $event.submitter)">
                 @csrf
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                 <input type="hidden" name="colourway_id" :value="chosen || ''">

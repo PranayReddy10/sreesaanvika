@@ -500,7 +500,19 @@ storage:link` has not been run, or the symlink it makes is not being followed.
 Run it, and if the images are still refused, add `Options +FollowSymLinks` at
 the top of `public_html/.htaccess`.
 
-**A film shows as a black square.** Look at **Storefront → Films** in the
+**Photographs are broken squares, and you want to know why.** Run
+
+```sh
+php artisan ojasvi:photos
+```
+
+It says where uploads are kept, whether every file is actually there, whether
+`public/storage` exists and can be read through, and — when the shop's own
+side is right — the exact address to open in a browser so the web server can
+say what it objects to. A 403 there is a permission or a symbolic link not
+being followed; a 404 is an address.
+
+ Look at **Storefront → Films** in the
 admin: the Plays column says which ones are not working and why. Two things
 cause it, and both look identical on the page.
 

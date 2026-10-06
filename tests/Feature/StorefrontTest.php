@@ -113,6 +113,65 @@ class StorefrontTest extends TestCase
             ->assertJsonPath('count', 1);
     }
 
+    /**
+     * Buy it now goes to the checkout; Add to bag does not.
+     *
+     * Both press the same form, and which one was pressed is the whole
+     * difference. It was broken twice over: the page worked out which button
+     * had been used by asking the browser what was focused, and a touchscreen
+     * does not focus a button it is tapped with — and the post left out the
+     * button's own name and value, so the shop was never told either way.
+     * Buy it now put the saree in the bag and left the shopper standing there.
+     */
+    public function test_buy_it_now_is_answered_with_the_checkout(): void
+    {
+        $product = Product::published()->first();
+
+        $this->postJson('/bag/add', ['product_id' => $product->id, 'then' => 'checkout'])
+            ->assertOk()
+            ->assertJsonPath('checkout', route('checkout'));
+
+        $this->postJson('/bag/add', ['product_id' => $product->id])
+            ->assertOk()
+            ->assertJsonPath('checkout', route('bag'));
+    }
+
+    /**
+     * The phone menu and the search sheet are moved out of the header.
+     *
+     * Both are written inside it and both cover the screen, but the header is
+     * blurred — and backdrop-filter makes an element the containing block for
+     * everything fixed inside it. Left there, "fixed inset-0" means the inside
+     * of the header bar: the menu opened as a 72-pixel sliver with none of its
+     * links in it, which on a phone is a menu button that does nothing.
+     */
+    public function test_the_phone_menu_is_not_trapped_inside_the_header(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertSame(
+            2,
+            substr_count($html, 'x-teleport="body"'),
+            'the phone menu and the search sheet must both be moved out of the blurred header',
+        );
+    }
+
+    /**
+     * The page hands the pressed button to the script.
+     *
+     * Checked in the markup because the rest of it is in the browser, where
+     * this suite cannot go: without $event.submitter there is nothing to tell
+     * the two buttons apart, and Buy it now quietly becomes Add to bag again.
+     */
+    public function test_the_saree_page_says_which_button_was_pressed(): void
+    {
+        $product = Product::published()->first();
+
+        $this->get(route('product', $product->slug))
+            ->assertOk()
+            ->assertSee('addToBag($el, $event.submitter)', false);
+    }
+
     public function test_a_shade_from_another_saree_is_ignored(): void
     {
         $product = Product::published()->has('colourways')->first();

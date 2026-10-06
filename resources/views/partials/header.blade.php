@@ -104,7 +104,14 @@
     </div>
 
     {{-- Search, as a sheet rather than a page, so a shopper who was halfway
-         down a listing is not thrown back to the top of it. --}}
+         down a listing is not thrown back to the top of it.
+
+         Moved to the end of the body, because the header it is written inside
+         is blurred — and backdrop-filter makes an element the containing block
+         for everything fixed inside it. Left where it was written, "fixed
+         inset-0" means the inside of the header bar rather than the screen,
+         and the sheet opens as a strip 72 pixels tall. --}}
+    <template x-teleport="body">
     <div x-show="search" x-cloak x-transition.opacity
          class="fixed inset-0 z-50 bg-[color:var(--color-page)]/95 backdrop-blur"
          @keydown.escape.window="search = false">
@@ -125,8 +132,12 @@
             <p class="mt-4 text-sm text-ink-muted">Press enter to search {{ \App\Support\Shop::name() }}.</p>
         </div>
     </div>
+    </template>
 
-    {{-- The phone menu. --}}
+    {{-- The phone menu, moved to the end of the body for the same reason as
+         the search sheet above: inside the blurred header it was a 72-pixel
+         sliver with none of this in it. --}}
+    <template x-teleport="body">
     <div x-show="menu" x-cloak x-transition.opacity class="fixed inset-0 z-50 md:hidden" @keydown.escape.window="menu = false">
         <div class="absolute inset-0 bg-black/60" @click="menu = false"></div>
         <nav class="absolute inset-y-0 left-0 w-[82%] max-w-sm bg-[color:var(--color-page-alt)] border-r border-[color:var(--color-line-soft)] p-6 overflow-y-auto od-scroll"
@@ -158,4 +169,5 @@
             @endif
         </nav>
     </div>
+    </template>
 </header>
