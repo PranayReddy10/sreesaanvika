@@ -21,6 +21,55 @@
             <a href="{{ route('track') }}" class="od-btn od-btn-ghost">Track an order</a>
         </div>
 
+        {{--
+            Where her orders have been sent.
+
+            Kept from the orders themselves rather than asked for separately —
+            nobody fills in an address book — so the second order is a matter
+            of pressing the button, and the one the checkout will offer is
+            marked here rather than being a surprise at the till.
+        --}}
+        @if ($addresses->isNotEmpty())
+            <h2 class="mt-10 font-head text-2xl">Where we send things</h2>
+
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                @foreach ($addresses as $address)
+                    <article class="od-card p-5 {{ $address->is_default ? 'border-[color:var(--color-brand)]' : '' }}">
+                        @if ($address->is_default)
+                            <p class="od-eyebrow mb-2">The next one goes here</p>
+                        @endif
+
+                        <p class="text-ink">{{ $address->name }}</p>
+                        <p class="mt-1 text-sm text-ink-muted leading-relaxed">
+                            {{ $address->line1 }}@if ($address->line2), {{ $address->line2 }}@endif<br>
+                            @if ($address->landmark)Near {{ $address->landmark }}<br>@endif
+                            {{ $address->city }} {{ $address->pincode }}<br>
+                            {{ $address->state }}
+                        </p>
+                        @if ($address->phone)
+                            <p class="mt-1 text-sm text-ink-faint">{{ $address->phone }}</p>
+                        @endif
+
+                        <div class="mt-4 flex items-center gap-4 text-sm">
+                            @unless ($address->is_default)
+                                <form method="post" action="{{ route('account.address.use', $address) }}">
+                                    @csrf
+                                    <button type="submit" class="text-gold hover:text-gold-light transition">Send the next one here</button>
+                                </form>
+                            @endunless
+
+                            <form method="post" action="{{ route('account.address.forget', $address) }}"
+                                  onsubmit="return confirm('Remove this address?')">
+                                @csrf
+                                @method('delete')
+                                <button type="submit" class="text-ink-faint hover:text-ink-muted transition">Remove</button>
+                            </form>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        @endif
+
         <h2 class="mt-10 font-head text-2xl">Your orders</h2>
 
         @forelse ($orders as $order)

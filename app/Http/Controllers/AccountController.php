@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -15,6 +16,11 @@ class AccountController extends Controller
             'orders' => auth()->check()
                 ? auth()->user()->orders()->with('items')->latest()->take(20)->get()
                 : collect(),
+            // Kept from the orders she has placed, newest first, so the one
+            // the checkout will offer is the one at the top.
+            'addresses' => auth()->check()
+                ? auth()->user()->addresses()->orderByDesc('is_default')->latest()->get()
+                : collect(),
         ]);
     }
 
@@ -25,6 +31,32 @@ class AccountController extends Controller
                 ? auth()->user()->wishlistItems()->with('product.images', 'product.colourways')->get()
                 : collect(),
         ]);
+    }
+
+    /**
+     * Which address the next order should offer.
+     *
+     * Kept rather than typed again: a shopper who buys four times a year
+     * should type her house once.
+     */
+    public function useAddress(Request $request, Address $address): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless($address->user_id === $request->user()->id, 404);
+
+        $request->user()->addresses()->update(['is_default' => false]);
+
+        $address->forceFill(['is_default' => true])->save();
+
+        return back()->with('bag', 'We will send the next one there.');
+    }
+
+    public function forgetAddress(Request $request, Address $address): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless($address->user_id === $request->user()->id, 404);
+
+        $address->delete();
+
+        return back()->with('bag', 'That address is gone.');
     }
 
     /** Save a saree, or unsave it. One button, both ways. */

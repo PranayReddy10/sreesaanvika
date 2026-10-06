@@ -79,6 +79,14 @@ Route::post('/account/saved/{product}', [AccountController::class, 'save'])
     ->middleware('auth')
     ->name('account.save');
 
+// The addresses her own orders have been sent to.
+Route::post('/account/address/{address}', [AccountController::class, 'useAddress'])
+    ->middleware('auth')
+    ->name('account.address.use');
+Route::delete('/account/address/{address}', [AccountController::class, 'forgetAddress'])
+    ->middleware('auth')
+    ->name('account.address.forget');
+
 Route::get('/page/{slug}', PageController::class)->name('page');
 
 Route::post('/newsletter', [NewsletterController::class, 'store'])->name('newsletter');

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Address;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Coupon;
@@ -109,8 +110,47 @@ class OrderService
 
             $order->history()->create(['to' => 'pending', 'note' => 'Placed']);
 
+            $this->rememberAddress($order, $address);
+
             return $order;
         });
+    }
+
+    /**
+     * Keep the address, so the next order does not ask for it again.
+     *
+     * Only for somebody with an account — a guest has nowhere to keep it — and
+     * only the parts that make it findable again. The same address typed twice
+     * is one address: a shopper who buys four times a year should not have to
+     * scroll past four copies of her own house to find it.
+     *
+     * The newest one is the one the checkout offers, because an address that
+     * has just been posted to is the one most likely to be right.
+     */
+    private function rememberAddress(Order $order, array $address): void
+    {
+        if (! $order->user_id) {
+            return;
+        }
+
+        $kept = $this->addressFor($address);
+
+        $same = Address::where('user_id', $order->user_id)
+            ->where('line1', $kept['line1'])
+            ->where('pincode', $kept['pincode'])
+            ->first();
+
+        $row = $same ?? new Address(['user_id' => $order->user_id]);
+
+        $row->fill($kept + ['user_id' => $order->user_id])->save();
+
+        // One default, and it is this one.
+        Address::where('user_id', $order->user_id)
+            ->whereKeyNot($row->id)
+            ->where('is_default', true)
+            ->update(['is_default' => false]);
+
+        $row->forceFill(['is_default' => true])->save();
     }
 
     /** @return array<string, string|null> */
