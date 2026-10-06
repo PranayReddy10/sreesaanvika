@@ -39,16 +39,84 @@ class Video extends Model
         return $query->where('on_home', true);
     }
 
-    /** Where the film actually is. Null means there is nothing to play. */
+    /* ------------------------------------------------ what kind of film */
+
+    /**
+     * Instagram's code for this reel, or null if this is not one.
+     *
+     * Takes whatever the shop pasted. The address copied out of the app
+     * carries a tracking query, sometimes the account name, and may say reel,
+     * reels, p or tv depending on where it was copied from — all of which mean
+     * the same post, and none of which a shop should have to think about.
+     */
+    public function instagramCode(): ?string
+    {
+        $url = trim((string) $this->url);
+
+        if ($url === '' || ! preg_match(
+            '#instagram\.com/(?:[\w.]+/)?(?:reels?|p|tv)/([A-Za-z0-9_-]{5,})#i',
+            $url,
+            $m,
+        )) {
+            return null;
+        }
+
+        return $m[1];
+    }
+
+    /** Is this played by Instagram rather than by us? */
+    public function isEmbed(): bool
+    {
+        return $this->path === null && $this->instagramCode() !== null;
+    }
+
+    /**
+     * The address of Instagram's own player.
+     *
+     * Nothing is fetched from it until somebody taps the film. Instagram's
+     * embed brings its own scripts and its own cookies, and loading four of
+     * them on the front page would undo every promise the shop makes about
+     * not calling on anybody else as a page opens.
+     */
+    public function embedUrl(): ?string
+    {
+        $code = $this->instagramCode();
+
+        return $code ? "https://www.instagram.com/reel/{$code}/embed/" : null;
+    }
+
+    public function watchUrl(): ?string
+    {
+        $code = $this->instagramCode();
+
+        return $code ? "https://www.instagram.com/reel/{$code}/" : null;
+    }
+
+    /**
+     * Where the film actually is.
+     *
+     * Only for films this shop plays itself. An Instagram reel has no such
+     * address — Instagram plays it — so this is null and isEmbed() is true.
+     */
     public function src(): ?string
     {
         if ($this->path) {
             return Storage::disk('public')->url($this->path);
         }
 
+        if ($this->isEmbed()) {
+            return null;
+        }
+
         $url = trim((string) $this->url);
 
         return $url !== '' ? $url : null;
+    }
+
+    /** Is there anything at all to show for this row? */
+    public function playable(): bool
+    {
+        return $this->src() !== null || $this->isEmbed();
     }
 
     public function posterUrl(): ?string

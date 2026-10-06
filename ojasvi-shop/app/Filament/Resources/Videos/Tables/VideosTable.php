@@ -45,10 +45,15 @@ class VideosTable
                     ->searchable(),
 
                 TextColumn::make('where')
-                    ->label('Kept')
+                    ->label('Played by')
                     ->badge()
-                    ->state(fn (Video $record) => $record->path ? 'Here' : 'Elsewhere')
-                    ->color(fn ($state) => $state === 'Here' ? 'primary' : 'gray')
+                    ->state(fn (Video $record) => match (true) {
+                        (bool) $record->path   => 'The shop',
+                        $record->isEmbed()     => 'Instagram',
+                        default                => 'Elsewhere',
+                    })
+                    ->color(fn ($state) => $state === 'The shop' ? 'primary' : 'gray')
+                    ->description(fn (Video $record) => $record->isEmbed() ? 'Needs one tap' : 'Plays on its own')
                     ->tooltip(fn (Video $record) => $record->path ?: $record->url),
 
                 IconColumn::make('is_visible')

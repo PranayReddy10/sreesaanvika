@@ -54,10 +54,14 @@ class VideosRelationManager extends RelationManager
                     ->description(fn (Video $record) => $record->caption),
 
                 TextColumn::make('where')
-                    ->label('Kept')
+                    ->label('Played by')
                     ->badge()
-                    ->state(fn (Video $record) => $record->path ? 'Here' : 'Elsewhere')
-                    ->color(fn ($state) => $state === 'Here' ? 'primary' : 'gray'),
+                    ->state(fn (Video $record) => match (true) {
+                        (bool) $record->path => 'The shop',
+                        $record->isEmbed()   => 'Instagram',
+                        default              => 'Elsewhere',
+                    })
+                    ->color(fn ($state) => $state === 'The shop' ? 'primary' : 'gray'),
 
                 IconColumn::make('on_home')->label('On the front page')->boolean(),
                 IconColumn::make('is_visible')->label('Showing')->boolean(),

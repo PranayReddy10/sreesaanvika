@@ -1,11 +1,16 @@
 @php
     $limit = (int) ($section?->setting('limit', 6) ?: 6);
 
+    // Filtered after fetching rather than in SQL: whether a row has anything
+    // to play depends on reading an Instagram address, which is not a thing to
+    // ask a database. Taken after filtering, so a row with nothing in it does
+    // not use up one of the places in the rail.
     $reels = \App\Models\Video::visible()
         ->forHome()
         ->with('product.images')
-        ->take($limit)
-        ->get();
+        ->get()
+        ->filter(fn ($reel) => $reel->playable())
+        ->take($limit);
 @endphp
 
 @if ($reels->isNotEmpty())

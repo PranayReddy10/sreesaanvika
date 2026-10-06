@@ -279,6 +279,17 @@ Last, in the admin at `/admin`:
   wants it.
 - **Storefront → Films** — the reel along the bottom of the front page. A film
   can be in the reel, on a saree's page, or both.
+
+  Two kinds, and the difference matters. A film you **upload** is played by the
+  shop: it starts on its own, muted, as the shopper scrolls to it. An
+  **Instagram reel** — paste the link straight from *Share → Copy link* — shows
+  as a still with a play button, because Instagram does not let any website
+  start its reels by itself. Nothing of Instagram's is fetched until she taps,
+  which keeps the page quick and keeps Instagram out of the shop's traffic.
+
+  For a reel, add a cover frame under *The frame to show first*: Instagram does
+  not hand one out, and without it the still is the saree's own photograph or a
+  plain panel.
 - **Storefront → Front page** — the rows of the home page, in order.
 
 ---

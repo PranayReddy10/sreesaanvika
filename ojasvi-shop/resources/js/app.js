@@ -197,9 +197,51 @@ function watchVideos() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', watchVideos);
+/**
+ * Instagram reels.
+ *
+ * A still until somebody taps it, then Instagram's own player takes over.
+ * Nothing of theirs is fetched before that tap — their embed brings scripts
+ * and cookies, and four of them loading as the front page opens would undo
+ * what the shop promises about not calling on anybody else.
+ *
+ * Instagram will not let a website start one by itself, so the tap is real
+ * and the page never pretends otherwise.
+ */
+function watchReels() {
+    document.querySelectorAll('[data-od-reel]').forEach((figure) => {
+        if (figure.dataset.odWired === '1') return;
+        figure.dataset.odWired = '1';
+
+        const play = figure.querySelector('.od-reel-play');
+
+        play?.addEventListener('click', () => {
+            const frame = document.createElement('iframe');
+
+            frame.src = figure.dataset.embed;
+            frame.title = figure.dataset.label || 'Instagram reel';
+            frame.loading = 'lazy';
+            frame.allow = 'autoplay; encrypted-media; picture-in-picture';
+            frame.allowFullscreen = true;
+            frame.scrolling = 'no';
+            frame.className = 'absolute inset-0 w-full h-full border-0';
+
+            figure.appendChild(frame);
+            figure.classList.add('is-embedded');
+
+            // The shop's own furniture goes once Instagram's is in: two play
+            // badges and two captions on one film is nobody's idea of a shop.
+            figure.querySelectorAll('.od-reel-poster, .od-reel-play, .od-reel-mark, .od-reel-caption')
+                .forEach((part) => part.remove());
+        });
+    });
+}
+
+const wire = () => { watchVideos(); watchReels(); };
+
+document.addEventListener('DOMContentLoaded', wire);
 // Livewire swaps pieces of the page without reloading it.
-document.addEventListener('livewire:navigated', watchVideos);
+document.addEventListener('livewire:navigated', wire);
 
 /** A short message at the foot of the screen, with a way to act on it. */
 function toast(message, href) {
