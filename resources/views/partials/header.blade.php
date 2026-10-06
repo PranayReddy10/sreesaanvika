@@ -139,7 +139,7 @@
          sliver with none of this in it. --}}
     <template x-teleport="body">
     <div x-show="menu" x-cloak x-transition.opacity class="fixed inset-0 z-50 md:hidden" @keydown.escape.window="menu = false">
-        <div class="absolute inset-0 bg-black/60" @click="menu = false"></div>
+        <div class="absolute inset-0 bg-[color:var(--color-ink)]/40" @click="menu = false"></div>
         <nav class="absolute inset-y-0 left-0 w-[82%] max-w-sm bg-[color:var(--color-page-alt)] border-r border-[color:var(--color-line-soft)] p-6 overflow-y-auto od-scroll"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0">

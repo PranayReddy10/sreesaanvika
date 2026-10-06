@@ -32,9 +32,12 @@
                 @endif
 
                 {{-- The words sit on the photograph, so the photograph has to
-                     be darkened under them or nothing is legible on a bright
-                     silk. --}}
-                <div class="absolute inset-0 bg-gradient-to-t from-[color:var(--color-page)] via-[color:var(--color-page)]/45 to-[color:var(--color-page)]/15"></div>
+                     be washed out under them or nothing is legible — and on a
+                     cream page the wash is cream, lightening the silk rather
+                     than darkening it. Strong where the words are, because a
+                     deep indigo Kanjivaram is exactly the kind of photograph
+                     that swallows dark lettering. --}}
+                <div class="absolute inset-0 bg-gradient-to-t from-[color:var(--color-page)] via-[color:var(--color-page)]/75 to-[color:var(--color-page)]/25"></div>
 
                 <div class="relative h-full od-wrap flex items-end md:items-center pb-16 md:pb-0">
                     <div class="max-w-xl

@@ -42,7 +42,7 @@
 
     <link rel="icon" href="{{ asset('brand/favicon.png') }}" sizes="32x32">
     <link rel="apple-touch-icon" href="{{ asset('brand/apple-touch-icon.png') }}">
-    <meta name="theme-color" content="#140a12">
+    <meta name="theme-color" content="#f1e9dc">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles

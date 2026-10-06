@@ -6,40 +6,61 @@
 @source '../views';
 
 /*
- * OJASVI.
+ * OJASVI, on paper.
  *
- * Aubergine and gold, carried over from the shop's own site rather than
- * invented again: a deep plum page, gold for anything that means money or
- * action, and a serif for headings so the shop reads as a saree house and not
- * as a software product.
+ * The shop's own cards are cream and brown — #f1e9dc and #8a6c50 — and the
+ * site now reads the same way: a warm paper page, white for anything holding
+ * a photograph or a form, and brown for everything that means money or
+ * action. The serif stays, because the shop should read as a saree house and
+ * not as a software product.
+ *
+ * Every pair below was measured rather than guessed. The faintest text on the
+ * palest ground is 4.58 to 1, the body text 12.6, and white on the brown of a
+ * button 4.84 — all of which clear WCAG AA, which matters here more than on
+ * most sites: a saree shop's customers are often reading on a phone in
+ * daylight.
+ *
+ * The token names come from the shop's first, dark theme, where "light" meant
+ * brighter and so more prominent. On paper prominence runs the other way, so
+ * gold-light is the deeper brown. Renaming them would touch every view in the
+ * shop and change nothing anybody can see.
  */
 @theme {
     --font-sans: 'Jost', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-head: 'Playfair Display', Georgia, 'Times New Roman', serif;
     --font-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
 
-    --color-page: #140a12;
-    --color-page-alt: #1a0d17;
-    --color-surface: #21121d;
-    --color-surface-2: #2b1826;
-    --color-surface-3: #3a2233;
+    --color-page: #f1e9dc;
+    --color-page-alt: #e9dfce;
+    --color-surface: #ffffff;
+    --color-surface-2: #faf6ef;
+    --color-surface-3: #efe4d2;
 
-    --color-gold: #d9a441;
-    --color-gold-light: #f0d08a;
-    --color-gold-deep: #a97a26;
+    /* The brand brown exactly as the cards use it, for rules, borders and the
+       fill of a button — places where it is a shape rather than a word. */
+    --color-brand: #8a6c50;
+
+    /* And its deeper relatives, for places where it is a word and has to be
+       read at eleven pixels. */
+    --color-gold: #7a5c42;
+    --color-gold-light: #5f4733;
+    --color-gold-deep: #4a3626;
+
     --color-maroon: #7b1e3b;
-    --color-marigold: #e8952f;
+    /* Used only for what has gone wrong, which on paper should be red rather
+       than the dark theme's amber — amber on cream cannot be read at all. */
+    --color-marigold: #9d2a1e;
 
-    --color-ink: #f4eaee;
-    --color-ink-soft: #ded0d6;
-    --color-ink-muted: #ab99a2;
-    --color-ink-faint: #7d6d76;
+    --color-ink: #2f2418;
+    --color-ink-soft: #4a3c2d;
+    --color-ink-muted: #6b5c4b;
+    --color-ink-faint: #776651;
 
-    --color-line: rgba(217, 164, 65, 0.18);
-    --color-line-soft: rgba(244, 234, 238, 0.09);
+    --color-line: rgba(138, 108, 80, 0.32);
+    --color-line-soft: rgba(47, 36, 24, 0.10);
 
-    --shadow-gold: 0 14px 40px -14px rgba(217, 164, 65, 0.35);
-    --shadow-lift: 0 24px 60px -30px rgba(0, 0, 0, 0.85);
+    --shadow-gold: 0 14px 34px -16px rgba(138, 108, 80, 0.45);
+    --shadow-lift: 0 24px 60px -30px rgba(47, 36, 24, 0.30);
 
     --radius-card: 14px;
 }
@@ -128,8 +149,11 @@
     }
 
     .od-btn-gold {
-        background: linear-gradient(135deg, var(--color-gold-deep), var(--color-gold-light) 45%, var(--color-gold));
-        color: #2a1b0a;
+        /* Brown, with white lettering at 4.84 to 1 against the palest point of
+           the gradient. The dark theme's near-black lettering is unreadable on
+           a brown this deep. */
+        background: linear-gradient(135deg, var(--color-gold-light), var(--color-brand) 55%, var(--color-gold));
+        color: #ffffff;
         box-shadow: var(--shadow-gold);
     }
 
@@ -143,19 +167,23 @@
     }
 
     .od-btn-ghost:hover {
-        border-color: var(--color-gold);
+        border-color: var(--color-brand);
         color: var(--color-gold-light);
+        background: var(--color-surface-2);
     }
 
     .od-card {
         background: var(--color-surface);
         border: 1px solid var(--color-line-soft);
         border-radius: var(--radius-card);
+        /* On a dark page a card showed by being lighter than its surroundings.
+           On paper it has to be lifted off instead, or it disappears. */
+        box-shadow: 0 1px 2px rgba(47, 36, 24, 0.04), 0 8px 24px -16px rgba(47, 36, 24, 0.16);
     }
 
     .od-input {
         width: 100%;
-        background: var(--color-surface-2);
+        background: var(--color-surface);
         border: 1px solid var(--color-line-soft);
         border-radius: 10px;
         padding: 0.75rem 0.9rem;
@@ -163,8 +191,13 @@
         font-size: 0.9375rem;
     }
 
+    .od-input { border-color: var(--color-line); }
     .od-input::placeholder { color: var(--color-ink-faint); }
-    .od-input:focus { border-color: var(--color-gold); outline: none; }
+    .od-input:focus {
+        border-color: var(--color-brand);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(138, 108, 80, 0.15);
+    }
 
     .od-label {
         display: block;
@@ -199,7 +232,7 @@
         max-width: calc(100vw - 2rem);
         padding: 0.875rem 1.25rem;
         border-radius: 999px;
-        background: var(--color-surface-2);
+        background: var(--color-surface);
         border: 1px solid var(--color-line);
         box-shadow: var(--shadow-lift);
         font-size: 0.875rem;
@@ -220,7 +253,7 @@
     /* The play badge goes once the film is actually running. */
     .od-video.is-playing .od-video-play { opacity: 0; pointer-events: none; }
     .od-video-play { opacity: 1; transition: opacity .3s ease; }
-    .od-video-play:hover { background: rgba(20, 10, 18, 0.2); }
+    .od-video-play:hover { background: rgba(47, 36, 24, 0.15); }
 
     /* The film itself is invisible until there is a frame in it.
        A <video> element with nothing decoded paints flat black, whatever is
