@@ -79,6 +79,13 @@ tracking number in by hand, which is what it did before.
 money is taken before any email is attempted, so a wrong SMTP password costs
 the shop an email and never a sale.
 
+**Films come in two kinds.** One the shop uploads and plays itself, and an
+Instagram reel, pasted as a link. The second cannot autoplay — Instagram
+forbids it — so it is a still until tapped, and nothing of Instagram's is
+fetched before that tap. Pretending otherwise would mean four of their embeds
+loading as the front page opens, which costs a shopper on a slow line more
+than the whole rest of the page.
+
 **Films play for the shopper, not at her.** Muted, because every browser
 refuses to start a film with sound and one that silently never plays is worse
 than none. Only while on screen, and nothing downloads until it is nearly

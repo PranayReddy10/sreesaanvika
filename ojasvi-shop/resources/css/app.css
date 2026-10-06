@@ -221,6 +221,14 @@
     .od-video.is-playing .od-video-play { opacity: 0; pointer-events: none; }
     .od-video-play { opacity: 1; transition: opacity .3s ease; }
     .od-video-play:hover { background: rgba(20, 10, 18, 0.2); }
+
+    /* Instagram's embed carries its own header, caption and buttons, so the
+       box has to grow once theirs is in or half of it is cropped away. */
+    .od-reel.is-embedded {
+        aspect-ratio: auto !important;
+        min-height: 640px;
+        background: #000;
+    }
 }
 
 @layer utilities {

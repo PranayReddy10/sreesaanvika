@@ -312,13 +312,15 @@
         </div>
     </div>
 
-    @if ($product->videos->isNotEmpty())
+    @php $films = $product->videos->filter(fn ($film) => $film->playable()); @endphp
+
+    @if ($films->isNotEmpty())
         <section class="mt-20">
             <h2 class="font-display text-2xl md:text-3xl">See it worn</h2>
             <p class="mt-2 text-ink-muted">Sound is off until you turn it on.</p>
 
             <div class="mt-7 flex gap-4 overflow-x-auto od-scroll snap-x snap-mandatory pb-4 -mx-4 px-4 md:mx-0 md:px-0">
-                @foreach ($product->videos as $film)
+                @foreach ($films as $film)
                     <div class="snap-start shrink-0 w-[68vw] sm:w-[40vw] lg:w-[24vw] max-w-[320px]">
                         <x-shop.video :video="$film" :eager="$loop->first" />
                         @if ($film->title)

@@ -129,6 +129,22 @@ class DemoSeeder extends Seeder
                 'is_visible' => true,
             ]);
         }
+
+        /*
+         * One Instagram reel, last, because that is how most of these arrive
+         * in practice — filmed on a phone, posted, and the link pasted in. It
+         * shows as a still until somebody taps it, so the rail leads with the
+         * ones that play by themselves.
+         */
+        Video::create([
+            'product_id' => $products[5]->id ?? null,
+            'on_home'    => true,
+            'title'      => 'From our Instagram',
+            'caption'    => 'Tap to watch on Instagram',
+            'url'        => 'https://www.instagram.com/reel/C8xYzExAbCd/',
+            'position'   => $position,
+            'is_visible' => true,
+        ]);
     }
 
     private function settings(): void

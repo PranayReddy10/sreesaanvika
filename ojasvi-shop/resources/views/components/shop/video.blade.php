@@ -6,12 +6,13 @@
 
 @php
     $src = $video->src();
+    $embed = $video->embedUrl();
     $poster = $video->posterUrl();
 @endphp
 
 @if ($src)
     {{--
-        Autoplay, honestly.
+        A film the shop holds, played by the shop.
 
         Muted, because every browser refuses to start a film with sound and a
         shop whose videos silently do not play is worse off than one with none.
@@ -75,5 +76,76 @@
                 {{ $video->caption }}
             </figcaption>
         @endif
+    </figure>
+
+@elseif ($embed)
+    {{--
+        A reel that Instagram plays.
+
+        Instagram does not let a website start one by itself, so there is no
+        pretending otherwise — this is a still with a play badge, and one tap
+        hands over to Instagram's own player.
+
+        Nothing of Instagram's is fetched until that tap. Their embed brings
+        its own scripts and its own cookies, and loading four of them as the
+        front page opens would undo what the shop promises about not calling
+        on anybody else. It also costs a shopper on a slow line more than the
+        whole rest of the page.
+    --}}
+    <figure
+        class="od-reel group relative overflow-hidden rounded-[var(--radius-card)] bg-[color:var(--color-surface-2)]"
+        style="aspect-ratio: {{ $ratio }}"
+        data-od-reel
+        data-embed="{{ $embed }}"
+        data-label="{{ $video->label() }}"
+    >
+        @if ($poster)
+            <img src="{{ $poster }}" alt="{{ $video->label() }}"
+                 class="od-reel-poster w-full h-full object-cover"
+                 loading="{{ $eager ? 'eager' : 'lazy' }}" decoding="async">
+        @else
+            <div class="od-reel-poster w-full h-full grid place-items-center
+                        bg-gradient-to-br from-[color:var(--color-surface-2)] to-[color:var(--color-surface-3)]">
+                <span class="od-eyebrow">On Instagram</span>
+            </div>
+        @endif
+
+        <button type="button"
+                class="od-reel-play absolute inset-0 grid place-items-center bg-[color:var(--color-page)]/35
+                       transition hover:bg-[color:var(--color-page)]/20"
+                aria-label="Play {{ $video->label() }} on Instagram">
+            <span class="w-14 h-14 rounded-full bg-[color:var(--color-page)]/75 border border-[color:var(--color-line)]
+                         grid place-items-center text-gold-light">
+                <svg class="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </span>
+        </button>
+
+        {{-- Said plainly, so a tap is never a surprise: this one goes to
+             Instagram, and Instagram will know she watched it. --}}
+        <span class="od-reel-mark pointer-events-none absolute top-3 left-3 flex items-center gap-1.5
+                     rounded-full bg-[color:var(--color-page)]/75 border border-[color:var(--color-line)]
+                     px-2.5 py-1 text-[0.65rem] uppercase tracking-[0.12em] text-ink-soft">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+            Instagram
+        </span>
+
+        @if ($video->caption)
+            <figcaption class="od-reel-caption pointer-events-none absolute bottom-0 inset-x-0 p-4
+                               bg-gradient-to-t from-[color:var(--color-page)] to-transparent
+                               text-sm text-ink-soft">
+                {{ $video->caption }}
+            </figcaption>
+        @endif
+
+        <noscript>
+            <a href="{{ $video->watchUrl() }}" target="_blank" rel="noopener"
+               class="absolute inset-0 grid place-items-end p-4 text-sm text-gold-light">
+                Watch on Instagram
+            </a>
+        </noscript>
     </figure>
 @endif

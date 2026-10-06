@@ -119,7 +119,11 @@ class VideoTest extends TestCase
 
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertSame(2, substr_count($html, 'data-od-video'));
+        // Either kind counts towards the limit — they share the rail.
+        $this->assertSame(
+            2,
+            substr_count($html, 'data-od-video') + substr_count($html, 'data-od-reel'),
+        );
     }
 
     /* ------------------------------------------- what the browser is given */
@@ -236,6 +240,153 @@ class VideoTest extends TestCase
         $film->product->forceDelete();
 
         $this->assertDatabaseMissing('videos', ['id' => $film->id]);
+    }
+
+    /* ------------------------------------------------------ Instagram reels */
+
+    public function test_an_instagram_link_is_understood_however_it_was_copied(): void
+    {
+        // All of these are the same post. The address copied out of the app
+        // carries a tracking query, sometimes the account name, and says reel,
+        // reels, p or tv depending on where it was copied from.
+        $same = [
+            'https://www.instagram.com/reel/C8xYz_1AbCd/',
+            'https://www.instagram.com/reels/C8xYz_1AbCd',
+            'https://instagram.com/p/C8xYz_1AbCd/?utm_source=ig_web_copy_link',
+            'https://www.instagram.com/tv/C8xYz_1AbCd/',
+            'https://www.instagram.com/ojasvidrapes/reel/C8xYz_1AbCd/?igsh=MXY%3D',
+        ];
+
+        foreach ($same as $url) {
+            $this->assertSame(
+                'C8xYz_1AbCd',
+                (new Video(['url' => $url]))->instagramCode(),
+                "Did not understand: {$url}",
+            );
+        }
+    }
+
+    public function test_something_that_is_not_a_reel_is_not_treated_as_one(): void
+    {
+        foreach ([
+            'https://www.instagram.com/ojasvidrapes/',   // an account, not a post
+            'https://cdn.example.in/film.mp4',
+            'https://www.youtube.com/watch?v=abc',
+            '',
+        ] as $url) {
+            $this->assertNull((new Video(['url' => $url]))->instagramCode(), $url);
+        }
+    }
+
+    public function test_a_reel_shows_as_a_still_and_fetches_nothing_from_instagram(): void
+    {
+        Video::query()->delete();
+
+        Video::create([
+            'title' => 'From our Instagram',
+            'url' => 'https://www.instagram.com/reel/C8xYz_1AbCd/',
+            'on_home' => true,
+        ]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        /*
+         * The promise this is here to keep: a page with four reels on it must
+         * make no request to Instagram as it opens. Their embed brings scripts
+         * and cookies, and it costs a shopper on a slow line more than the
+         * whole rest of the page.
+         */
+        $this->assertStringNotContainsString('<iframe', $html);
+        $this->assertStringNotContainsString('instagram.com/embed.js', $html);
+        $this->assertStringNotContainsString('cdninstagram', $html);
+
+        // The address is on the page for the tap to use, and nothing more.
+        $this->assertStringContainsString('data-od-reel', $html);
+        $this->assertStringContainsString('instagram.com/reel/C8xYz_1AbCd/embed/', $html);
+    }
+
+    public function test_an_uploaded_film_is_still_played_by_the_shop_itself(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // The two kinds live side by side: ours autoplays, Instagram's waits
+        // for a tap. Neither turns into the other.
+        $this->assertStringContainsString('data-od-video', $html);
+        $this->assertStringContainsString('data-od-reel', $html);
+    }
+
+    public function test_a_reel_can_belong_to_a_saree_too(): void
+    {
+        Video::query()->delete();
+
+        $saree = $this->aSaree();
+
+        Video::create([
+            'product_id' => $saree->id,
+            'title' => 'Worn at a wedding',
+            'url' => 'https://www.instagram.com/reel/C8xYz_1AbCd/',
+            'on_home' => false,
+        ]);
+
+        $this->get(route('product', $saree->slug))
+            ->assertOk()
+            ->assertSee('Worn at a wedding', false)
+            ->assertSee('data-od-reel', false);
+    }
+
+    public function test_a_reel_takes_the_sarees_photograph_as_its_still(): void
+    {
+        $saree = Product::published()->has('images')->firstOrFail();
+
+        $reel = Video::create([
+            'product_id' => $saree->id,
+            'url' => 'https://www.instagram.com/reel/C8xYz_1AbCd/',
+        ]);
+
+        // Instagram does not hand out the cover frame, so without this a reel
+        // would be a blank rectangle until somebody tapped it.
+        $this->assertSame($saree->firstImage()->url, $reel->posterUrl());
+    }
+
+    public function test_a_page_link_is_refused_with_a_reason(): void
+    {
+        $admin = User::create([
+            'name' => 'OJASVI', 'email' => 'owner@example.test',
+            'password' => 'long-enough-for-this', 'is_admin' => true,
+        ]);
+
+        \Livewire\Livewire::actingAs($admin)
+            ->test(\App\Filament\Resources\Videos\Pages\CreateVideo::class)
+            ->fillForm([
+                'title' => 'A YouTube page',
+                // A page, not a film: it would show a shopper nothing at all.
+                'url' => 'https://www.youtube.com/watch?v=abc',
+                'position' => 0,
+            ])
+            ->call('create')
+            ->assertHasFormErrors(['url']);
+    }
+
+    public function test_an_instagram_link_is_accepted(): void
+    {
+        $admin = User::create([
+            'name' => 'OJASVI', 'email' => 'owner@example.test',
+            'password' => 'long-enough-for-this', 'is_admin' => true,
+        ]);
+
+        \Livewire\Livewire::actingAs($admin)
+            ->test(\App\Filament\Resources\Videos\Pages\CreateVideo::class)
+            ->fillForm([
+                'title' => 'Pasted from the app',
+                'url' => 'https://www.instagram.com/reel/C8xYz_1AbCd/?igsh=MXY%3D',
+                'position' => 0,
+                'is_visible' => true,
+                'on_home' => true,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('videos', ['title' => 'Pasted from the app']);
     }
 
     public function test_the_upload_limit_offered_never_exceeds_what_the_server_takes(): void
