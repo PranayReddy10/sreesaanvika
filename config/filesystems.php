@@ -38,10 +38,27 @@ return [
             'report' => false,
         ],
 
+        /*
+         * Photographs and films the shop uploads.
+         *
+         * Normally these live outside the web root and are reached through the
+         * symlink `php artisan storage:link` makes. Some shared hosts forbid
+         * symlinks outright — Hostinger disables PHP's symlink() and exec(),
+         * so that command cannot run at all — and on a few the web server will
+         * not follow one even if it exists.
+         *
+         * Set SHOP_UPLOADS_IN_PUBLIC=true there and uploads are written
+         * straight into public/uploads instead, which needs no symlink. The
+         * paths stored against each saree are relative to this root either
+         * way, so nothing in the database changes; only the files move.
+         */
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'root' => env('SHOP_UPLOADS_IN_PUBLIC', false)
+                ? public_path('uploads')
+                : storage_path('app/public'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/')
+                .(env('SHOP_UPLOADS_IN_PUBLIC', false) ? '/uploads' : '/storage'),
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

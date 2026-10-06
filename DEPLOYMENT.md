@@ -213,15 +213,44 @@ than failing with a SQL error.
 If `migrate` says **"Base table or view not found"**, that is this mistake —
 run `php artisan migrate --force` and then seed again.
 
-`storage:link` has to point at the real document root. If it refuses or the
-symlink does not work on your plan, make the folder by hand instead:
+**`storage:link` will not run on Hostinger.** It answers
 
-```sh
-ln -s ~/ojasvi/storage/app/public ~/domains/ojasvidrapes.in/public_html/storage
+```
+Call to undefined function Illuminate\Filesystem\exec()
 ```
 
-Photographs are uploaded to `storage/app/public` and served through that link.
-Without it, every product image is a broken square.
+because the host disables PHP's `symlink()`, so Laravel falls back to `exec()`,
+which is disabled too. Nothing is wrong with the shop; make the link from the
+shell instead, where neither restriction applies:
+
+```sh
+cd ~/domains/ojasvidrapes.in/public_html/public
+ln -s ../storage/app/public storage
+```
+
+Check it with `ls -la storage` — it should point at `../storage/app/public`.
+
+Photographs and films are uploaded to `storage/app/public` and served through
+that link. Without it, every product image is a broken square.
+
+**If symlinks are forbidden altogether,** or the web server will not follow
+one, skip them entirely. In `.env`:
+
+```ini
+SHOP_UPLOADS_IN_PUBLIC=true
+```
+
+Uploads then go straight to `public/uploads`, which needs no link. Move what
+is already there and clear the cached config:
+
+```sh
+mkdir -p public/uploads
+cp -a storage/app/public/. public/uploads/
+php artisan config:clear && php artisan config:cache
+```
+
+The paths recorded against each saree are relative to whichever of the two is
+in use, so nothing in the database changes — only the files move.
 
 ### Permissions
 
