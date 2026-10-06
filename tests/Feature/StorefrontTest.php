@@ -137,6 +137,41 @@ class StorefrontTest extends TestCase
     }
 
     /**
+     * Every slide holds the front page open, not only the first.
+     *
+     * The slides used to be the first one in the flow of the page with the
+     * rest laid over it absolutely, so showing the second sent the first to
+     * display:none and the section collapsed to nothing at all: the arrows
+     * jumped up under the header and the sarees below rode up through the
+     * photograph. Measured at 0 pixels tall in a browser before the fix and
+     * 738 after, on every slide.
+     *
+     * Checked in the markup because the fault is in the layout, where this
+     * suite cannot see — but it has exactly one cause, and this is it.
+     */
+    public function test_no_slide_is_laid_over_the_others(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $slides = \App\Models\Section::where('key', 'hero')->first()?->slides->count() ?? 0;
+
+        $this->assertGreaterThan(1, $slides, 'the front page needs more than one slide to prove this');
+
+        // One cell, every slide in it.
+        $this->assertSame(
+            $slides,
+            substr_count($html, 'grid-area: 1 / 1'),
+            'every slide must sit in the same grid cell',
+        );
+
+        $this->assertStringNotContainsString(
+            'x-transition.opacity.duration.600ms" class="absolute inset-0"',
+            $html,
+            'a slide laid over the others cannot hold the section open',
+        );
+    }
+
+    /**
      * The phone menu and the search sheet are moved out of the header.
      *
      * Both are written inside it and both cover the screen, but the header is

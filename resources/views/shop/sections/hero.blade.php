@@ -63,9 +63,21 @@
     class="relative select-none"
     style="touch-action: pan-y"
 >
+    {{--
+        Every slide in the same grid cell, rather than the first one in the
+        flow of the page and the rest laid over it absolutely.
+
+        That was the old arrangement, and it meant only the first slide held
+        the section open: show the second and the first went display:none,
+        the section collapsed to nothing, the arrows jumped up under the
+        header and the sarees below rode up through the photograph. Stacked
+        in one cell, whichever slide is showing gives the section its height,
+        and they are all the same height anyway.
+    --}}
+    <div class="grid">
     @foreach ($slides as $k => $slide)
         <div x-show="i === {{ $k }}" x-transition.opacity.duration.600ms
-             class="{{ $k === 0 ? '' : 'absolute inset-0' }}">
+             style="grid-area: 1 / 1">
             <div class="relative h-[72vh] min-h-[460px] md:h-[82vh]">
                 @if ($slide->image)
                     <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($slide->image) }}"
@@ -109,6 +121,7 @@
             </div>
         </div>
     @endforeach
+    </div>
 
     @if ($slides->count() > 1)
         {{-- And something to press on a wide screen, where there is nothing to
