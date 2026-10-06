@@ -1,0 +1,57 @@
+/**
+ * Order screen: the delivery panel and the orders-list pill.
+ */
+
+.odd-box p { margin: 0 0 14px; }
+.odd-box label { display: block; margin-bottom: 4px; }
+.odd-box .description { font-size: 11px; color: #787c82; }
+
+.odd-track-link {
+	display: inline-block;
+	margin-top: 6px;
+	font-size: 12px;
+}
+
+.odd-history {
+	margin: 0;
+	max-height: 220px;
+	overflow-y: auto;
+	border: 1px solid #e0e0e0;
+	border-radius: 3px;
+	padding: 8px 10px;
+	background: #fbfbfb;
+}
+
+.odd-history li {
+	margin: 0 0 9px;
+	padding-bottom: 9px;
+	border-bottom: 1px solid #f0f0f0;
+	font-size: 12px;
+	line-height: 1.45;
+}
+
+.odd-history li:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+.odd-history__when { display: block; color: #787c82; font-size: 11px; }
+.odd-history__what { display: block; font-weight: 600; }
+.odd-history__note { display: block; color: #50575e; }
+
+/* Orders list */
+.odd-pill {
+	display: inline-block;
+	padding: 2px 9px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.7;
+	background: #f0f0f1;
+	color: #50575e;
+	white-space: nowrap;
+}
+
+.odd-pill--dispatched,
+.odd-pill--transit { background: #e6f0fb; color: #1c4e80; }
+.odd-pill--out { background: #fff3d6; color: #8a5b00; }
+.odd-pill--delivered { background: #e3f4ea; color: #14663c; }
+.odd-pill--failed,
+.odd-pill--returned,
+.odd-pill--cancelled { background: #fbeaea; color: #8a1f1f; }

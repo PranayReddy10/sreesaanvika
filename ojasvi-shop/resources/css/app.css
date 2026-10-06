@@ -1,0 +1,240 @@
+@import 'tailwindcss';
+@import '../../public/fonts/fonts.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views';
+
+/*
+ * OJASVI.
+ *
+ * Aubergine and gold, carried over from the shop's own site rather than
+ * invented again: a deep plum page, gold for anything that means money or
+ * action, and a serif for headings so the shop reads as a saree house and not
+ * as a software product.
+ */
+@theme {
+    --font-sans: 'Jost', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-head: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+
+    --color-page: #140a12;
+    --color-page-alt: #1a0d17;
+    --color-surface: #21121d;
+    --color-surface-2: #2b1826;
+    --color-surface-3: #3a2233;
+
+    --color-gold: #d9a441;
+    --color-gold-light: #f0d08a;
+    --color-gold-deep: #a97a26;
+    --color-maroon: #7b1e3b;
+    --color-marigold: #e8952f;
+
+    --color-ink: #f4eaee;
+    --color-ink-soft: #ded0d6;
+    --color-ink-muted: #ab99a2;
+    --color-ink-faint: #7d6d76;
+
+    --color-line: rgba(217, 164, 65, 0.18);
+    --color-line-soft: rgba(244, 234, 238, 0.09);
+
+    --shadow-gold: 0 14px 40px -14px rgba(217, 164, 65, 0.35);
+    --shadow-lift: 0 24px 60px -30px rgba(0, 0, 0, 0.85);
+
+    --radius-card: 14px;
+}
+
+@layer base {
+    /* Alpine hides these until it has booted, so a menu never flashes open. */
+    [x-cloak] { display: none !important; }
+
+    html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        background-color: var(--color-page);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        /* A saree photograph is the point of every page; nothing here should
+           pull the eye off one. */
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+        font-family: var(--font-head);
+        font-weight: 500;
+        letter-spacing: 0.01em;
+    }
+
+    ::selection {
+        background: var(--color-gold);
+        color: var(--color-page);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-gold);
+        outline-offset: 3px;
+    }
+
+    /* Thin, gold, and only where a list actually scrolls. */
+    .od-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-gold-deep) transparent;
+    }
+    .od-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+    .od-scroll::-webkit-scrollbar-thumb { background: var(--color-gold-deep); border-radius: 99px; }
+}
+
+@layer components {
+    .od-wrap {
+        width: 100%;
+        max-width: 1280px;
+        margin-inline: auto;
+        padding-inline: 1rem;
+    }
+
+    @media (min-width: 768px) {
+        .od-wrap { padding-inline: 2rem; }
+    }
+
+    /* The small gold capitals above a heading. */
+    .od-eyebrow {
+        font-size: 0.6875rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--color-gold);
+    }
+
+    .od-rule {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--color-line), transparent);
+    }
+
+    .od-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.75rem;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+        cursor: pointer;
+    }
+
+    .od-btn-gold {
+        background: linear-gradient(135deg, var(--color-gold-deep), var(--color-gold-light) 45%, var(--color-gold));
+        color: #2a1b0a;
+        box-shadow: var(--shadow-gold);
+    }
+
+    .od-btn-gold:hover { transform: translateY(-1px); }
+    .od-btn-gold:disabled { opacity: 0.55; transform: none; cursor: not-allowed; }
+
+    .od-btn-ghost {
+        border: 1px solid var(--color-line);
+        color: var(--color-ink);
+        background: transparent;
+    }
+
+    .od-btn-ghost:hover {
+        border-color: var(--color-gold);
+        color: var(--color-gold-light);
+    }
+
+    .od-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-line-soft);
+        border-radius: var(--radius-card);
+    }
+
+    .od-input {
+        width: 100%;
+        background: var(--color-surface-2);
+        border: 1px solid var(--color-line-soft);
+        border-radius: 10px;
+        padding: 0.75rem 0.9rem;
+        color: var(--color-ink);
+        font-size: 0.9375rem;
+    }
+
+    .od-input::placeholder { color: var(--color-ink-faint); }
+    .od-input:focus { border-color: var(--color-gold); outline: none; }
+
+    .od-label {
+        display: block;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--color-ink-muted);
+        margin-bottom: 0.4rem;
+    }
+
+    /* A saree photograph: tall, because that is the shape of the thing. */
+    .od-shot {
+        aspect-ratio: 3 / 4;
+        object-fit: cover;
+        width: 100%;
+        background: var(--color-surface-2);
+    }
+}
+
+@layer components {
+    .od-toast {
+        position: fixed;
+        left: 50%;
+        bottom: 1.25rem;
+        z-index: 60;
+        transform: translate(-50%, 1.5rem);
+        opacity: 0;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        max-width: calc(100vw - 2rem);
+        padding: 0.875rem 1.25rem;
+        border-radius: 999px;
+        background: var(--color-surface-2);
+        border: 1px solid var(--color-line);
+        box-shadow: var(--shadow-lift);
+        font-size: 0.875rem;
+    }
+
+    .od-toast.is-in { opacity: 1; transform: translate(-50%, 0); }
+
+    .od-toast a {
+        color: var(--color-gold-light);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.6875rem;
+        white-space: nowrap;
+    }
+}
+
+@layer components {
+    /* The play badge goes once the film is actually running. */
+    .od-video.is-playing .od-video-play { opacity: 0; pointer-events: none; }
+    .od-video-play { opacity: 1; transition: opacity .3s ease; }
+    .od-video-play:hover { background: rgba(20, 10, 18, 0.2); }
+}
+
+@layer utilities {
+    .od-fade-up {
+        animation: od-fade-up 0.5s ease both;
+    }
+
+    @keyframes od-fade-up {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .od-fade-up { animation: none; }
+        html { scroll-behavior: auto; }
+    }
+}
