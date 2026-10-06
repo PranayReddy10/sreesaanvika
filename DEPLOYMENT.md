@@ -44,22 +44,51 @@ step, the shop goes up with no styling at all.
 
 ---
 
-## 3. Upload
+## 3. Where the files go
 
-The important part: **`public/` is the document root, and nothing else should
-be reachable from the web.**
+Two arrangements work. Hostinger's cheaper plans give you one writable
+directory — `public_html` — and no way to move the document root, so the
+second is the one most shops end up using. It is fully supported.
 
-Upload so that the server looks like this:
+### Everything inside public_html (what most Hostinger plans allow)
+
+Clone or upload the repository so that `public_html` *is* the application:
+
+```
+domains/ojasvidrapes.in/public_html/
+├── .htaccess          ← ships with the shop; this is what makes it work
+├── app/
+├── bootstrap/
+├── config/
+├── database/
+├── public/            ← index.php lives in here
+├── resources/
+├── routes/
+├── storage/
+├── vendor/
+├── artisan
+└── .env
+```
+
+Nothing to edit. The `.htaccess` at the top sends every request into
+`public/`, where Laravel's front controller is, and refuses `.env`,
+`composer.json`, the logs and the whole of `app/`, `config/`, `vendor/` and
+the rest. `git pull` keeps working exactly as it is.
+
+It depends on `mod_rewrite`, which Hostinger has. If the shop answers **403**,
+that file is missing or is being ignored — see the troubleshooting section.
+
+### The application above the web root (better, where the plan allows it)
+
+If you can move the document root, or put files outside `public_html`, this is
+the stronger arrangement because the application is not merely refused, it is
+not there at all:
 
 ```
 /home/uXXXXXXX/
 ├── ojasvi/              ← the whole application, OUTSIDE public_html
 │   ├── app/
-│   ├── bootstrap/
 │   ├── config/
-│   ├── database/
-│   ├── resources/
-│   ├── routes/
 │   ├── storage/
 │   ├── vendor/
 │   ├── artisan
@@ -67,45 +96,30 @@ Upload so that the server looks like this:
 └── domains/ojasvidrapes.in/public_html/   ← only what is in public/
     ├── build/
     ├── brand/
-    ├── fonts/
     ├── index.php
     └── .htaccess
 ```
 
-Then edit `public_html/index.php` and point its two `require` lines at the
-application folder:
+Then edit `public_html/index.php` so its two `require` lines point at the
+application. Use absolute paths — counting `../` wrong is the most common way
+a Laravel site ends up serving its own `.env`:
 
 ```php
-require __DIR__.'/../../../ojasvi/vendor/autoload.php';
-$app = require_once __DIR__.'/../../../ojasvi/bootstrap/app.php';
+require '/home/uXXXXXXX/ojasvi/vendor/autoload.php';
+$app = require_once '/home/uXXXXXXX/ojasvi/bootstrap/app.php';
 ```
 
-Count the `../` carefully against your own paths. Getting this wrong is the
-single most common way a Laravel site on shared hosting ends up serving its
-own `.env` to the public.
+Some plans also let you point the domain at a subdirectory, under
+**Websites → Manage → Advanced**. Setting the root to `public_html/public`
+gives you this arrangement with nothing moved and nothing edited.
 
-If your plan will not let you put the application outside `public_html`, put it
-in `public_html/ojasvi/` and add this to `public_html/.htaccess` **before**
-anything else:
+### Either way, check it
 
-```apache
-RewriteEngine On
-RewriteRule ^ojasvi/(?!public/) - [F,L]
-```
+Open `https://ojasvidrapes.in/.env` in a browser. You want a **403 or 404**.
 
-That is a second-best arrangement. Prefer the first.
-
-**How to tell which you have.** Open `https://ojasvidrapes.in/.env` in a
-browser. You should get a 404 or a 403. If you see the file — your database
-password, your Razorpay secret and your `APP_KEY` — stop, move the application
-out of the web root, and then change every one of those secrets, because they
-have been readable by anybody who asked.
-
-The application ships a root `.htaccess` that refuses `.env`, `composer.json`,
-the logs and the whole of `app/`, `config/`, `storage/` and `vendor/`. It costs
-nothing when the layout is right, and it is the difference between a mistake
-and a disaster when it is not. It is not a substitute for the right layout: a
-server with `AllowOverride None` ignores it entirely.
+If you can see the file — your database password, your Razorpay secret and
+your `APP_KEY` — stop. Fix the layout, then change every one of those secrets,
+because they have been readable by anybody who asked for them.
 
 ### Composer
 
@@ -409,6 +423,28 @@ php artisan up
 ---
 
 ## When something is wrong
+
+**403 Forbidden on the home page.** The commonest first-deploy fault, and it
+means the web server found no page to serve at the top of `public_html` —
+Laravel's `index.php` is inside `public/`, not at the root.
+
+Check, in this order:
+
+1. Is `.htaccess` actually there? `ls -la ~/domains/ojasvidrapes.in/public_html/.htaccess`.
+   An upload by FTP will silently skip dotfiles unless you turn on "show
+   hidden files". If it is missing, pull again or upload it by hand.
+2. Does `https://ojasvidrapes.in/public/` load the shop? If it does, the files
+   are all fine and only the rewrite is not happening — which is the same
+   answer: the `.htaccess` is missing or being ignored.
+3. Still 403 with the file in place? `AllowOverride` may be off for the
+   directory. Ask Hostinger support to enable `.htaccess` overrides, or point
+   the domain at `public_html/public` under **Websites → Manage → Advanced**,
+   which needs no rewriting at all.
+
+**Every product photograph is a broken square, or 403.** `php artisan
+storage:link` has not been run, or the symlink it makes is not being followed.
+Run it, and if the images are still refused, add `Options +FollowSymLinks` at
+the top of `public_html/.htaccess`.
 
 **A blank white page.** Look in `storage/logs/laravel-*.log`. Nine times in
 ten it is a permission on `storage/`, or `APP_KEY` never generated.

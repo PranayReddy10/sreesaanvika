@@ -1,22 +1,49 @@
-# A last line of defence, not a layout.
+# Serving the shop when the whole application sits in public_html.
 #
-# The application is meant to live OUTSIDE the web root, with only the
-# contents of public/ inside it — see DEPLOYMENT.md, step 3. If it has ended
-# up inside public_html anyway, which is the easiest mistake to make on shared
-# hosting, this file stops the web server handing out the shop's secrets.
+# Laravel expects only public/ to be web-reachable, with the rest of the
+# application above the web root. Shared hosting often will not allow that —
+# everything has to live in public_html — so this file does the same job from
+# inside it: it sends every request into public/, where Laravel's front
+# controller is, and refuses the files that were never meant to be fetched.
 #
-# It costs nothing where the layout is right, because nothing ever asks the
-# web server for these paths.
+# Where the application IS above the web root, this file is not in the web
+# root either, so it is simply never read. It costs nothing to keep.
 
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # The application's own directories. With the rewrite below these would
+    # 404 anyway, since none of them exists inside public/ — this is belt and
+    # braces for a server that answers them some other way.
+    #
+    # storage is deliberately NOT in this list. A request for /storage/… is
+    # for the photographs, which live at public/storage (the symlink made by
+    # `php artisan storage:link`). Blocking it here would blank every product
+    # image on the site. The application's own storage/ directory is out of
+    # reach regardless, because the rewrite sends that path into public/ too.
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|tests|vendor|node_modules)(/|$) - [F,L]
+
+    # Everything else is served from public/, exactly as if that were the
+    # document root. The condition stops it rewriting what it has already
+    # rewritten.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # No rewriting available, so nothing above applies and the shop will not
+    # serve from here at all. Refuse the private directories outright rather
+    # than leave them readable.
+    RedirectMatch 404 ^/(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules)(/|$)
+</IfModule>
+
+# Refused whatever else happens, because this does not depend on rewriting.
+#
 # The .env holds the database password, the Razorpay secret and the app key.
-# A single request for it is the whole shop.
-<FilesMatch "^\.env|^\.env\..*|composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|\.gitignore|\.gitattributes|.*\.(log|sqlite|sql|md|yml|yaml|sh)$">
+# A single successful request for it is the whole shop.
+<FilesMatch "^\.env|^\.env\..*|composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|vite\.config\.js|\.gitignore|\.gitattributes|\.editorconfig|\.npmrc|\.styleci\.yml|.*\.(log|sqlite|sql|md|yml|yaml|sh)$">
     Require all denied
 </FilesMatch>
 
-# Source, configuration, migrations, tests and the vendor tree. None of it is
-# meant to be read over HTTP; only public/ is.
-RedirectMatch 404 ^/(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules)(/|$)
-
-# Never list a directory that has no index.
+# Never list a directory that has no index page.
 Options -Indexes
