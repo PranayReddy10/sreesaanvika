@@ -166,11 +166,68 @@ class GoogleStats
         });
     }
 
+    /**
+     * What Google Ads cost and brought in — through Analytics, not the Ads API.
+     *
+     * The Google Ads API wants a developer token that Google approves by hand,
+     * over weeks, which for a shop with twelve sarees is not a reasonable
+     * thing to ask. Linking Google Ads to Analytics is four clicks, and
+     * Analytics then reports the cost, the clicks and the return on it under
+     * metrics of its own — the same numbers, by a door that is already open.
+     *
+     * Null when the two are not linked: Analytics refuses the whole report
+     * rather than returning the other metrics, and that refusal is the signal.
+     *
+     * @return array{cost: float, clicks: int, impressions: int, roas: ?float}|null
+     */
+    public function ads(int $days): ?array
+    {
+        if ($this->account === null || $this->propertyId() === '') {
+            return null;
+        }
+
+        return Cache::remember("google:ads:{$this->propertyId()}:{$days}", now()->addMinutes(self::KEEP), function () use ($days) {
+            $token = $this->account->token(ServiceAccount::ANALYTICS);
+
+            if ($token === null) {
+                return null;
+            }
+
+            $response = Http::withToken($token)
+                ->timeout(20)
+                ->post("https://analyticsdata.googleapis.com/v1beta/properties/{$this->propertyId()}:runReport", [
+                    'dateRanges' => [['startDate' => "{$days}daysAgo", 'endDate' => 'today']],
+                    'metrics'    => [
+                        ['name' => 'advertiserAdCost'],
+                        ['name' => 'advertiserAdClicks'],
+                        ['name' => 'advertiserAdImpressions'],
+                        ['name' => 'returnOnAdSpend'],
+                    ],
+                ]);
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $row = ($response->json('rows') ?? [[]])[0]['metricValues'] ?? [];
+
+            $cost = (float) ($row[0]['value'] ?? 0);
+
+            return [
+                'cost'        => $cost,
+                'clicks'      => (int) ($row[1]['value'] ?? 0),
+                'impressions' => (int) ($row[2]['value'] ?? 0),
+                'roas'        => $cost > 0 ? (float) ($row[3]['value'] ?? 0) : null,
+            ];
+        });
+    }
+
     /** So a shop that has just pasted its key does not wait half an hour to see. */
     public function forget(): void
     {
         foreach ([7, 30, 90, 365] as $days) {
             Cache::forget("google:ga4:{$this->propertyId()}:{$days}");
+            Cache::forget("google:ads:{$this->propertyId()}:{$days}");
             Cache::forget("google:gsc:{$this->site()}:{$days}");
         }
     }

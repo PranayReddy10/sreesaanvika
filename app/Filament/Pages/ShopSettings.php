@@ -90,6 +90,9 @@ class ShopSettings extends Page implements HasForms
         'google_service_account'      => ['analytics', 'text'],
         'google_ga4_property'         => ['analytics', 'string'],
         'google_search_console_site'  => ['analytics', 'string'],
+
+        'meta_ad_account'             => ['analytics', 'string'],
+        'meta_access_token'           => ['analytics', 'text'],
     ];
 
     /**
@@ -366,6 +369,28 @@ class ShopSettings extends Page implements HasForms
                                         'Exactly as Search Console spells it: <code>sc-domain:ojasvidrapes.in</code> '
                                         . 'for a domain property, or <code>https://ojasvidrapes.in/</code> for a URL one.'
                                     )),
+                            ]),
+
+                        Section::make('What the advertising costs')
+                            ->description('Spend against sales, on the front page beside everything else. Google Ads comes through Analytics — link the two in Analytics → Admin → Google Ads links and nothing more is needed here. Instagram and Facebook need their own two.')
+                            ->collapsed()
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('meta_ad_account')
+                                    ->label('Meta ad account')
+                                    ->placeholder('act_1234567890')
+                                    ->maxLength(60)
+                                    ->helperText('Ads Manager, top left. With or without the act_ in front.'),
+
+                                Textarea::make('meta_access_token')
+                                    ->label('Meta access token')
+                                    ->rows(3)
+                                    ->helperText(new HtmlString(
+                                        'A <strong>long-lived</strong> token with <code>ads_read</code>, from a system '
+                                        . 'user in Business settings. A token from the Graph Explorer lasts an hour '
+                                        . 'and this panel will be empty again by tomorrow. It is a password.'
+                                    ))
+                                    ->columnSpanFull(),
                             ]),
                     ]),
                 ])->persistTabInQueryString(),

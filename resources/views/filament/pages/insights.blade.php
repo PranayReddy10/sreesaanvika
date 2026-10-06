@@ -2,6 +2,7 @@
     $h = $this->headline();
     $google = $this->google();
     $about = $this->whoIsAbout();
+    $ads = $this->marketing();
     $discounts = $this->discounts();
     $empty = $this->emptySearches();
     $cold = $this->lookedAtNotBought();
@@ -224,6 +225,99 @@
                 </div>
             @endforeach
         @endif
+    </x-filament::section>
+
+    <x-filament::section>
+        <x-slot name="heading">What the advertising cost</x-slot>
+        <x-slot name="description">
+            Spend against what came back. The only figure that settles whether advertising is worth
+            doing, and it normally lives in two dashboards nobody opens.
+        </x-slot>
+
+        <div class="od-two">
+            <div>
+                <div class="od-stat-label" style="margin-bottom:.5rem">Google</div>
+
+                @if ($ads['google'])
+                    <div class="od-row">
+                        <span>Spent</span>
+                        <span class="od-row-right od-strong">{{ $this->money($ads['google']['cost']) }}</span>
+                    </div>
+                    <div class="od-row">
+                        <span>Clicks</span>
+                        <span class="od-row-right od-muted">{{ number_format($ads['google']['clicks']) }}</span>
+                    </div>
+                    <div class="od-row">
+                        <span>Times shown</span>
+                        <span class="od-row-right od-muted">{{ number_format($ads['google']['impressions']) }}</span>
+                    </div>
+                    <div class="od-row">
+                        <span>Back for every rupee</span>
+                        <span class="od-row-right od-strong">
+                            {{ $ads['google']['roas'] === null ? '—' : '₹'.number_format($ads['google']['roas'], 2) }}
+                        </span>
+                    </div>
+                @elseif (! $ads['googleSet'])
+                    <p class="od-empty">
+                        Needs the same key as the panel below — Settings → Analytics.
+                    </p>
+                @else
+                    <p class="od-empty">
+                        Nothing from Google Ads. Link it to Analytics — Analytics → Admin →
+                        Google Ads links — and these fill in by themselves. Nothing else is needed:
+                        the Ads API wants a developer token Google approves by hand, and this is the
+                        same figures by a door that is already open.
+                    </p>
+                @endif
+            </div>
+
+            <div>
+                <div class="od-stat-label" style="margin-bottom:.5rem">Instagram &amp; Facebook</div>
+
+                @if ($ads['meta'])
+                    <div class="od-row">
+                        <span>Spent</span>
+                        <span class="od-row-right od-strong">{{ $this->money($ads['meta']['spend']) }}</span>
+                    </div>
+                    <div class="od-row">
+                        <span>Clicks</span>
+                        <span class="od-row-right od-muted">
+                            {{ number_format($ads['meta']['clicks']) }}
+                            <span class="od-sub">of {{ number_format($ads['meta']['impressions']) }} shown</span>
+                        </span>
+                    </div>
+                    <div class="od-row">
+                        <span>Sales it claims</span>
+                        <span class="od-row-right od-muted">
+                            {{ number_format($ads['meta']['purchases']) }} · {{ $this->money($ads['meta']['value']) }}
+                        </span>
+                    </div>
+                    <div class="od-row">
+                        <span>Back for every rupee</span>
+                        <span class="od-row-right od-strong">
+                            {{ $ads['meta']['roas'] === null ? '—' : '₹'.number_format($ads['meta']['roas'], 2) }}
+                        </span>
+                    </div>
+                @elseif (! $ads['metaSet'])
+                    <p class="od-empty">
+                        Needs an ad account and a long-lived token — Settings → Analytics →
+                        <strong>What the advertising costs</strong>.
+                    </p>
+                @else
+                    <p class="od-empty">
+                        Meta would not answer. Nine times in ten the token has expired: one from the
+                        Graph Explorer lasts an hour, and this wants a long-lived one from a system
+                        user with <span class="od-mono">ads_read</span>.
+                    </p>
+                @endif
+            </div>
+        </div>
+
+        <p class="od-foot" style="margin-top:1rem">
+            Both platforms count a sale their own way and both count generously — a shopper who saw a
+            reel and bought a week later is claimed by Meta and by nobody else. Read these beside
+            what the shop actually took, above, rather than instead of it.
+        </p>
     </x-filament::section>
 
     <x-filament::section>

@@ -469,7 +469,24 @@ Settings → Found on Google** and **Analytics**.
    Console's own numbers run about three days behind, so that panel stops
    three days ago and says so.
 
-7. **Turn off "Hide the whole shop from search engines"** on the day you open,
+7. **See what the advertising costs** (optional). The front page can show
+   spend against sales for both platforms.
+
+   - **Google Ads**: nothing to paste. Link it to Analytics —
+     Analytics → **Admin → Google Ads links** — and the figures arrive through
+     the same key as step 6. (The Google Ads API itself wants a developer
+     token that Google approves by hand over weeks; this is the same numbers
+     by a door that is already open.)
+   - **Instagram and Facebook**: Settings → Analytics → **What the advertising
+     costs** wants the ad account (Ads Manager, top left) and a **long-lived**
+     access token with `ads_read`, made from a system user in Meta Business
+     settings. A token from the Graph Explorer lasts an hour and the panel
+     will be empty again by tomorrow.
+
+   Both platforms count a sale their own way and both count generously. Read
+   them beside what the shop actually took, not instead of it.
+
+8. **Turn off "Hide the whole shop from search engines"** on the day you open,
    if you turned it on while building. Nothing else on this list matters until
    you do.
 

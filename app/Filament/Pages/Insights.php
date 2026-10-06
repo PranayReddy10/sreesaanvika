@@ -28,15 +28,41 @@ class Insights extends Page
 {
     protected string $view = 'filament.pages.insights';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBarSquare;
+    /*
+     * The front page of the admin, and the only one of its kind.
+     *
+     * There were two: a Dashboard with four panels on it, and Analysis with
+     * everything else. Nobody can hold a shop's state in their head across two
+     * screens — the question "is this week better than last" was answered half
+     * here and half there — and the Dashboard's four panels were the half
+     * worth seeing first. They are the top of this page now, and the stretch
+     * chosen at the top governs the whole of it.
+     */
+    protected static ?string $slug = '/';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Shop';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHome;
 
-    protected static ?string $navigationLabel = 'Analysis';
+    protected static ?string $navigationLabel = 'Dashboard';
 
-    protected static ?string $title = 'What the figures say';
+    protected static ?string $title = 'How the shop is doing';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = -1;
+
+    /** The four that were the old Dashboard, above everything else. */
+    public function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\ShopOverview::class,
+            \App\Filament\Widgets\SalesChart::class,
+            \App\Filament\Widgets\OrdersNeedingWork::class,
+            \App\Filament\Widgets\RunningLow::class,
+        ];
+    }
+
+    public function getHeaderWidgetsColumns(): int|array
+    {
+        return 2;
+    }
 
     #[Url]
     public string $period = '30';
@@ -315,6 +341,37 @@ class Insights extends Page
             'days'     => $days,
             'visitors' => $stats->visitors($days),
             'search'   => $stats->search($days),
+        ];
+    }
+
+    /* ---------------------------------------------------- what it costs */
+
+    /**
+     * What the advertising cost, and what came back.
+     *
+     * The one figure that matters is spend against sales, and it lives in two
+     * dashboards nobody opens daily — which is how a shop runs advertising for
+     * months without knowing whether it pays.
+     *
+     * Google's numbers come through Analytics rather than the Ads API: that
+     * API wants a developer token Google approves by hand over weeks, and
+     * linking Ads to Analytics is four clicks for the same figures.
+     *
+     * @return array{days: int, google: ?array, meta: ?array, metaSet: bool, googleSet: bool}
+     */
+    public function marketing(): array
+    {
+        $days = max(1, (int) $this->period);
+
+        $google = new \App\Services\Google\GoogleStats;
+        $meta = new \App\Services\Meta\MetaAds;
+
+        return [
+            'days'      => $days,
+            'googleSet' => $google->configured(),
+            'metaSet'   => $meta->configured(),
+            'google'    => $google->ads($days),
+            'meta'      => $meta->results($days),
         ];
     }
 

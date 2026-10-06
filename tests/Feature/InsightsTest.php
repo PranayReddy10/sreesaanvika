@@ -96,7 +96,7 @@ class InsightsTest extends TestCase
     {
         $this->asAdmin();
 
-        $this->get('/admin/insights')->assertOk();
+        $this->get('/admin')->assertOk();
 
         $page = Livewire::test(Insights::class)->instance();
         $headline = $page->headline();
@@ -124,7 +124,7 @@ class InsightsTest extends TestCase
     {
         $this->actingAs(User::where('is_admin', false)->firstOrFail());
 
-        $this->get('/admin/insights')->assertForbidden();
+        $this->get('/admin')->assertForbidden();
     }
 
     /* ------------------------------------------------------------ the list */

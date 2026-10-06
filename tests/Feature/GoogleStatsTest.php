@@ -149,7 +149,7 @@ class GoogleStatsTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get('/admin/insights')
+            ->get('/admin')
             ->assertOk()
             ->assertSee('What Google knows')
             ->assertSee('Not set up yet');
@@ -185,7 +185,7 @@ class GoogleStatsTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get('/admin/insights')
+            ->get('/admin')
             ->assertOk()
             ->assertSee('What Google knows')
             ->assertDontSee('Not set up yet')
