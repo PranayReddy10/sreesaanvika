@@ -38,6 +38,29 @@ class RegisterController extends Controller
         $bag->forget();
         $bag->current(false);
 
-        return redirect()->intended(route('account'));
+        return redirect()->intended($this->next($request) ?? route('account'));
+    }
+
+    /**
+     * Where she was before she was asked to make an account.
+     *
+     * Only ever back into this shop; an address somewhere else is how a form
+     * like this becomes a way of sending people to a copy of it.
+     */
+    private function next(Request $request): ?string
+    {
+        $next = trim((string) $request->input('next'));
+
+        if ($next === '' || str_starts_with($next, '//')) {
+            return null;
+        }
+
+        $host = parse_url($next, PHP_URL_HOST);
+
+        if ($host !== null && $host !== $request->getHost()) {
+            return null;
+        }
+
+        return str_starts_with($next, '/') || $host !== null ? $next : null;
     }
 }

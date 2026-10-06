@@ -195,4 +195,81 @@ class InsightsTest extends TestCase
 
         $this->get('/admin/newsletter-subscribers')->assertOk()->assertSee('reader@example.in');
     }
+
+    /**
+     * Who is about: the people the shop can name.
+     *
+     * Google counts everybody who arrived. This counts accounts — signed in
+     * now, signed in at all, and newly made — which is the half a shop can
+     * actually act on, and the half that was missing from this screen.
+     */
+    public function test_it_counts_the_people_the_shop_can_name(): void
+    {
+        $page = new \App\Filament\Pages\Insights;
+        $page->period = '30';
+
+        // Measured as a change, because the seeder has already filled the shop
+        // with customers and an absolute number here would only be testing the
+        // seeder.
+        $before = $page->whoIsAbout();
+
+        \App\Models\User::create([
+            'name' => 'Lakshmi', 'email' => 'lakshmi-about@example.in',
+            'password' => 'long-enough-for-this', 'last_login_at' => now()->subHour(),
+        ]);
+
+        $years = \App\Models\User::create([
+            'name' => 'Priya', 'email' => 'priya-about@example.in',
+            'password' => 'long-enough-for-this', 'last_login_at' => now()->subYears(2),
+        ]);
+        $years->forceFill(['created_at' => now()->subYears(2)])->save();
+
+        $after = $page->whoIsAbout();
+
+        $this->assertSame($before['signedIn'] + 1, $after['signedIn'], 'only the one who signed in this month');
+        $this->assertSame($before['joined'] + 1, $after['joined'], 'only the account made this month');
+        $this->assertSame($before['accounts'] + 2, $after['accounts'], 'both are still accounts');
+    }
+
+    /**
+     * And says so rather than showing a zero where it cannot know.
+     *
+     * Who is on the site this minute is read from the session table, which is
+     * only written when sessions are kept in the database. A shop that has
+     * changed that should be told, not shown nobody.
+     */
+    public function test_it_admits_when_it_cannot_see_who_is_on_the_site(): void
+    {
+        config(['session.driver' => 'file']);
+
+        $about = (new \App\Filament\Pages\Insights)->whoIsAbout();
+
+        $this->assertNull($about['live']);
+        $this->assertNull($about['liveNamed']);
+    }
+
+    public function test_it_counts_who_is_on_the_site_from_the_session_table(): void
+    {
+        config(['session.driver' => 'database']);
+
+        $customer = \App\Models\User::create([
+            'name' => 'Lakshmi', 'email' => 'lakshmi-live@example.in',
+            'password' => 'long-enough-for-this',
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('sessions')->insert([
+            ['id' => 'a', 'user_id' => $customer->id, 'ip_address' => '1.1.1.1', 'user_agent' => 'x',
+             'payload' => '', 'last_activity' => now()->getTimestamp()],
+            ['id' => 'b', 'user_id' => null, 'ip_address' => '1.1.1.2', 'user_agent' => 'x',
+             'payload' => '', 'last_activity' => now()->getTimestamp()],
+            // Gone home half an hour ago.
+            ['id' => 'c', 'user_id' => null, 'ip_address' => '1.1.1.3', 'user_agent' => 'x',
+             'payload' => '', 'last_activity' => now()->subMinutes(30)->getTimestamp()],
+        ]);
+
+        $about = (new \App\Filament\Pages\Insights)->whoIsAbout();
+
+        $this->assertSame(2, $about['live']);
+        $this->assertSame(1, $about['liveNamed']);
+    }
 }

@@ -21,14 +21,15 @@ class ReviewController extends Controller
 {
     public function store(Request $request, Product $product): RedirectResponse
     {
-        $signedIn = $request->user();
+        // The route will not let a guest this far. Reviews are for people with
+        // an account: it is the cheapest thing that stops a shop of twelve
+        // sarees waking up to forty reviews of somebody else's handbags.
+        $writer = $request->user();
 
         $data = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'title'  => ['nullable', 'string', 'max:120'],
             'body'   => ['required', 'string', 'min:10', 'max:2000'],
-            'name'   => [$signedIn ? 'nullable' : 'required', 'string', 'max:80'],
-            'email'  => [$signedIn ? 'nullable' : 'required', 'email', 'max:160'],
             // A field no human sees and no human fills in.
             'website' => ['prohibited'],
         ], [
@@ -36,7 +37,7 @@ class ReviewController extends Controller
             'website.prohibited' => 'Something went wrong. Please try again.',
         ]);
 
-        $email = mb_strtolower(trim($signedIn?->email ?? $data['email']));
+        $email = mb_strtolower((string) $writer->email);
 
         if (RateLimiter::tooManyAttempts('review:'.$request->ip(), 5)) {
             return $this->backToReviews($product)->with('review_error', 'That is a lot of reviews at once. Try again in an hour.');
@@ -45,16 +46,12 @@ class ReviewController extends Controller
         $order = $this->ordersFor($email, $product)->first();
 
         // One per person per saree. Somebody who has changed their mind should
-        // tell the shop, not write the same piece twice. Recognised by the
-        // account where there is one, and otherwise by the order the address
-        // placed — which is the only thing a guest leaves behind.
+        // tell the shop, not write the same piece twice. By account, and also
+        // by the order — an account made after buying as a guest is the same
+        // person.
         $already = Review::where('product_id', $product->id)
-            ->where(function ($q) use ($signedIn, $order) {
-                $q->whereRaw('1 = 0');
-
-                if ($signedIn) {
-                    $q->orWhere('user_id', $signedIn->id);
-                }
+            ->where(function ($q) use ($writer, $order) {
+                $q->where('user_id', $writer->id);
 
                 if ($order) {
                     $q->orWhere('order_id', $order->id);
@@ -71,9 +68,9 @@ class ReviewController extends Controller
 
         Review::create([
             'product_id'  => $product->id,
-            'user_id'     => $signedIn?->id,
+            'user_id'     => $writer->id,
             'order_id'    => $order?->id,
-            'name'        => trim($data['name'] ?? '') ?: ($signedIn?->name ?? 'A customer'),
+            'name'        => $writer->name ?: 'A customer',
             'rating'      => (int) $data['rating'],
             'title'       => trim((string) ($data['title'] ?? '')) ?: null,
             'body'        => trim($data['body']),
@@ -101,9 +98,9 @@ class ReviewController extends Controller
     /**
      * The orders this address has actually paid for, holding this saree.
      *
-     * Matched on the address the order was placed with rather than on the
-     * account, because most people buy as a guest and come back months later
-     * to say what they thought.
+     * Matched on the address rather than on the account, because somebody who
+     * bought as a guest and made an account afterwards is the same person and
+     * has earned the same badge.
      */
     private function ordersFor(string $email, Product $product)
     {

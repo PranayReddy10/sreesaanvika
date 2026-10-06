@@ -51,7 +51,30 @@ class SessionController extends Controller
 
         auth()->user()->forceFill(['last_login_at' => now()])->save();
 
-        return redirect()->intended(route('account'));
+        return redirect()->intended($this->next($request) ?? route('account'));
+    }
+
+    /**
+     * Where she was before she was asked to sign in.
+     *
+     * Only ever back into this shop. An address somewhere else is how a
+     * sign-in form becomes a way of sending people to a copy of it.
+     */
+    private function next(Request $request): ?string
+    {
+        $next = trim((string) $request->input('next'));
+
+        if ($next === '' || str_starts_with($next, '//')) {
+            return null;
+        }
+
+        $host = parse_url($next, PHP_URL_HOST);
+
+        if ($host !== null && $host !== $request->getHost()) {
+            return null;
+        }
+
+        return str_starts_with($next, '/') || $host !== null ? $next : null;
     }
 
     public function destroy(Request $request, CartService $bag): RedirectResponse

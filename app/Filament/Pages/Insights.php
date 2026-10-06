@@ -243,6 +243,47 @@ class Insights extends Page
         return ['offers' => $offers->all(), 'coupons' => $coupons->all()];
     }
 
+    /* ------------------------------------------------------- who is about */
+
+    /**
+     * Visitors and accounts, from the shop's own tables.
+     *
+     * Google counts everybody who arrived; this counts the ones the shop can
+     * actually name. Who is on the site this minute comes from the session
+     * table, which is only kept when sessions are stored in the database —
+     * they are on this host, but a shop that has changed it should be told
+     * that rather than shown a zero.
+     *
+     * @return array{live: ?int, liveNamed: ?int, signedIn: int, joined: int, accounts: int}
+     */
+    public function whoIsAbout(): array
+    {
+        $since = $this->since();
+
+        $live = $named = null;
+
+        if (config('session.driver') === 'database') {
+            // Five minutes, which is what everybody else means by "now".
+            $recent = DB::table(config('session.table', 'sessions'))
+                ->where('last_activity', '>=', now()->subMinutes(5)->getTimestamp());
+
+            $live = (clone $recent)->count();
+            $named = (clone $recent)->whereNotNull('user_id')->distinct()->count('user_id');
+        }
+
+        return [
+            'live'      => $live,
+            'liveNamed' => $named,
+            'signedIn'  => \App\Models\User::where('is_admin', false)
+                ->where('last_login_at', '>=', $since)
+                ->count(),
+            'joined'    => \App\Models\User::where('is_admin', false)
+                ->where('created_at', '>=', $since)
+                ->count(),
+            'accounts'  => \App\Models\User::where('is_admin', false)->count(),
+        ];
+    }
+
     /* ------------------------------------------------------ what Google knows */
 
     /**

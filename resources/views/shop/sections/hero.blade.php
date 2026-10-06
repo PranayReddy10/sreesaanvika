@@ -1,11 +1,25 @@
 @php $slides = $section->slides; @endphp
 
 @if ($slides->isNotEmpty())
+{{--
+    The front page's slides.
+
+    They changed themselves every six seconds and could be changed by pressing
+    one of the bars underneath, and that was all: a shopper who did what anyone
+    does with a picture on a phone — pushed it sideways — found it did not move.
+
+    Pointer events rather than touch ones, so the same few lines cover a finger
+    and a mouse drag. Vertical wins ties: the commonest gesture over a picture
+    that fills the screen is scrolling past it, and a slider that steals that
+    is worse than one that does not move at all.
+--}}
 <section
     x-data="{
         i: 0,
         n: {{ $slides->count() }},
         timer: null,
+        fromX: null,
+        fromY: null,
         go(to) { this.i = (to + this.n) % this.n; this.restart(); },
         restart() {
             clearInterval(this.timer);
@@ -13,11 +27,41 @@
                 this.timer = setInterval(() => this.i = (this.i + 1) % this.n, 6500);
             }
         },
+        grab(e) {
+            if (this.n < 2) return;
+            this.fromX = e.clientX;
+            this.fromY = e.clientY;
+            clearInterval(this.timer);
+        },
+        drop(e) {
+            if (this.fromX === null) return;
+
+            const x = e.clientX - this.fromX;
+            const y = e.clientY - this.fromY;
+
+            this.fromX = this.fromY = null;
+
+            // Forty-five pixels, and more sideways than up: below that it is a
+            // tap, and a tap on a slide is meant for the button on it.
+            if (Math.abs(x) > 45 && Math.abs(x) > Math.abs(y)) {
+                this.go(this.i + (x < 0 ? 1 : -1));
+
+                return;
+            }
+
+            this.restart();
+        },
     }"
     x-init="restart()"
     @mouseenter="clearInterval(timer)"
     @mouseleave="restart()"
-    class="relative"
+    @pointerdown="grab($event)"
+    @pointerup="drop($event)"
+    @pointercancel="fromX = fromY = null; restart()"
+    @keydown.window.arrow-left="go(i - 1)"
+    @keydown.window.arrow-right="go(i + 1)"
+    class="relative select-none"
+    style="touch-action: pan-y"
 >
     @foreach ($slides as $k => $slide)
         <div x-show="i === {{ $k }}" x-transition.opacity.duration.600ms
@@ -67,6 +111,26 @@
     @endforeach
 
     @if ($slides->count() > 1)
+        {{-- And something to press on a wide screen, where there is nothing to
+             push and no reason to guess that the bars below are buttons. --}}
+        <button type="button" @click="go(i - 1)" aria-label="The slide before"
+                class="hidden md:grid place-items-center absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11
+                       rounded-full bg-[color:var(--color-page)]/70 border border-[color:var(--color-line)]
+                       text-ink hover:bg-[color:var(--color-page)] transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
+            </svg>
+        </button>
+
+        <button type="button" @click="go(i + 1)" aria-label="The next slide"
+                class="hidden md:grid place-items-center absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11
+                       rounded-full bg-[color:var(--color-page)]/70 border border-[color:var(--color-line)]
+                       text-ink hover:bg-[color:var(--color-page)] transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+            </svg>
+        </button>
+
         <div class="absolute bottom-6 left-0 right-0 od-wrap flex items-center gap-2">
             @foreach ($slides as $k => $slide)
                 <button type="button" @click="go({{ $k }})"

@@ -38,7 +38,7 @@
 
         <div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
             @if ($sale && $off > 0)
-                <span class="rounded-full bg-gold px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-[color:var(--color-page)]">
+                <span class="rounded-full bg-[color:var(--color-brand)] px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-white">
                     {{ $off }}% off
                 </span>
             @endif
@@ -48,7 +48,10 @@
                     Sold out
                 </span>
             @elseif ($product->isLowStock())
-                <span class="rounded-full bg-[color:var(--color-maroon)] px-2.5 py-1 text-[0.65rem] uppercase tracking-wider text-ink">
+                {{-- Deep brown with cream on it, like everything else that is
+                     a filled shape here. It was maroon with the page's dark
+                     ink on it, which read as a smudge on a photograph. --}}
+                <span class="rounded-full bg-[color:var(--color-gold-deep)] px-2.5 py-1 text-[0.65rem] uppercase tracking-wider text-[color:var(--color-page)]">
                     {{ $stock }} left
                 </span>
             @endif

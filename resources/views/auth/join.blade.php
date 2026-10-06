@@ -9,6 +9,10 @@
 
     <form method="post" action="{{ route('join') }}" class="mt-8 space-y-4">
         @csrf
+        @if (request('next'))
+            {{-- Where she was when the shop asked her to make an account. --}}
+            <input type="hidden" name="next" value="{{ request('next') }}">
+        @endif
 
         <div>
             <label for="name" class="od-label">Your name</label>
@@ -46,7 +50,7 @@
     </form>
 
     <p class="mt-6 text-sm text-ink-muted">
-        Already have one? <a href="{{ route('sign-in') }}" class="text-gold hover:text-gold-light">Sign in</a>.
+        Already have one? <a href="{{ route('sign-in', request('next') ? ['next' => request('next')] : []) }}" class="text-gold hover:text-gold-light">Sign in</a>.
     </p>
 </div>
 @endsection

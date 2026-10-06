@@ -4,10 +4,14 @@
 @endphp
 
 @if ($bar['on'] && $bar['text'] !== '')
-    <div class="bg-[color:var(--color-maroon)] text-ink text-center text-[0.8125rem] tracking-wide">
+    {{-- Brown, not maroon. The shop's cards are two colours and so is the
+         shop; a third one across the top of every page is the thing the eye
+         catches first. Cream lettering on it at 7.2 to 1 — it was the page's
+         own dark ink before, which on a deep fill is barely there. --}}
+    <div class="bg-[color:var(--color-gold-light)] text-[color:var(--color-page)] text-center text-[0.8125rem] tracking-wide">
         <div class="od-wrap py-2">
             @if ($bar['url'])
-                <a href="{{ $bar['url'] }}" class="hover:text-gold-light transition">{{ $bar['text'] }}</a>
+                <a href="{{ $bar['url'] }}" class="underline underline-offset-4 decoration-1 hover:opacity-80 transition">{{ $bar['text'] }}</a>
             @else
                 {{ $bar['text'] }}
             @endif

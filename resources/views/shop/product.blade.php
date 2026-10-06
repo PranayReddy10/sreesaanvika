@@ -210,7 +210,11 @@
             @endif
 
             <template x-if="shade && shade.stock !== null && shade.stock > 0 && shade.stock <= 3">
-                <p class="mt-5 text-sm text-[color:var(--color-marigold)]">
+                {{-- Brown and a little heavier, rather than red: how few are
+                     left is a fact about the saree, not something that has
+                     gone wrong, and red is what this shop uses for a mistake
+                     on a form. --}}
+                <p class="mt-5 text-sm font-medium text-gold">
                     Only <span x-text="shade.stock"></span> left in this shade.
                 </p>
             </template>
@@ -384,7 +388,23 @@
             </p>
         @endif
 
-        <div x-data="{ open: {{ $errors->hasAny(['rating', 'body', 'name', 'email', 'website']) ? 'true' : 'false' }}, rating: {{ (int) old('rating', 0) }} }" class="mt-10">
+        @guest
+            {{-- An account first. It is the cheapest thing that keeps a shop of
+                 twelve sarees from waking up to forty reviews of somebody
+                 else's handbags, and she is brought straight back here. --}}
+            <div class="mt-10">
+                <a href="{{ route('sign-in', ['next' => route('product', $product->slug) . '#reviews']) }}"
+                   class="od-btn od-btn-ghost">
+                    Sign in to write a review
+                </a>
+                <p class="mt-3 text-sm text-ink-muted">
+                    Reviews come from people with an account, so you can see who wrote them.
+                    <a href="{{ route('join', ['next' => route('product', $product->slug) . '#reviews']) }}"
+                       class="text-gold hover:text-gold-light">Making one takes a moment.</a>
+                </p>
+            </div>
+        @else
+        <div x-data="{ open: {{ $errors->hasAny(['rating', 'body', 'website']) ? 'true' : 'false' }}, rating: {{ (int) old('rating', 0) }} }" class="mt-10">
             <template x-if="!open">
                 <button type="button" @click="open = true" class="od-btn od-btn-ghost">
                     {{ $reviews->isNotEmpty() ? 'Write a review' : 'Be the first to say something' }}
@@ -414,21 +434,9 @@
                     @error('rating')<p class="mt-1.5 text-sm text-[color:var(--color-marigold)]">{{ $message }}</p>@enderror
                 </div>
 
-                @guest
-                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label class="od-label" for="review-name">Your name</label>
-                            <input id="review-name" name="name" class="od-input" value="{{ old('name') }}" maxlength="80" required>
-                            @error('name')<p class="mt-1.5 text-sm text-[color:var(--color-marigold)]">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
-                            <label class="od-label" for="review-email">Your email</label>
-                            <input id="review-email" name="email" type="email" class="od-input" value="{{ old('email') }}" required>
-                            <p class="mt-1.5 text-xs text-ink-faint">Never shown. Used to mark the review as a real purchase.</p>
-                            @error('email')<p class="mt-1.5 text-sm text-[color:var(--color-marigold)]">{{ $message }}</p>@enderror
-                        </div>
-                    </div>
-                @endguest
+                <p class="mt-4 text-sm text-ink-muted">
+                    It will go up as <strong class="text-ink">{{ auth()->user()->name }}</strong>.
+                </p>
 
                 <div class="mt-5">
                     <label class="od-label" for="review-title">A line to sum it up</label>
@@ -460,6 +468,7 @@
                 </p>
             </form>
         </div>
+        @endguest
     </section>
 
     @if ($alsoLike->isNotEmpty())

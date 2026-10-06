@@ -29,7 +29,9 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('/sarees', ShopController::class)->name('shop');
 Route::get('/saree/{product:slug}', ProductController::class)->name('product');
-Route::post('/saree/{product:slug}/review', [ReviewController::class, 'store'])->name('review.store');
+Route::post('/saree/{product:slug}/review', [ReviewController::class, 'store'])
+    ->middleware('auth')
+    ->name('review.store');
 
 Route::post('/contact', [EnquiryController::class, 'store'])->name('enquiry.store');
 

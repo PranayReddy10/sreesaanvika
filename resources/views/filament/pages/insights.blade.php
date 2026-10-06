@@ -1,6 +1,7 @@
 @php
     $h = $this->headline();
     $google = $this->google();
+    $about = $this->whoIsAbout();
     $discounts = $this->discounts();
     $empty = $this->emptySearches();
     $cold = $this->lookedAtNotBought();
@@ -223,6 +224,53 @@
                 </div>
             @endforeach
         @endif
+    </x-filament::section>
+
+    <x-filament::section>
+        <x-slot name="heading">Who is about</x-slot>
+        <x-slot name="description">
+            The ones the shop can name, from its own tables. Google counts everybody; this counts
+            the people with an account.
+        </x-slot>
+
+        <div class="od-stats">
+            <div>
+                <div class="od-stat-label">On the site now</div>
+                <div class="od-stat-value">
+                    {{ $about['live'] === null ? '—' : number_format($about['live']) }}
+                </div>
+                <div class="od-stat-note">
+                    @if ($about['live'] === null)
+                        Needs SESSION_DRIVER=database
+                    @else
+                        In the last five minutes
+                    @endif
+                </div>
+            </div>
+            <div>
+                <div class="od-stat-label">Signed in now</div>
+                <div class="od-stat-value">
+                    {{ $about['liveNamed'] === null ? '—' : number_format($about['liveNamed']) }}
+                </div>
+                <div class="od-stat-note">
+                    @if ($about['live'] !== null && $about['live'] > 0)
+                        {{ number_format($about['liveNamed'] / $about['live'] * 100) }}% of those here
+                    @else
+                        Of the people here
+                    @endif
+                </div>
+            </div>
+            <div>
+                <div class="od-stat-label">Signed in at all</div>
+                <div class="od-stat-value">{{ number_format($about['signedIn']) }}</div>
+                <div class="od-stat-note">In this stretch</div>
+            </div>
+            <div>
+                <div class="od-stat-label">New accounts</div>
+                <div class="od-stat-value">{{ number_format($about['joined']) }}</div>
+                <div class="od-stat-note">{{ number_format($about['accounts']) }} in all</div>
+            </div>
+        </div>
     </x-filament::section>
 
     <x-filament::section>

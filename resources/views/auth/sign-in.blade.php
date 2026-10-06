@@ -9,6 +9,10 @@
 
     <form method="post" action="{{ route('sign-in') }}" class="mt-8 space-y-4">
         @csrf
+        @if (request('next'))
+            {{-- Where she was when the shop asked her to sign in. --}}
+            <input type="hidden" name="next" value="{{ request('next') }}">
+        @endif
 
         <div>
             <label for="email" class="od-label">Email</label>
@@ -32,10 +36,27 @@
         <button type="submit" class="od-btn od-btn-gold w-full">Sign in</button>
     </form>
 
-    <p class="mt-6 text-sm text-ink-muted">
-        No account? <a href="{{ route('join') }}" class="text-gold hover:text-gold-light">Make one</a>,
-        or just <a href="{{ route('shop') }}" class="text-gold hover:text-gold-light">carry on shopping</a> —
-        you do not need one to order.
+    {{-- A button, not a word in a sentence.
+
+         Somebody who has never bought here before arrives on this page and has
+         to see straight away that the shop is not asking her to remember a
+         password she never made. Written as a line of small print under the
+         form, that is read by almost nobody. --}}
+    <div class="mt-8 flex items-center gap-4">
+        <span class="h-px flex-1 bg-[color:var(--color-line-soft)]"></span>
+        <span class="text-xs uppercase tracking-[0.18em] text-ink-faint">New here?</span>
+        <span class="h-px flex-1 bg-[color:var(--color-line-soft)]"></span>
+    </div>
+
+    <a href="{{ route('join', request('next') ? ['next' => request('next')] : []) }}"
+       class="od-btn od-btn-ghost w-full mt-5">
+        Create an account
+    </a>
+
+    <p class="mt-5 text-sm text-ink-muted">
+        You do not need one to order — you can
+        <a href="{{ route('shop') }}" class="text-gold hover:text-gold-light">carry on shopping</a>
+        and check out as a guest. An account keeps your orders and what you have saved in one place.
     </p>
 </div>
 @endsection
