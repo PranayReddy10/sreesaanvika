@@ -6,16 +6,35 @@
 @php
     use App\Support\Shop;
 
-    $image = $product->firstImage();
-    $second = $product->imagesFor()->get(1);
-    $sale = $product->onSale();
-    $off = $product->discountPercent();
-    $stock = $product->stockFor();
+    /*
+     * A card is of one shade, and shows that shade's own photographs.
+     *
+     * A saree woven in two colours is two quite different things to look at,
+     * and a listing that shows the design in general shows neither. The first
+     * shade is the one the card is of — its photographs, its price, its stock
+     * — and the link says so, so the page it opens is showing the same thing
+     * the card was.
+     *
+     * A shade without photographs of its own falls back to the saree's, which
+     * is what imagesFor does, so a shop that has not photographed every colour
+     * loses nothing.
+     */
     $shades = $product->colourways->where('is_visible', true);
+    $of = $shades->first();
+
+    $gallery = $product->imagesFor($of);
+    $image = $gallery->first();
+    $second = $gallery->get(1);
+
+    $url = $of ? route('product', [$product, 'shade' => $of->name]) : route('product', $product);
+
+    $sale = $product->onSale($of);
+    $off = $product->discountPercent($of);
+    $stock = $product->stockFor($of);
 @endphp
 
 <article class="group">
-    <a href="{{ route('product', $product) }}" class="block relative overflow-hidden rounded-[var(--radius-card)] bg-[color:var(--color-surface-2)]">
+    <a href="{{ $url }}" class="block relative overflow-hidden rounded-[var(--radius-card)] bg-[color:var(--color-surface-2)]">
         @if ($image)
             <img src="{{ $image->url }}" alt="{{ $image->alt ?: $product->name }}"
                  class="od-shot transition duration-700 group-hover:scale-[1.04]"
@@ -60,22 +79,30 @@
 
     <div class="pt-3.5">
         <h3 class="font-head text-[1.0625rem] leading-snug">
-            <a href="{{ route('product', $product) }}" class="hover:text-gold-light transition">{{ $product->name }}</a>
+            <a href="{{ $url }}" class="hover:text-gold-light transition">{{ $product->name }}</a>
         </h3>
 
         <p class="mt-1.5 flex items-baseline gap-2">
-            <span class="text-[0.9375rem] {{ $sale ? 'text-gold-light' : 'text-ink-soft' }}">{{ Shop::money($product->priceFor()) }}</span>
+            <span class="text-[0.9375rem] {{ $sale ? 'text-gold-light' : 'text-ink-soft' }}">{{ Shop::money($product->priceFor($of)) }}</span>
             @if ($sale)
-                <span class="text-sm text-ink-faint line-through">{{ Shop::money($product->fullPriceFor()) }}</span>
+                <span class="text-sm text-ink-faint line-through">{{ Shop::money($product->fullPriceFor($of)) }}</span>
             @endif
         </p>
 
         @if ($shades->count() > 1)
             <div class="mt-2.5 flex items-center gap-1.5">
                 @foreach ($shades->take(5) as $shade)
-                    <span class="w-3.5 h-3.5 rounded-full border border-[color:var(--color-line)]"
-                          style="background: {{ $shade->hex ?: '#555' }}"
-                          title="{{ $shade->name }}"></span>
+                    {{-- The one the card is of is ringed, so the row of dots
+                         says which colour is in the photograph rather than
+                         leaving it to be guessed. --}}
+                    <a href="{{ route('product', [$product, 'shade' => $shade->name]) }}"
+                       class="w-3.5 h-3.5 rounded-full border transition
+                              {{ $of && $shade->id === $of->id
+                                  ? 'border-[color:var(--color-ink)] ring-1 ring-offset-1 ring-[color:var(--color-ink)] ring-offset-[color:var(--color-page)]'
+                                  : 'border-[color:var(--color-line)] hover:border-[color:var(--color-ink-muted)]' }}"
+                       style="background: {{ $shade->hex ?: '#555' }}"
+                       title="{{ $shade->name }}"
+                       aria-label="{{ $product->name }} in {{ $shade->name }}"></a>
                 @endforeach
                 @if ($shades->count() > 5)
                     <span class="text-xs text-ink-faint">+{{ $shades->count() - 5 }}</span>

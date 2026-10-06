@@ -190,13 +190,13 @@ class StorefrontTest extends TestCase
     /**
      * A saree's page opens on the same photograph its card showed.
      *
-     * It used to open pre-switched to the first shade's own photographs,
-     * although nobody had picked a shade — one is chosen for the page so the
-     * price and the stock have something to show, and that is all it was for.
-     * A shopper saw one picture on /sarees, pressed it, and landed on another.
+     * A card in a listing is of one shade — a saree woven in two colours is
+     * two different things to look at — so it shows that shade's photographs
+     * and its link says which shade. The page it opens shows the same thing.
      *
-     * The shade's photographs are exactly right once a shade is picked, or
-     * named in the address, and that is when they show.
+     * The front page is the other half of the same rule: its pieces are of the
+     * saree rather than of a shade, so they show what the shop put first under
+     * Photographs and link without a shade, and the page opens on those.
      */
     public function test_a_saree_opens_on_the_photograph_its_card_showed(): void
     {
@@ -207,7 +207,7 @@ class StorefrontTest extends TestCase
          * A photograph of that shade's own, and one no other list holds. The
          * seeder gives a shade and the saree the same picture files, so with
          * its data the two lists are impossible to tell apart on the page —
-         * which is how the fault got out in the first place.
+         * which is how this got out in the first place.
          */
         \App\Models\ProductImage::where('colourway_id', $shade->id)->delete();
 
@@ -220,33 +220,36 @@ class StorefrontTest extends TestCase
 
         $saree->refresh();
 
-        $card = $saree->firstImage();
-        $shadeFirst = $saree->imagesFor($shade)->first();
+        $ofTheSaree = $saree->imagesFor()->first();
+        $ofTheShade = $saree->imagesFor($shade)->first();
 
-        $this->assertSame('products/only-this-shade.jpg', $shadeFirst->path);
-        $this->assertNotSame($card->url, $shadeFirst->url);
-
-        $this->get(route('shop'))->assertOk()->assertSee($card->url, false);
+        $this->assertNotSame($ofTheSaree->url, $ofTheShade->url, 'the two lists must differ to prove anything');
 
         /*
-         * On the src of the photograph itself rather than anywhere in the
-         * page: every photograph's address is in the page — in the gallery the
-         * script is handed, and in the structured data — so looking for one
-         * loosely proves nothing about which is shown.
+         * On the src of the photograph rather than anywhere in the page: every
+         * photograph's address is in the page — in the gallery the script is
+         * handed, and in the structured data — so looking for one loosely
+         * proves nothing about which is shown.
          */
         $opens = fn (string $url): string => 'src="'.$url.'"';
 
-        // Nobody asked for a shade, so the page opens on what the shop put
-        // first: the picture whose card was pressed.
-        $this->get(route('product', $saree))
+        // The card is of the shade, and says so in its link.
+        $this->get(route('shop'))
             ->assertOk()
-            ->assertSee($opens($card->url), false)
-            ->assertDontSee($opens($shadeFirst->url), false);
+            ->assertSee($ofTheShade->url, false)
+            ->assertSee(route('product', [$saree, 'shade' => $shade->name]), false);
 
-        // Asked for in the address — a link somebody sent — counts as picked.
+        // And the page that link opens is showing it.
         $this->get(route('product', [$saree, 'shade' => $shade->name]))
             ->assertOk()
-            ->assertSee($opens($shadeFirst->url), false);
+            ->assertSee($opens($ofTheShade->url), false);
+
+        // Nobody asked for a shade — the front page's way in — so the page
+        // opens on what the shop put first under Photographs.
+        $this->get(route('product', $saree))
+            ->assertOk()
+            ->assertSee($opens($ofTheSaree->url), false)
+            ->assertDontSee($opens($ofTheShade->url), false);
     }
 
     /**
