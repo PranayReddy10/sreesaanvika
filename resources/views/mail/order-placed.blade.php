@@ -44,7 +44,8 @@ It goes out within {{ Shop::dispatchDays() }} working days, and we will email yo
 See your order
 </x-mail::button>
 
-Anything at all, just reply to this email@if (Shop::phone()) or ring us on {{ Shop::phone() }}@endif.
+{{-- A directive written hard against a word is not a directive: Blade leaves @if attached to "email" as text and compiles the @endif on its own, which is a view that will not render at all. --}}
+Anything at all, just reply to this email{{ Shop::phone() ? ' or ring us on '.Shop::phone() : '' }}.
 
 Thank you,<br>
 {{ Shop::name() }}

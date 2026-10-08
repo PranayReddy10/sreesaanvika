@@ -87,6 +87,17 @@ class Video extends Model
             return 'The file is missing';
         }
 
+        /*
+         * The codec is read out of the file's first few boxes, which needs the
+         * file itself. On a bucket there is no file to open — only a key — so
+         * a shop keeping its films on Spaces is told the film is there and
+         * nothing about its codec, rather than being told, wrongly, that its
+         * codec is fine.
+         */
+        if (($config = config('filesystems.disks.public')) && ($config['driver'] ?? null) !== 'local') {
+            return null;
+        }
+
         $codec = Film::unplayableCodec($disk->path($this->path));
 
         return $codec ? $codec.' — most browsers cannot play it' : null;

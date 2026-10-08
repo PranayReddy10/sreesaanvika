@@ -335,9 +335,27 @@ for good: nothing is kept on this box, so there is nothing to link to.
    DigitalOcean's own uploader are both fine. The paths stored against each
    saree do not change, so nothing in the database needs touching.
 5. `php artisan config:clear && php artisan config:cache`.
+6. Prove it, before a photograph is the thing that tells you:
+
+   ```sh
+   php artisan ojasvi:test-storage
+   ```
+
+   It writes one file to the Space, reads it back, fetches it over the open web
+   the way a shopper's browser does, and deletes it — and prints whatever the
+   Space refused with. Saving the settings in the admin runs the same check and
+   puts the answer on screen, so a mistyped key is caught while it is still in
+   front of whoever typed it.
 
 The files must be **public** in the Space, or every photograph is a broken
-square. New uploads from the admin are marked public automatically.
+square. New uploads from the admin are marked public automatically — `Written,
+but not public` from the check above means the key may write but not set that,
+and wants replacing with a full-access key.
+
+A half-finished upload still goes to **this server**, not to the Space: while
+the shopkeeper is filling the form, the file sits in `storage/app/private`
+until Save. So `storage/` stays writable on a shop keeping its photographs on
+Spaces, and uploads do not cross the Atlantic twice.
 
 The AWS SDK this uses ships support for 449 services; `composer.json` prunes
 it to S3 alone on every install, which is the difference between about twenty
@@ -648,7 +666,22 @@ shows its still, or a plain panel, with no play button on it.
 ten it is a permission on `storage/`, or `APP_KEY` never generated.
 
 **Images are broken squares.** The `storage` symlink is missing or points
-somewhere wrong. See step 4.
+somewhere wrong. See step 4. On a shop keeping its photographs on Spaces, run
+`php artisan ojasvi:test-storage` — a file written but not public looks exactly
+like this.
+
+**"The … failed to upload" when adding a photograph.** The browser says that
+for every possible cause, so ask the shop's own disk instead:
+
+```sh
+php artisan ojasvi:test-storage
+```
+
+It names the one that applies: a key or secret with a typo, a Space in another
+region (Bangalore is `blr1` and nothing else), a bucket name that is nearly
+right, a key allowed to write but not to make a file public, or `composer
+install` never having been run on this server, which leaves the S3 libraries
+missing. The same check runs when the storage settings are saved in the admin.
 
 **The shop has no styling.** `public/build` was not uploaded, or `npm run
 build` was never run. See step 2.

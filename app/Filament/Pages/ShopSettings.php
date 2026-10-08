@@ -3,6 +3,9 @@
 namespace App\Filament\Pages;
 
 use App\Models\Setting;
+use App\Providers\ShopConfigProvider;
+use App\Support\StorageCheck;
+use Illuminate\Support\Facades\Storage;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -628,6 +631,7 @@ class ShopSettings extends Page implements HasForms
     public function save(): void
     {
         $state = $this->form->getState();
+        $storageBefore = $this->storageFingerprint();
 
         foreach (self::FIELDS as $key => [$group, $type]) {
             $value = $state[$key] ?? '';
@@ -646,6 +650,69 @@ class ShopSettings extends Page implements HasForms
             ->title('Saved')
             ->body('The shop is using these straight away.')
             ->success()
+            ->send();
+
+        // Only when it is the photographs' home that has changed: a shop
+        // editing its telephone number has no business waiting on DigitalOcean.
+        if ($this->storageFingerprint() !== $storageBefore) {
+            $this->checkTheStorage($state);
+        }
+    }
+
+    /** Everything that decides where a photograph is written, as one string. */
+    private function storageFingerprint(): string
+    {
+        $keys = array_filter(
+            array_keys(self::FIELDS),
+            fn (string $key) => $key === 'storage_driver' || str_starts_with($key, 'spaces_'),
+        );
+
+        return collect($keys)
+            ->map(fn (string $key) => $key.'='.(string) Setting::get($key, ''))
+            ->implode('|');
+    }
+
+    /**
+     * Having just been told where the photographs go, try putting one there.
+     *
+     * Otherwise the first the shop hears of a mistyped key is a photograph
+     * that will not upload, hours later, reported by the browser as "failed to
+     * upload" and nothing else. One file is written, read back, fetched the way
+     * a shopper fetches it, and deleted — and if any of that is refused, the
+     * refusal is on screen while the keys are still in front of whoever typed
+     * them.
+     *
+     * @param  array<string, mixed>  $state
+     */
+    private function checkTheStorage(array $state): void
+    {
+        if (($state['storage_driver'] ?? '') !== 'spaces') {
+            return;
+        }
+
+        // The settings were saved a moment ago, so the disk built from the old
+        // ones is no longer the one being tested.
+        (new ShopConfigProvider(app()))->boot();
+        Storage::forgetDisk('public');
+
+        $check = StorageCheck::run();
+
+        if ($check->ok) {
+            Notification::make()
+                ->title('DigitalOcean is working')
+                ->body('A file was written to the Space, read back, and seen from outside. Photographs will upload.')
+                ->success()
+                ->persistent()
+                ->send();
+
+            return;
+        }
+
+        Notification::make()
+            ->title($check->summary)
+            ->body(trim(($check->advice ? $check->advice.' ' : '').($check->detail ?? '')) ?: null)
+            ->danger()
+            ->persistent()
             ->send();
     }
 }

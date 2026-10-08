@@ -194,6 +194,130 @@ class ShopConfigTest extends TestCase
         $this->assertSame($before, config('filesystems.disks.public.driver'));
     }
 
+    /**
+     * The upload that was actually failing.
+     *
+     * Livewire parks a file FilePond is still processing on the default disk,
+     * and the default disk here is `public` — the very one the admin has just
+     * pointed at the Space. So turning Spaces on sent every half-finished
+     * upload to DigitalOcean before the shop had pressed Save, and that is the
+     * request the browser reports as "failed to upload", with nothing stored
+     * and nothing logged.
+     *
+     * Temporary files belong on this server. Only the finished photograph goes
+     * up.
+     */
+    public function test_a_half_finished_upload_stays_on_this_server(): void
+    {
+        Setting::put('storage_driver', 'spaces', 'string', 'storage');
+        Setting::put('spaces_key', 'a-key', 'string', 'storage');
+        Setting::put('spaces_secret', 'a-secret', 'secret', 'storage');
+        Setting::put('spaces_bucket', 'ojasvi', 'string', 'storage');
+
+        $this->apply();
+
+        $disk = config('livewire.temporary_file_upload.disk') ?: config('filesystems.default');
+
+        $this->assertSame('local', config("filesystems.disks.{$disk}.driver"));
+        $this->assertFalse(\Livewire\Features\SupportFileUploads\FileUploadConfiguration::isUsingS3());
+    }
+
+    /** A shop that has chosen its own temporary disk keeps it. */
+    public function test_a_temporary_disk_the_shop_has_chosen_is_left_alone(): void
+    {
+        config(['livewire.temporary_file_upload.disk' => 'tmp-of-its-own']);
+
+        Setting::put('storage_driver', 'spaces', 'string', 'storage');
+        Setting::put('spaces_key', 'a-key', 'string', 'storage');
+        Setting::put('spaces_secret', 'a-secret', 'secret', 'storage');
+        Setting::put('spaces_bucket', 'ojasvi', 'string', 'storage');
+
+        $this->apply();
+
+        $this->assertSame('tmp-of-its-own', config('livewire.temporary_file_upload.disk'));
+    }
+
+    /**
+     * A bucket that refuses a photograph says so.
+     *
+     * With these off Flysystem answers false and says nothing: the shop gets
+     * "failed to upload" in the browser and an empty log, which is every
+     * possible fault wearing the same face.
+     */
+    public function test_a_refusal_from_the_bucket_is_not_swallowed(): void
+    {
+        Setting::put('storage_driver', 'spaces', 'string', 'storage');
+        Setting::put('spaces_key', 'a-key', 'string', 'storage');
+        Setting::put('spaces_secret', 'a-secret', 'secret', 'storage');
+        Setting::put('spaces_bucket', 'ojasvi', 'string', 'storage');
+
+        $this->apply();
+
+        $this->assertTrue(config('filesystems.disks.public.throw'));
+        $this->assertTrue(config('filesystems.disks.public.report'));
+    }
+
+    /**
+     * Told at the moment the keys are typed, not at the next upload.
+     *
+     * A key with a typo in it looks exactly like a key without one until
+     * somebody tries to add a photograph, and what they get then is "failed to
+     * upload" and nothing else. So saving the setting writes a file to the
+     * Space there and then, and says what came back.
+     */
+    public function test_saving_spaces_settings_that_do_not_work_says_so_at_once(): void
+    {
+        $admin = User::create([
+            'name' => 'OJASVI', 'email' => 'owner@example.test',
+            'password' => 'long-enough-for-this', 'is_admin' => true,
+        ]);
+
+        \Livewire\Livewire::actingAs($admin)
+            ->test(\App\Filament\Pages\ShopSettings::class)
+            ->fillForm([
+                'shop_name' => 'OJASVI',
+                'storage_driver' => 'spaces',
+                'spaces_bucket' => 'ojasvi',
+                'spaces_region' => 'blr1',
+                // Nothing is listening here, which stands in for every way a
+                // Space can refuse.
+                'spaces_endpoint' => 'http://127.0.0.1:1',
+                'spaces_key' => 'DO00NOTAREALKEY',
+                'spaces_secret' => 'not-a-real-secret',
+            ])
+            ->call('save')
+            ->assertNotified('It could not write a file where the photographs go.');
+    }
+
+    /**
+     * And not on every save of everything else.
+     *
+     * A shop changing its telephone number has no business waiting on a
+     * round trip to DigitalOcean, nor being told about it.
+     */
+    public function test_saving_something_else_does_not_go_near_the_space(): void
+    {
+        Setting::put('storage_driver', 'spaces', 'string', 'storage');
+        Setting::put('spaces_key', 'DO00NOTAREALKEY', 'secret', 'storage');
+        Setting::put('spaces_secret', 'not-a-real-secret', 'secret', 'storage');
+        Setting::put('spaces_bucket', 'ojasvi', 'string', 'storage');
+        Setting::put('spaces_endpoint', 'http://127.0.0.1:1', 'string', 'storage');
+
+        $admin = User::create([
+            'name' => 'OJASVI', 'email' => 'owner@example.test',
+            'password' => 'long-enough-for-this', 'is_admin' => true,
+        ]);
+
+        \Livewire\Livewire::actingAs($admin)
+            ->test(\App\Filament\Pages\ShopSettings::class)
+            // shop_name is required, so a form that leaves it out never gets
+            // as far as saving anything — which would make this prove nothing.
+            ->fillForm(['shop_name' => 'OJASVI', 'phone' => '9000000000'])
+            ->call('save')
+            ->assertNotified('Saved')
+            ->assertNotNotified('It could not write a file where the photographs go.');
+    }
+
     public function test_leaving_it_on_this_server_changes_nothing(): void
     {
         $before = config('filesystems.disks.public');

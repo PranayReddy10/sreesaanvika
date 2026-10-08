@@ -72,9 +72,38 @@ class ShopConfigProvider extends ServiceProvider
                 ?: "https://{$region}.digitaloceanspaces.com",
             'url'        => $url ?: null,
             'visibility' => 'public',
-            'throw'      => false,
-            'report'     => false,
+            /*
+             * Loud, both of them.
+             *
+             * A bucket that refuses a photograph is not a condition to carry on
+             * through: with these off, Flysystem answers false, Filament shows
+             * "failed to upload" and nothing is written anywhere — so the shop
+             * has an upload that will not work and a log with nothing in it.
+             * Nothing on the storefront does any reading over the wire (an
+             * address is built from the path, not fetched), so this costs the
+             * shopper nothing.
+             */
+            'throw'      => true,
+            'report'     => true,
         ]]);
+
+        /*
+         * Half-finished uploads stay on this server.
+         *
+         * Livewire keeps a file FilePond is still processing on the default
+         * disk, and the default disk here is `public` — the very one just
+         * pointed at the Space. So switching storage over in the admin sent
+         * every upload to DigitalOcean twice: once to a livewire-tmp folder
+         * while the shopkeeper was still filling the form, and again when it
+         * was saved. The first of those is the upload that fails, before
+         * anything has been stored and with nothing to show for it but
+         * "failed to upload".
+         *
+         * A shop that has set this itself is left alone.
+         */
+        config([
+            'livewire.temporary_file_upload.disk' => config('livewire.temporary_file_upload.disk') ?: 'local',
+        ]);
     }
 
     /** The shop's own mail server, when the admin has been given one. */
