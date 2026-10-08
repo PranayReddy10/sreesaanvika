@@ -330,12 +330,27 @@ for good: nothing is kept on this box, so there is nothing to link to.
    SPACES_REGION=blr1
    SPACES_URL=https://ojasvi.blr1.cdn.digitaloceanspaces.com
    ```
-4. Copy what is already there up to the Space, keeping the same paths —
-   `products/…`, `videos/…`. Any S3 tool will do it; `s3cmd sync` or
-   DigitalOcean's own uploader are both fine. The paths stored against each
-   saree do not change, so nothing in the database needs touching.
-5. `php artisan config:clear && php artisan config:cache`.
-6. Prove it, before a photograph is the thing that tells you:
+4. Copy what is already on this server up to the Space. **Nothing moves the
+   files for you**, and until they are up there every photograph already on
+   the shop is a broken square:
+
+   ```sh
+   php artisan ojasvi:photos-to-spaces
+   ```
+
+   It sends everything in the uploads folder, keeping the same paths —
+   `products/…`, `videos/…` — so nothing in the database needs touching. Run
+   it as often as you like: anything already up there at the same size is
+   skipped, so a copy that stopped half way is finished by running it again.
+   `--pretend` says what would go without sending anything.
+5. Let the admin see them. A photograph on the shop is an `<img>` tag, which
+   no browser polices; the admin's upload boxes *fetch* each picture to draw
+   their preview, which every browser does police. So a Space with no CORS
+   rule looks perfect to a shopper and shows the shopkeeper a grey bar that
+   never finishes loading. In DigitalOcean: open the Space, **Settings → CORS
+   Configurations → Add**, origin `https://ojasvidrapes.in`, method **GET**.
+6. `php artisan config:clear && php artisan config:cache`.
+7. Prove it, before a photograph is the thing that tells you:
 
    ```sh
    php artisan ojasvi:test-storage
@@ -669,6 +684,12 @@ ten it is a permission on `storage/`, or `APP_KEY` never generated.
 somewhere wrong. See step 4. On a shop keeping its photographs on Spaces, run
 `php artisan ojasvi:test-storage` — a file written but not public looks exactly
 like this.
+
+**Photographs disappear when I press Save.** The files are not where the shop
+is now looking for them — nearly always a move to Spaces with step 4 above not
+yet done. Run `php artisan ojasvi:photos-to-spaces`, then reload the saree.
+(The admin keeps the photograph on the record either way; what you are seeing
+is the picture missing, not the record.)
 
 **"The … failed to upload" when adding a photograph.** The browser says that
 for every possible cause, so ask the shop's own disk instead:

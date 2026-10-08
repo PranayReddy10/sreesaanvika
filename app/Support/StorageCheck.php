@@ -101,11 +101,28 @@ final class StorageCheck
         $detail = null;
         $advice = null;
 
+        $origin = rtrim((string) config('app.url'), '/');
+
         try {
-            $response = Http::withoutVerifying()->timeout(15)->get($url);
+            // Asked for as the admin's own browser asks, so the answer says
+            // whether the Space will talk to it.
+            $response = Http::withoutVerifying()->timeout(15)
+                ->withHeaders($origin === '' ? [] : ['Origin' => $origin])
+                ->get($url);
 
             if ($response->successful() && $response->body() === $body) {
                 $seen = true;
+
+                /*
+                 * The storefront shows a photograph with an <img> tag, which
+                 * no browser polices. The admin's upload box fetches it to
+                 * draw the preview, which every browser does police — so a
+                 * Space with no CORS rule looks perfect to a shopper and shows
+                 * the shopkeeper a grey bar that never finishes loading.
+                 */
+                if ($onSpaces && $origin !== '' && ! $response->header('Access-Control-Allow-Origin')) {
+                    $detail = 'The Space has no CORS rule for '.$origin.', so photographs show on the shop but not in the admin\'s upload boxes. In DigitalOcean, open the Space, then Settings, then CORS Configurations, and add that address with GET allowed.';
+                }
             } elseif ($response->successful()) {
                 // A CDN in front of the Space can answer with something it
                 // cached earlier. Worth saying, not worth failing over.

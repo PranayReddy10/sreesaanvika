@@ -55,10 +55,37 @@ class TestStorage extends Command
         foreach ([$check->detail, $check->advice] as $more) {
             if ($more) {
                 $this->line('');
-                $this->line('  '.wordwrap($more, 68, "\n  "));
+                $this->line('  '.$this->wrapped($more));
             }
         }
 
         return $check->ok ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * Wrapped to the terminal, counting letters rather than bytes.
+     *
+     * wordwrap() counts bytes, so a rupee sign or an accent is cut in half
+     * and the line comes out short and broken.
+     */
+    private function wrapped(string $text, int $width = 68): string
+    {
+        $lines = [];
+        $line = '';
+
+        foreach (explode(' ', $text) as $word) {
+            if ($line !== '' && mb_strlen($line.' '.$word) > $width) {
+                $lines[] = $line;
+                $line = $word;
+
+                continue;
+            }
+
+            $line = $line === '' ? $word : $line.' '.$word;
+        }
+
+        $lines[] = $line;
+
+        return implode("\n  ", $lines);
     }
 }
