@@ -109,6 +109,20 @@ class Product extends Model
             ->where(fn ($q) => $q->whereNull('published_at')->orWhere('published_at', '<=', now()));
     }
 
+    /**
+     * Newest first, counting a saree with no publish date as new.
+     *
+     * "Leave empty to publish as soon as the status says so" is what the
+     * admin promises, and a plain `latest('published_at')` breaks it: the
+     * database sorts an empty date last, so the saree added this morning went
+     * to the back of every row on the front page and the shop saw only the
+     * ones it had added before.
+     */
+    public function scopeNewestFirst(Builder $query): Builder
+    {
+        return $query->orderByRaw('COALESCE(published_at, created_at) DESC')->orderByDesc('id');
+    }
+
     public function scopeInStock(Builder $query): Builder
     {
         return $query->where(fn ($q) => $q->where('track_stock', false)

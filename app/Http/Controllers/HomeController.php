@@ -29,11 +29,24 @@ class HomeController extends Controller
 
         $pool = Product::published()
             ->with(['images', 'colourways'])
-            ->latest('published_at')
+            ->newestFirst()
             ->take(max(12, $wanted))
             ->get();
 
-        $featured = $pool->where('is_featured', true)->values();
+        /*
+         * Asked for by name rather than sieved out of the pool above.
+         *
+         * Ticking "Feature it" on a saree has to put it on the front page,
+         * and filtering the newest dozen only did that for a saree that was
+         * also among the newest dozen — so featuring anything older than that
+         * appeared to do nothing at all.
+         */
+        $featured = Product::published()
+            ->with(['images', 'colourways'])
+            ->where('is_featured', true)
+            ->newestFirst()
+            ->take(max(5, $wanted))
+            ->get();
 
         // A shop that has marked nothing as featured still gets a front page.
         if ($featured->isEmpty()) {

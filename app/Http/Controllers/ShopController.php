@@ -167,7 +167,9 @@ class ShopController extends Controller
             'popular'    => $query->orderByDesc('views'),
             // The default is what the shop would hand you: the pieces it has
             // chosen to put forward, then the newest.
-            default      => $query->orderByDesc('is_featured')->orderByDesc('published_at'),
+            // Newest counts a saree with no publish date as published now,
+            // which is what the admin says an empty date means.
+            default      => $query->orderByDesc('is_featured')->newestFirst(),
         };
     }
 }
