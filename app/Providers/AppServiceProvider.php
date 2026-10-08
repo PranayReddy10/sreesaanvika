@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Support\Photograph;
 use App\Support\PhotographUrl;
+use App\Support\Uploads;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\ImageColumn;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -42,8 +45,38 @@ class AppServiceProvider extends ServiceProvider
          * missing shows as a broken preview, which is true and fixable,
          * instead of the record being thrown away on the shop's behalf.
          */
+        /*
+         * Livewire turns away anything over twelve megabytes before a line of
+         * this shop's code runs, and says only that the file failed to upload.
+         * A photograph off a camera is routinely larger than that, so the
+         * limit becomes the server's real one — which the form also quotes, so
+         * nobody is told one number and refused by another.
+         */
+        config(['livewire.temporary_file_upload.rules' => ['required', 'file', 'max:'.Uploads::ceiling()]]);
+
+        /*
+         * A photograph off a camera is for the person editing it.
+         *
+         * Eleven megabytes, six thousand pixels across — and no screen a
+         * shopper owns can show more than about two thousand of them, so the
+         * rest is a minute of her data spent on nothing. Every upload is
+         * therefore capped and re-encoded on its way in, at a quality where
+         * the difference cannot be seen: a 48-megapixel saree goes from 9.5MB
+         * to 0.76MB with the weave still holding up under a pinch-zoom.
+         *
+         * Done to the half-finished file, before it is stored, so what lands
+         * on the shop's disk is the only copy that ever existed — and done
+         * quietly, because a file this cannot open is left exactly as it is
+         * rather than lost.
+         */
         FileUpload::configureUsing(function (FileUpload $upload): void {
             $upload->fetchFileInformation(false);
+
+            $upload->saveUploadedFileUsing(function (FileUpload $component, TemporaryUploadedFile $file): ?string {
+                Photograph::tidy((string) $file->getRealPath());
+
+                return $component->saveUploadedFile($file);
+            });
 
             /*
              * And when the photographs are on a bucket, the preview comes

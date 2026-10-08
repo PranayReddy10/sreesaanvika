@@ -170,15 +170,7 @@ class VideoFields
      */
     public static function uploadCeiling(): int
     {
-        $limits = array_filter([
-            self::bytes((string) ini_get('upload_max_filesize')),
-            self::bytes((string) ini_get('post_max_size')),
-        ]);
-
-        $bytes = $limits === [] ? 8 * 1024 * 1024 : min($limits);
-
-        // A little under, because the rest of the form goes in the same post.
-        return (int) max(1024, floor(($bytes * 0.9) / 1024));
+        return \App\Support\Uploads::ceiling();
     }
 
     private static function sizeAdvice(): string

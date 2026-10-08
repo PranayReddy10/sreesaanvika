@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use App\Support\Uploads;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -115,6 +116,19 @@ class ProductForm
                                 ->directory('products')
                                 ->imageEditor()
                                 ->required()
+                                /*
+                                 * The whole photograph, as it came off the
+                                 * camera. It is shrunk on the way in — long
+                                 * edge to 2400, which is more than any screen
+                                 * shows — so there is nothing to be gained by
+                                 * the shop doing it first, and a good deal to
+                                 * be lost if it does it badly.
+                                 */
+                                ->maxSize(Uploads::ceiling())
+                                ->helperText('Straight off the camera is fine — up to about '
+                                    .Uploads::ceilingInMegabytes().' MB. Large photographs are '
+                                    .'resized here, so what the shop sends a customer is a '
+                                    .'tenth of the size and looks the same.')
                                 ->columnSpanFull(),
 
                             TextInput::make('alt')
@@ -162,7 +176,9 @@ class ProductForm
                                 ->schema([
                                     FileUpload::make('path')
                                         ->image()->disk('public')->directory('products')
-                                        ->imageEditor()->required()->columnSpanFull(),
+                                        ->imageEditor()->required()
+                                        ->maxSize(Uploads::ceiling())
+                                        ->columnSpanFull(),
                                     TextInput::make('alt')->label('Describe it')->maxLength(255),
                                 ])
                                 ->defaultItems(0)

@@ -380,6 +380,42 @@ The AWS SDK this uses ships support for 449 services; `composer.json` prunes
 it to S3 alone on every install, which is the difference between about twenty
 megabytes and several hundred — worth knowing on a host that counts disk.
 
+### What PHP will accept
+
+A saree photographed properly is a ten or twelve megabyte file, and PHP's own
+defaults turn those away before a line of this shop's code runs — the browser
+says only that the upload failed. In hPanel: **Advanced → PHP Configuration →
+PHP Options**, and set
+
+| | |
+|---|---|
+| `upload_max_filesize` | `64M` |
+| `post_max_size` | `64M` |
+| `memory_limit` | `512M` |
+| `max_execution_time` | `120` |
+
+The admin reads these back and tells the shop the real figure, so nobody is
+promised fifty megabytes by a form on a server that stops at eight.
+
+**The photographs themselves are shrunk on the way in**, so none of that size
+reaches a customer: the long edge is brought down to 2400 pixels and the file
+re-encoded at a quality where the difference cannot be seen. A 48-megapixel
+saree measured 9.5 MB going in and 774 KB coming out — the same picture, and
+still sharp under a pinch-zoom, because no screen a shopper owns shows more
+than about 2000 pixels of it. Nothing is cropped, a photograph taken with the
+phone on its side is turned upright, and anything already the right size is
+left alone rather than put through a second round of compression.
+
+For the camera files already uploaded before this:
+
+```sh
+php artisan ojasvi:tidy-photos
+```
+
+It goes over every photograph on the disk — or in the Space — once, and says
+how much it saved. `--pretend` reports without changing anything. Safe to run
+again: a photograph already the right size is skipped, not re-saved.
+
 ### Permissions
 
 ```sh
@@ -688,6 +724,11 @@ ten it is a permission on `storage/`, or `APP_KEY` never generated.
 somewhere wrong. See step 4. On a shop keeping its photographs on Spaces, run
 `php artisan ojasvi:test-storage` — a file written but not public looks exactly
 like this.
+
+**A photograph will not upload and the browser says only that it failed.**
+Nearly always PHP's own limits: see "What PHP will accept" in step 4. The size
+the admin quotes under the Image box is the one the server will really take —
+if that says 8 MB, hPanel is where it changes.
 
 **Photographs show on the shop but sit on "Loading" in the admin.** That was
 the missing CORS rule, and the admin no longer depends on it — if you still
