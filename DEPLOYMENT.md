@@ -343,14 +343,8 @@ for good: nothing is kept on this box, so there is nothing to link to.
    it as often as you like: anything already up there at the same size is
    skipped, so a copy that stopped half way is finished by running it again.
    `--pretend` says what would go without sending anything.
-5. Let the admin see them. A photograph on the shop is an `<img>` tag, which
-   no browser polices; the admin's upload boxes *fetch* each picture to draw
-   their preview, which every browser does police. So a Space with no CORS
-   rule looks perfect to a shopper and shows the shopkeeper a grey bar that
-   never finishes loading. In DigitalOcean: open the Space, **Settings → CORS
-   Configurations → Add**, origin `https://ojasvidrapes.in`, method **GET**.
-6. `php artisan config:clear && php artisan config:cache`.
-7. Prove it, before a photograph is the thing that tells you:
+5. `php artisan config:clear && php artisan config:cache`.
+6. Prove it, before a photograph is the thing that tells you:
 
    ```sh
    php artisan ojasvi:test-storage
@@ -366,6 +360,16 @@ The files must be **public** in the Space, or every photograph is a broken
 square. New uploads from the admin are marked public automatically — `Written,
 but not public` from the check above means the key may write but not set that,
 and wants replacing with a full-access key.
+
+**A CORS rule on the Space is optional, and worth adding.** A photograph on
+the shop is an `<img>` tag, which no browser polices; the admin's upload boxes
+*fetch* each picture so they can draw and crop it, and that every browser does
+police. Rather than leave the shopkeeper looking at a grey bar that never
+finishes loading, the admin fetches those previews from this shop's own
+address and the shop fetches from the Space — so it works with no rule at all.
+Adding one takes that hop out: in DigitalOcean, open the Space, **Settings →
+CORS Configurations → Add**, origin `https://ojasvidrapes.in`, method **GET**.
+`php artisan ojasvi:test-storage` says whether the rule is there.
 
 A half-finished upload still goes to **this server**, not to the Space: while
 the shopkeeper is filling the form, the file sits in `storage/app/private`
@@ -684,6 +688,11 @@ ten it is a permission on `storage/`, or `APP_KEY` never generated.
 somewhere wrong. See step 4. On a shop keeping its photographs on Spaces, run
 `php artisan ojasvi:test-storage` — a file written but not public looks exactly
 like this.
+
+**Photographs show on the shop but sit on "Loading" in the admin.** That was
+the missing CORS rule, and the admin no longer depends on it — if you still
+see it after a `git pull`, run `php artisan config:cache` and reload, since
+the admin's preview address is new.
 
 **Photographs disappear when I press Save.** The files are not where the shop
 is now looking for them — nearly always a move to Spaces with step 4 above not

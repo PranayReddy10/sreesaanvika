@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Support\PhotographUrl;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -79,6 +80,91 @@ class PhotographsOnSpacesTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertSame($before, $saree->fresh()->images()->pluck('path', 'id')->all());
+    }
+
+    /* ----------------------------------------- showing them in the admin */
+
+    /**
+     * The grey "Loading" bar.
+     *
+     * An upload box does not show its picture with an <img> tag — it fetches
+     * it, so it can draw and crop it — and a browser polices a fetch across
+     * domains where it does not police an <img>. A shop on a Space therefore
+     * had photographs that were perfect for the shopper and never finished
+     * loading for the shopkeeper. The admin fetches from this shop's own
+     * address instead, and this shop fetches from the Space.
+     */
+    public function test_on_a_bucket_the_admin_fetches_the_picture_from_this_shop(): void
+    {
+        config(['filesystems.disks.public' => ['driver' => 's3', 'bucket' => 'ojasvi']]);
+
+        $this->assertSame(
+            url('photograph-preview/products/kanjivaram-indigo-1.jpg'),
+            PhotographUrl::forTheAdmin('public', 'products/kanjivaram-indigo-1.jpg'),
+        );
+    }
+
+    /** On this server's own disk, nothing changes. */
+    public function test_on_this_server_it_is_the_ordinary_address(): void
+    {
+        Storage::fake('public');
+
+        $this->assertStringNotContainsString(
+            'photograph-preview',
+            PhotographUrl::forTheAdmin('public', 'products/one.jpg'),
+        );
+    }
+
+    public function test_the_preview_hands_the_file_to_an_admin(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('products/one.jpg', 'the bytes of a saree');
+
+        $admin = \App\Models\User::create([
+            'name' => 'OJASVI', 'email' => 'owner@example.test',
+            'password' => 'long-enough-for-this', 'is_admin' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->get('/photograph-preview/products/one.jpg');
+
+        $response->assertOk()->assertHeader('content-type', 'image/jpeg');
+
+        // Named after the photograph, not after the route: the box reads the
+        // name off the end of the address.
+        $this->assertStringContainsString('one.jpg', (string) $response->headers->get('content-disposition'));
+        $this->assertSame('the bytes of a saree', $response->streamedContent());
+    }
+
+    public function test_it_is_not_for_customers_or_strangers(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('products/one.jpg', 'the bytes of a saree');
+
+        $customer = \App\Models\User::create([
+            'name' => 'Lakshmi', 'email' => 'lakshmi@example.in',
+            'password' => 'long-enough-for-this',
+        ]);
+
+        $this->actingAs($customer)->get('/photograph-preview/products/one.jpg')->assertForbidden();
+
+        auth()->logout();
+
+        $this->get('/photograph-preview/products/one.jpg')->assertRedirect('/sign-in');
+    }
+
+    public function test_it_will_not_climb_out_of_the_uploads_folder(): void
+    {
+        Storage::fake('public');
+
+        $admin = \App\Models\User::create([
+            'name' => 'OJASVI', 'email' => 'owner@example.test',
+            'password' => 'long-enough-for-this', 'is_admin' => true,
+        ]);
+
+        // Written out, and written in a way that reaches the route intact.
+        $this->actingAs($admin)->get('/photograph-preview/../../.env')->assertNotFound();
+        $this->actingAs($admin)->get('/photograph-preview/products/..%2F..%2F.env')->assertNotFound();
+        $this->actingAs($admin)->get('/photograph-preview/products/nothing-here.jpg')->assertNotFound();
     }
 
     /* ------------------------------------- copying what is already here */

@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Support\PhotographUrl;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -40,7 +42,32 @@ class AppServiceProvider extends ServiceProvider
          * missing shows as a broken preview, which is true and fixable,
          * instead of the record being thrown away on the shop's behalf.
          */
-        FileUpload::configureUsing(fn (FileUpload $upload) => $upload->fetchFileInformation(false));
+        FileUpload::configureUsing(function (FileUpload $upload): void {
+            $upload->fetchFileInformation(false);
+
+            /*
+             * And when the photographs are on a bucket, the preview comes
+             * from this address rather than the bucket's.
+             *
+             * The box fetches its picture so it can draw and crop it, and a
+             * browser polices a fetch across domains where it does not police
+             * an <img> tag. Hence the complaint this exists for: photographs
+             * perfect on the shop, a grey "Loading" bar in the admin. A CORS
+             * rule on the Space fixes it too, and this means nobody has to
+             * know that.
+             */
+            $upload->getUploadedFileUsing(function (FileUpload $component, string $file, string | array | null $storedFileNames): ?array {
+                $disk = $component->getDiskName();
+                $name = ($component->isMultiple() ? ($storedFileNames[$file] ?? null) : $storedFileNames) ?? basename($file);
+
+                return [
+                    'name' => $name,
+                    'size' => 0,
+                    'type' => null,
+                    'url' => Str::sanitizeUrl(PhotographUrl::forTheAdmin($disk, $file)),
+                ];
+            });
+        });
 
         /*
          * And the same for every thumbnail in a list.

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PhotographPreviewController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\SessionController;
@@ -100,3 +101,15 @@ Route::get('/newsletter/leave', [NewsletterController::class, 'leave'])->name('n
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 Route::get('/feed/google.xml', [FeedController::class, 'google'])->name('feed.google');
+
+/*
+ * A photograph handed to the admin from this address rather than the Space's.
+ *
+ * The upload boxes fetch their pictures, and a browser polices a fetch across
+ * domains — so without this a shop on DigitalOcean sees every picture on the
+ * shop and a grey "Loading" bar in the admin.
+ */
+Route::get('/photograph-preview/{path}', PhotographPreviewController::class)
+    ->where('path', '.*')
+    ->middleware('auth')
+    ->name('photograph.preview');
