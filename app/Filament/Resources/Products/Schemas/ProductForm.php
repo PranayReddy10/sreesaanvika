@@ -191,6 +191,15 @@ class ProductForm
                                     ->helperText('Leave empty to share the design stock.'),
                             ]),
 
+                            Toggle::make('show_worn_picture')
+                                ->label('Show the saree worn with this shade')
+                                ->default(true)
+                                ->helperText('The picture under "The saree worn" is added at the end of '
+                                    .'this shade\'s photographs, and is the only thing shown for a shade '
+                                    .'with none of its own. Turn it off where it would mislead — a shade '
+                                    .'in quite another colour from the one in that photograph.')
+                                ->columnSpanFull(),
+
                             Repeater::make('images')
                                 ->relationship()
                                 ->label('Photographs of this shade')
@@ -198,6 +207,7 @@ class ProductForm
                                 ->reorderable()
                                 ->schema([
                                     FileUpload::make('path')
+                                        ->label('Image')
                                         ->image()->disk('public')->directory('products')
                                         ->imageEditor()->required()
                                         ->maxSize(Uploads::ceiling())

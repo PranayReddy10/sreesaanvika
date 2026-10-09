@@ -18,6 +18,7 @@ class Colourway extends Model
             'price'      => 'decimal:2',
             'sale_price' => 'decimal:2',
             'is_visible' => 'boolean',
+            'show_worn_picture' => 'boolean',
         ];
     }
 

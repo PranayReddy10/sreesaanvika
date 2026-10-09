@@ -527,9 +527,13 @@ Last, in the admin at `/admin`:
 - **Catalogue → Sarees** — your pieces, their shades and their photographs.
   Each saree asks for one picture of it **worn**. The pictures under
   "Pictures of this saree" are what the front page and the cards show; the
-  saree's own page shows the worn picture and then the photographs of
-  whichever shade is chosen, so a shopper who presses a photograph does not
-  arrive at a page led by the same one.
+  saree's own page shows the photographs of whichever shade is chosen — the
+  first shade until a shopper picks another — with the worn picture at the
+  end of them, so a shopper who presses a photograph does not arrive at a
+  page led by the same one. A shade with no photographs of its own shows the
+  worn picture alone, and any shade can be told to do without it ("Show the
+  saree worn with this shade", under Colourways) where that picture would
+  mislead.
   Each one has a **Films** tab: fifteen to thirty seconds of it being worn,
   held portrait, does more for a sale than another photograph. They play
   muted as the shopper scrolls to them, and she turns the sound on if she

@@ -159,6 +159,71 @@ class SareePagePhotographsTest extends TestCase
             ->assertSee($gallery->first()->path, false);
     }
 
+    /* ---------------------------------------- a shade that wants none of it */
+
+    /**
+     * Some shades should not show the saree worn at all.
+     *
+     * The photograph is of one colour. On a shade close enough to it, it
+     * tells the shopper how the saree falls; on a pomegranate saree it tells
+     * her the wrong thing, and only the shop knows which is which.
+     */
+    public function test_a_shade_can_be_told_to_do_without_the_worn_picture(): void
+    {
+        $this->saree->update(['model_image' => 'products/worn.jpg']);
+
+        $shade = $this->saree->colourways->first();
+        $this->assertNotNull($shade);
+
+        $this->saree->images()->where('colourway_id', $shade->id)->delete();
+
+        ProductImage::create([
+            'product_id' => $this->saree->id,
+            'colourway_id' => $shade->id,
+            'path' => 'products/this-shade.jpg',
+            'alt' => 'This shade',
+            'position' => 0,
+        ]);
+
+        // On, which is how every shade starts.
+        $this->assertTrue($shade->show_worn_picture);
+        $this->assertSame(
+            ['products/this-shade.jpg', 'products/worn.jpg'],
+            $this->saree->fresh(['images', 'colourways'])->galleryFor($shade->fresh())->pluck('path')->all(),
+        );
+
+        $shade->update(['show_worn_picture' => false]);
+
+        $this->assertSame(
+            ['products/this-shade.jpg'],
+            $this->saree->fresh(['images', 'colourways'])->galleryFor($shade->fresh())->pluck('path')->all(),
+        );
+    }
+
+    /**
+     * And a shade with nothing of its own either still has a page.
+     *
+     * It falls back to the pictures of the saree, which is the last thing
+     * left: a gallery with nothing in it is not an option.
+     */
+    public function test_a_shade_with_nothing_at_all_falls_back_to_the_saree(): void
+    {
+        $this->saree->update(['model_image' => 'products/worn.jpg']);
+
+        $bare = Colourway::create([
+            'product_id' => $this->saree->id,
+            'name' => 'Pomegranate',
+            'hex' => '#7b1f2b',
+            'position' => 9,
+            'show_worn_picture' => false,
+        ]);
+
+        $gallery = $this->saree->fresh(['images', 'colourways'])->galleryFor($bare);
+
+        $this->assertNotEmpty($gallery);
+        $this->assertSame($this->saree->imagesFor()->pluck('path')->all(), $gallery->pluck('path')->all());
+    }
+
     /* --------------------------------------------------- the front page */
 
     public function test_the_front_page_shows_the_pictures_of_the_saree(): void

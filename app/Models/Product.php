@@ -260,6 +260,7 @@ class Product extends Model
      * and the saree worn at the end of them. A shade nobody has photographed
      * separately — most shades of most sarees — shows the worn picture and
      * nothing else, which is the one picture that is true of every shade.
+     * A shade can be told to do without it, and then shows only its own.
      *
      * With no shade asked for it is the first one, because that is the shade
      * the page stands on: its price, its stock, and now its photographs.
@@ -275,7 +276,13 @@ class Product extends Model
             ? $this->images->where('colourway_id', $colourway->id)->values()
             : collect();
 
-        if ($worn = $this->modelPhotograph()) {
+        /*
+         * And the saree worn at the end of them, unless this shade has been
+         * told to do without: a pomegranate saree under a picture of the
+         * indigo one being worn tells the shopper the wrong thing, and only
+         * the shop knows which shades those are.
+         */
+        if (($colourway?->show_worn_picture ?? true) && ($worn = $this->modelPhotograph())) {
             $gallery = $gallery->push($worn)->values();
         }
 
