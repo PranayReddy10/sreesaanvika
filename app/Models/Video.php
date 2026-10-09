@@ -164,9 +164,13 @@ class Video extends Model
             return Storage::disk('public')->url($this->poster);
         }
 
-        // A saree's own photograph stands in, so the page shows the piece
-        // rather than a black rectangle while the film loads.
-        return $this->product?->firstImage()?->url;
+        /*
+         * A photograph stands in, so the page shows the piece rather than a
+         * black rectangle while the film loads — the saree worn where there
+         * is such a picture, since that is the face the saree's own page
+         * wears, and its first photograph otherwise.
+         */
+        return ($this->product?->modelPhotograph() ?? $this->product?->firstImage())?->url;
     }
 
     /**

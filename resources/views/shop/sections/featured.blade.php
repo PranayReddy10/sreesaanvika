@@ -36,17 +36,8 @@
                  * picture, and nothing in the admin said so.
                  */
                 $gallery = $product->imagesFor();
-
-                /*
-                 * The front page's own photograph where the shop has given
-                 * one, and the saree's first where it has not. Either way it
-                 * is the wide picture for this row, and when the shop has
-                 * chosen one it appears here and nowhere else — which is the
-                 * point of it: clicking it used to open a page led by the
-                 * very same picture.
-                 */
-                $image = $product->frontPagePhotograph();
-                $extra = $gallery->reject(fn ($i) => $i->path === $image?->path)->take(2)->values();
+                $image = $gallery->first();
+                $extra = $gallery->slice(1, 2);
                 $flip = $i % 2 === 1;
             @endphp
 

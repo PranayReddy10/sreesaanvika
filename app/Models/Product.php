@@ -225,39 +225,59 @@ class Product extends Model
      * the design's, so a shop can photograph only the shades it has had time
      * to shoot without leaving gaps on the page.
      */
+    /**
+     * What the shop puts forward: the pictures of the saree itself.
+     *
+     * This is "Pictures of this saree" in the admin, and it is what the front
+     * page and the cards show. A shade with photographs of its own shows
+     * those instead, so a shop that has photographed every colour gets the
+     * right one on the card a shopper presses.
+     */
     public function imagesFor(?Colourway $colourway = null)
     {
-        $worn = $this->modelPhotograph();
-
         if ($colourway) {
             $own = $this->images->where('colourway_id', $colourway->id)->values();
 
             if ($own->isNotEmpty()) {
-                /*
-                 * The shade's own photographs first, because they are of this
-                 * shade and the model is wearing another one. The model shot
-                 * still comes along at the end: it is the only picture on the
-                 * page showing how the saree falls on somebody.
-                 */
-                return $worn ? $own->push($worn)->values() : $own;
+                return $own;
             }
         }
 
         $base = $this->images->whereNull('colourway_id')->values();
-        $base = $base->isNotEmpty() ? $base : $this->images->values();
 
-        // Nothing photographed for this shade, so the worn picture leads —
-        // which is the page a shopper gets for most shades of most sarees,
-        // since nobody photographs a model in every colour they weave.
-        return $worn ? collect([$worn])->concat($base)->values() : $base;
+        return $base->isNotEmpty() ? $base : $this->images->values();
+    }
+
+    /**
+     * What the saree's own page shows: the saree worn, and the shade chosen.
+     *
+     * Deliberately not the pictures of the saree itself. Those are what the
+     * front page and the cards are made of, and a shopper who has just
+     * pressed one of them does not need to arrive at a page led by the same
+     * picture — she needs to see it worn, and then the shade she is looking
+     * at.
+     *
+     * A saree with neither falls back to its own pictures, because a page
+     * with no photograph on it is worse than a repeated one.
+     */
+    public function galleryFor(?Colourway $colourway = null)
+    {
+        $gallery = collect([$this->modelPhotograph()])->filter();
+
+        if ($colourway) {
+            $gallery = $gallery->concat($this->images->where('colourway_id', $colourway->id)->values());
+        }
+
+        return $gallery->isNotEmpty() ? $gallery->values() : $this->imagesFor($colourway);
     }
 
     /**
      * The saree worn.
      *
      * Kept on the saree rather than in its gallery because it is one picture
-     * with a job: it opens the page, and it stands in for every shade nobody
-     * has photographed separately.
+     * with a job: it opens the saree's page, and it stands in for every shade
+     * nobody has photographed separately — which is most shades of most
+     * sarees, since nobody photographs a model in every colour they weave.
      */
     public function modelPhotograph(): ?ProductImage
     {
@@ -267,24 +287,9 @@ class Product extends Model
     }
 
     /**
-     * The one for the front page, and only for the front page.
-     *
-     * The row there is a wide editorial photograph; without a picture of its
-     * own it borrows the saree's first, which is how the shop ended up
-     * clicking a photograph on the front page and meeting it again at the top
-     * of the saree's own page.
-     */
-    public function frontPagePhotograph(): ?ProductImage
-    {
-        return $this->home_image
-            ? $this->aPhotograph($this->home_image, $this->name)
-            : $this->firstImage();
-    }
-
-    /**
      * A path, dressed as a photograph.
      *
-     * Not a row in product_images and never saved: these two belong to the
+     * Not a row in product_images and never saved: this one belongs to the
      * saree itself, and everything that draws a photograph — the address, the
      * alt text — already knows how to read one of these.
      */

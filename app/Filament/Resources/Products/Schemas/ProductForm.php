@@ -119,24 +119,9 @@ class ProductForm
                                  * before this existed.
                                  */
                                 ->required(fn (?Product $record) => $record === null)
-                                ->helperText('Shown first on the saree\'s own page.')
+                                ->helperText('The saree\'s own page opens on this, and then shows the photographs of whichever shade is chosen.')
                                 ->columnSpanFull(),
                         ]),
-
-                    Section::make('The front page')
-                        ->description('The wide photograph for the row on the home page. It is used there and nowhere else, so clicking it does not open a page showing the same picture again.')
-                        ->schema([
-                            FileUpload::make('home_image')
-                                ->label('Front page photograph')
-                                ->image()
-                                ->disk('public')
-                                ->directory('products')
-                                ->imageEditor()
-                                ->maxSize(Uploads::ceiling())
-                                ->helperText('Leave empty and the front page uses the first photograph below.')
-                                ->columnSpanFull(),
-                        ])
-                        ->collapsed(fn (?Product $record) => ! $record?->home_image),
 
                     Repeater::make('images')
                         ->relationship('baseImages')

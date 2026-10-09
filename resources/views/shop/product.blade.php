@@ -3,7 +3,12 @@
 @php
     use App\Support\Shop;
 
-    $images = $product->imagesFor();
+    /*
+     * The saree worn, then the shade being looked at — not the pictures of
+     * the saree itself, which are what the front page and the cards are made
+     * of and what the shopper has just pressed to get here.
+     */
+    $images = $product->galleryFor();
 
     /*
      * The photograph the page opens on, worked out here rather than left to
@@ -15,7 +20,7 @@
      * that, what shows is what the shop put first under Photographs, which is
      * also what its card showed in the listing it was pressed from.
      */
-    $opening = request('shade') ? $product->imagesFor($chosen) : $images;
+    $opening = request('shade') ? $product->galleryFor($chosen) : $images;
     $first = $opening->first();
 
     // Everything the shade buttons need, worked out on the server so the page
@@ -29,7 +34,7 @@
         'off'    => $product->discountPercent($c),
         'stock'  => $product->stockFor($c),
         'order'  => $product->canOrder(1, $c),
-        'images' => $product->imagesFor($c)->map(fn ($i) => ['id' => $i->id, 'url' => $i->url, 'alt' => $i->alt ?: $product->name])->values(),
+        'images' => $product->galleryFor($c)->map(fn ($i) => ['id' => $i->id, 'url' => $i->url, 'alt' => $i->alt ?: $product->name])->values(),
     ])->values();
 
     $reviews = $product->approvedReviews;
