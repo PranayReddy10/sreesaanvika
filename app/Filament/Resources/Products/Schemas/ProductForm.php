@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use App\Models\Product;
 use App\Support\Uploads;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -100,6 +101,43 @@ class ProductForm
                 ]),
 
                 Tab::make('Photographs')->icon('heroicon-o-photo')->schema([
+                    Section::make('The saree worn')
+                        ->description('One picture of this saree on somebody. It opens the saree\'s page, and it is what a shopper sees when she picks a shade nobody has photographed separately — which is most shades of most sarees, since nobody photographs a model in every colour they weave.')
+                        ->schema([
+                            FileUpload::make('model_image')
+                                ->label('Worn by a model')
+                                ->image()
+                                ->disk('public')
+                                ->directory('products')
+                                ->imageEditor()
+                                ->maxSize(Uploads::ceiling())
+                                /*
+                                 * Asked for on a new saree, not demanded of
+                                 * the ones already in the shop: making it
+                                 * required everywhere would lock the shop out
+                                 * of editing a catalogue it photographed
+                                 * before this existed.
+                                 */
+                                ->required(fn (?Product $record) => $record === null)
+                                ->helperText('Shown first on the saree\'s own page.')
+                                ->columnSpanFull(),
+                        ]),
+
+                    Section::make('The front page')
+                        ->description('The wide photograph for the row on the home page. It is used there and nowhere else, so clicking it does not open a page showing the same picture again.')
+                        ->schema([
+                            FileUpload::make('home_image')
+                                ->label('Front page photograph')
+                                ->image()
+                                ->disk('public')
+                                ->directory('products')
+                                ->imageEditor()
+                                ->maxSize(Uploads::ceiling())
+                                ->helperText('Leave empty and the front page uses the first photograph below.')
+                                ->columnSpanFull(),
+                        ])
+                        ->collapsed(fn (?Product $record) => ! $record?->home_image),
+
                     Repeater::make('images')
                         ->relationship('baseImages')
                         ->label('Pictures of this saree')

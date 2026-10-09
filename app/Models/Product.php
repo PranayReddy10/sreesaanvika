@@ -227,17 +227,73 @@ class Product extends Model
      */
     public function imagesFor(?Colourway $colourway = null)
     {
+        $worn = $this->modelPhotograph();
+
         if ($colourway) {
-            $own = $this->images->where('colourway_id', $colourway->id);
+            $own = $this->images->where('colourway_id', $colourway->id)->values();
 
             if ($own->isNotEmpty()) {
-                return $own->values();
+                /*
+                 * The shade's own photographs first, because they are of this
+                 * shade and the model is wearing another one. The model shot
+                 * still comes along at the end: it is the only picture on the
+                 * page showing how the saree falls on somebody.
+                 */
+                return $worn ? $own->push($worn)->values() : $own;
             }
         }
 
-        $base = $this->images->whereNull('colourway_id');
+        $base = $this->images->whereNull('colourway_id')->values();
+        $base = $base->isNotEmpty() ? $base : $this->images->values();
 
-        return $base->isNotEmpty() ? $base->values() : $this->images->values();
+        // Nothing photographed for this shade, so the worn picture leads —
+        // which is the page a shopper gets for most shades of most sarees,
+        // since nobody photographs a model in every colour they weave.
+        return $worn ? collect([$worn])->concat($base)->values() : $base;
+    }
+
+    /**
+     * The saree worn.
+     *
+     * Kept on the saree rather than in its gallery because it is one picture
+     * with a job: it opens the page, and it stands in for every shade nobody
+     * has photographed separately.
+     */
+    public function modelPhotograph(): ?ProductImage
+    {
+        return $this->model_image
+            ? $this->aPhotograph($this->model_image, $this->name.', worn')
+            : null;
+    }
+
+    /**
+     * The one for the front page, and only for the front page.
+     *
+     * The row there is a wide editorial photograph; without a picture of its
+     * own it borrows the saree's first, which is how the shop ended up
+     * clicking a photograph on the front page and meeting it again at the top
+     * of the saree's own page.
+     */
+    public function frontPagePhotograph(): ?ProductImage
+    {
+        return $this->home_image
+            ? $this->aPhotograph($this->home_image, $this->name)
+            : $this->firstImage();
+    }
+
+    /**
+     * A path, dressed as a photograph.
+     *
+     * Not a row in product_images and never saved: these two belong to the
+     * saree itself, and everything that draws a photograph — the address, the
+     * alt text — already knows how to read one of these.
+     */
+    private function aPhotograph(string $path, string $alt): ProductImage
+    {
+        $photograph = new ProductImage(['path' => $path, 'alt' => $alt]);
+        $photograph->setRelation('product', $this);
+
+        return $photograph;
     }
 
     public function firstImage(?Colourway $colourway = null): ?ProductImage

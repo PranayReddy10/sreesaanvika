@@ -525,6 +525,10 @@ Last, in the admin at `/admin`:
   zone (the one with no pincodes) **last**: a zone with no pincodes matches
   everything, so anything after it is never reached.
 - **Catalogue → Sarees** — your pieces, their shades and their photographs.
+  Each saree asks for one picture of it **worn**: it opens the saree's page,
+  and it is what a shopper sees when she picks a shade nobody has
+  photographed separately. A saree may also have a **front page photograph**,
+  used in the wide row on the home page and nowhere else.
   Each one has a **Films** tab: fifteen to thirty seconds of it being worn,
   held portrait, does more for a sale than another photograph. They play
   muted as the shopper scrolls to them, and she turns the sound on if she
