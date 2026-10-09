@@ -137,68 +137,42 @@ class StorefrontTest extends TestCase
     }
 
     /**
-     * The small photographs on the front page are doors, not decoration.
+     * The small photographs beside a front page row are links.
      *
-     * They looked exactly like thumbnails and did nothing when pressed, which
-     * is worse than showing no photograph at all. Each opens the saree on that
-     * photograph.
-     *
-     * And they are the saree's own photographs, in the order the shop put them
-     * in under Photographs — the same ones the cards on /sarees show. For an
-     * afternoon this showed the first shade's instead, so a shade with
-     * pictures of its own quietly replaced what the shop had chosen as the
-     * saree's first picture.
+     * They were decoration before — dimmed, aria-hidden, dead to a press —
+     * and a picture that looks like a thumbnail and does nothing is worse
+     * than no picture. They open the saree; they no longer say which
+     * photograph to open on, because the saree's page does not show the
+     * front page's pictures at all.
      */
     public function test_the_extra_photographs_on_the_front_page_open_the_saree(): void
     {
-        $saree = Product::published()->has('images', '>=', 2)->orderBy('id')->firstOrFail();
-
-        $gallery = $saree->imagesFor();
+        $saree = Product::published()->has('images')->where('is_featured', true)->first()
+            ?? Product::published()->has('images')->firstOrFail();
 
         $html = $this->get('/')->assertOk()->getContent();
 
-        // Only sarees the front page actually features are on it, so this
-        // proves nothing unless one of them is the one examined.
         if (! str_contains($html, route('product', $saree))) {
             $this->markTestSkipped('this saree is not on the front page');
         }
 
-        $second = $gallery->get(1);
-
-        $this->assertNotNull($second, 'needs a second photograph to link to');
-
-        /*
-         * By id rather than by address: the seeder gives a shade and the
-         * saree itself the same photograph file, so comparing what is on the
-         * page by its URL passes whichever list the page took it from. The id
-         * is the only thing that tells them apart — which is why this is the
-         * test that catches the list being swapped, and a comparison of the
-         * pictures on two pages is not.
-         */
-        $this->assertStringContainsString(
-            route('product', [$saree, 'photo' => $second->id]),
-            $html,
-            'the extra photograph must link to the saree, at that photograph',
-        );
-
-        // And the page takes the instruction.
-        $this->get(route('product', [$saree, 'photo' => $second->id]))
-            ->assertOk()
-            ->assertSee('photo: '.$second->id, false);
+        $this->assertStringContainsString(route('product', $saree), $html);
+        $this->assertStringNotContainsString('photo=', $html, 'the front page still links to a photograph');
     }
 
     /**
-     * A saree's page opens on the same photograph its card showed.
+     * A saree's page opens on the shade it is standing on.
      *
      * A card in a listing is of one shade — a saree woven in two colours is
      * two different things to look at — so it shows that shade's photographs
-     * and its link says which shade. The page it opens shows the same thing.
+     * and its link says which shade, and the page opens on exactly those.
      *
-     * The front page is the other half of the same rule: its pieces are of the
-     * saree rather than of a shade, so they show what the shop put first under
-     * Photographs and link without a shade, and the page opens on those.
+     * Arriving without a shade named, which is the front page's way in, the
+     * page opens on the first shade rather than on the pictures of the saree
+     * itself: those are what the front page is made of, and a shopper who has
+     * just pressed one does not need to meet it again.
      */
-    public function test_a_saree_opens_on_the_photograph_its_card_showed(): void
+    public function test_a_saree_opens_on_the_shade_it_is_standing_on(): void
     {
         $saree = Product::published()->has('colourways')->has('images')->orderBy('id')->firstOrFail();
         $shade = $saree->colourways->where('is_visible', true)->first();
@@ -218,18 +192,24 @@ class StorefrontTest extends TestCase
             'position'     => 0,
         ]);
 
+        // And a picture of it worn, so that a film on the page rests on that
+        // rather than borrowing the saree's first photograph — which would
+        // otherwise put one on the page and make the last assertion here a
+        // statement about film posters.
+        $saree->update(['model_image' => 'products/only-worn.jpg']);
+
         $saree->refresh();
 
         $ofTheSaree = $saree->imagesFor()->first();
-        $ofTheShade = $saree->imagesFor($shade)->first();
+        $ofTheShade = $saree->galleryFor($shade)->first();
 
         $this->assertNotSame($ofTheSaree->url, $ofTheShade->url, 'the two lists must differ to prove anything');
 
         /*
-         * On the src of the photograph rather than anywhere in the page: every
-         * photograph's address is in the page — in the gallery the script is
-         * handed, and in the structured data — so looking for one loosely
-         * proves nothing about which is shown.
+         * On the src of the photograph rather than anywhere in the page:
+         * every photograph's address is in the page — in the gallery the
+         * script is handed, and in the structured data — so looking for one
+         * loosely proves nothing about which is shown.
          */
         $opens = fn (string $url): string => 'src="'.$url.'"';
 
@@ -244,12 +224,12 @@ class StorefrontTest extends TestCase
             ->assertOk()
             ->assertSee($opens($ofTheShade->url), false);
 
-        // Nobody asked for a shade — the front page's way in — so the page
-        // opens on what the shop put first under Photographs.
+        // Nobody asked for a shade: the first one, still not the saree's own
+        // pictures.
         $this->get(route('product', $saree))
             ->assertOk()
-            ->assertSee($opens($ofTheSaree->url), false)
-            ->assertDontSee($opens($ofTheShade->url), false);
+            ->assertSee($opens($ofTheShade->url), false)
+            ->assertDontSee($opens($ofTheSaree->url), false);
     }
 
     /**

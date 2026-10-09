@@ -4,24 +4,18 @@
     use App\Support\Shop;
 
     /*
-     * The saree worn, then the shade being looked at — not the pictures of
+     * The shade being looked at, then the saree worn — not the pictures of
      * the saree itself, which are what the front page and the cards are made
      * of and what the shopper has just pressed to get here.
-     */
-    $images = $product->galleryFor();
-
-    /*
-     * The photograph the page opens on, worked out here rather than left to
-     * the browser.
      *
      * A shade is chosen for the page whether or not anybody asked for one, so
-     * that the price and the stock have something to show. Its photographs are
-     * only the right ones to open on when it was actually asked for — before
-     * that, what shows is what the shop put first under Photographs, which is
-     * also what its card showed in the listing it was pressed from.
+     * that the price and the stock have something to show; its photographs
+     * are now what the page shows as well, which is the only arrangement
+     * where the picture, the price and the stock on screen are all about the
+     * same shade.
      */
-    $opening = request('shade') ? $product->galleryFor($chosen) : $images;
-    $first = $opening->first();
+    $images = $product->galleryFor($chosen);
+    $first = $images->first();
 
     // Everything the shade buttons need, worked out on the server so the page
     // never shows a price the server would not charge.
@@ -115,13 +109,6 @@
         shades: {{ Illuminate\Support\Js::from($shades) }},
         fallback: {{ Illuminate\Support\Js::from($images->map(fn ($i) => ['id' => $i->id, 'url' => $i->url, 'alt' => $i->alt ?: $product->name])->values()) }},
         start: {{ (int) ($chosen?->id ?? 0) }},
-        {{-- Whether a shade was actually asked for, as against one being
-             chosen for the page so the price has something to show. --}}
-        shadeAsked: {{ request('shade') ? 'true' : 'false' }},
-        {{-- Which photograph to open on, when the front page linked to one of
-             them. By its id rather than its place in the list, because the
-             list a shopper gets depends on the shade she arrives with. --}}
-        photo: {{ (int) request('photo', 0) }},
     })"
     class="od-wrap py-8 md:py-12"
 >

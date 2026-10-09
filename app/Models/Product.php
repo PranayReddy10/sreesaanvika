@@ -249,26 +249,37 @@ class Product extends Model
     }
 
     /**
-     * What the saree's own page shows: the saree worn, and the shade chosen.
+     * What the saree's own page shows: the shade being looked at, then worn.
      *
      * Deliberately not the pictures of the saree itself. Those are what the
      * front page and the cards are made of, and a shopper who has just
      * pressed one of them does not need to arrive at a page led by the same
-     * picture — she needs to see it worn, and then the shade she is looking
-     * at.
+     * picture.
+     *
+     * So: the photographs of this shade, in the order the shop put them in,
+     * and the saree worn at the end of them. A shade nobody has photographed
+     * separately — most shades of most sarees — shows the worn picture and
+     * nothing else, which is the one picture that is true of every shade.
+     *
+     * With no shade asked for it is the first one, because that is the shade
+     * the page stands on: its price, its stock, and now its photographs.
      *
      * A saree with neither falls back to its own pictures, because a page
      * with no photograph on it is worse than a repeated one.
      */
     public function galleryFor(?Colourway $colourway = null)
     {
-        $gallery = collect([$this->modelPhotograph()])->filter();
+        $colourway ??= $this->colourways->first();
 
-        if ($colourway) {
-            $gallery = $gallery->concat($this->images->where('colourway_id', $colourway->id)->values());
+        $gallery = $colourway
+            ? $this->images->where('colourway_id', $colourway->id)->values()
+            : collect();
+
+        if ($worn = $this->modelPhotograph()) {
+            $gallery = $gallery->push($worn)->values();
         }
 
-        return $gallery->isNotEmpty() ? $gallery->values() : $this->imagesFor($colourway);
+        return $gallery->isNotEmpty() ? $gallery : $this->imagesFor($colourway);
     }
 
     /**

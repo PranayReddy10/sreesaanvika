@@ -69,31 +69,55 @@ class SareePagePhotographsTest extends TestCase
             ->assertDontSee('products/for-the-front-page.jpg', false);
     }
 
-    public function test_choosing_a_shade_shows_the_worn_picture_and_that_shade(): void
+    public function test_a_shade_shows_its_own_photographs_with_the_worn_one_last(): void
     {
         $this->saree->update(['model_image' => 'products/worn.jpg']);
 
         $shade = $this->saree->colourways->first();
         $this->assertNotNull($shade);
 
-        ProductImage::create([
-            'product_id' => $this->saree->id,
-            'colourway_id' => $shade->id,
-            'path' => 'products/this-very-shade.jpg',
-            'alt' => 'This shade',
-            'position' => 0,
-        ]);
+        $this->saree->images()->where('colourway_id', $shade->id)->delete();
+
+        foreach (['products/this-shade-1.jpg', 'products/this-shade-2.jpg'] as $position => $path) {
+            ProductImage::create([
+                'product_id' => $this->saree->id,
+                'colourway_id' => $shade->id,
+                'path' => $path,
+                'alt' => 'This shade',
+                'position' => $position,
+            ]);
+        }
 
         $gallery = $this->saree->fresh(['images', 'colourways'])->galleryFor($shade);
 
-        $this->assertSame('products/worn.jpg', $gallery->first()->path);
-        $this->assertTrue($gallery->contains('path', 'products/this-very-shade.jpg'));
+        $this->assertSame([
+            'products/this-shade-1.jpg',
+            'products/this-shade-2.jpg',
+            'products/worn.jpg',
+        ], $gallery->pluck('path')->all());
+    }
 
-        // And nothing from the pictures of the saree itself.
-        $this->assertSame(
-            [],
-            $gallery->whereNotNull('colourway_id')->where('colourway_id', '!=', $shade->id)->pluck('path')->all(),
-        );
+    /**
+     * And the page opens on the first shade, because that is the shade it
+     * stands on: its price and its stock are already what the page shows.
+     */
+    public function test_the_page_opens_on_the_first_shade(): void
+    {
+        [$saree, $first] = $this->aSareeWithTwoShades();
+
+        $page = $this->get('/saree/'.$saree->slug)->assertOk();
+
+        $html = $page->getContent();
+
+        // The photograph painted into the page, before a line of JavaScript.
+        $this->assertStringContainsString('products/the-first-shade.jpg', $html);
+
+        $opensOn = strpos($html, 'products/the-first-shade.jpg');
+        $other = strpos($html, 'products/the-second-shade.jpg');
+
+        $this->assertNotFalse($opensOn);
+        $this->assertTrue($other === false || $opensOn < $other, 'it opened on the second shade');
+        $this->assertSame($first->id, $saree->colourways->first()->id);
     }
 
     /** The shade nobody photographed, which is most of them. */
@@ -110,6 +134,8 @@ class SareePagePhotographsTest extends TestCase
 
         $gallery = $this->saree->fresh(['images', 'colourways'])->galleryFor($bare);
 
+        // The worn picture and nothing else: it is the one photograph that is
+        // true of every shade.
         $this->assertSame(['products/worn.jpg'], $gallery->pluck('path')->all());
     }
 
@@ -239,6 +265,54 @@ class SareePagePhotographsTest extends TestCase
         ]);
 
         return [$saree->fresh(['images', 'colourways']), $shade];
+    }
+
+    /**
+     * A saree in two shades, each photographed, and worn.
+     *
+     * @return array{0: Product, 1: Colourway}
+     */
+    private function aSareeWithTwoShades(): array
+    {
+        $saree = Product::create([
+            'name' => 'Kanjivaram in two shades',
+            'slug' => 'kanjivaram-in-two-shades',
+            'status' => 'published',
+            'price' => 18500,
+            'short_description' => 'Woven twice.',
+            'description' => 'Woven twice.',
+            'model_image' => 'products/the-saree-worn.jpg',
+        ]);
+
+        ProductImage::create([
+            'product_id' => $saree->id,
+            'path' => 'products/for-the-front-page.jpg',
+            'alt' => 'The saree itself',
+            'position' => 0,
+        ]);
+
+        $shades = collect(['Indigo' => 'first', 'Maroon' => 'second'])
+            ->map(function (string $which, string $name) use ($saree) {
+                $shade = Colourway::create([
+                    'product_id' => $saree->id,
+                    'name' => $name,
+                    'hex' => '#27356b',
+                    'position' => $which === 'first' ? 0 : 1,
+                    'stock' => 4,
+                ]);
+
+                ProductImage::create([
+                    'product_id' => $saree->id,
+                    'colourway_id' => $shade->id,
+                    'path' => 'products/the-'.$which.'-shade.jpg',
+                    'alt' => $name,
+                    'position' => 0,
+                ]);
+
+                return $shade;
+            });
+
+        return [$saree->fresh(['images', 'colourways']), $shades->first()];
     }
 
     private function admin(): User

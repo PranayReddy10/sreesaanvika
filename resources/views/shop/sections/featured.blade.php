@@ -89,11 +89,13 @@
                          They were decoration before — aria-hidden, dimmed, not
                          clickable — and a picture that looks like a thumbnail
                          and does nothing when pressed is worse than no picture
-                         at all. Each opens the saree on that photograph. --}}
+                         at all. Each opens the saree, which opens on its own
+                         first shade: these pictures are the front page's, and
+                         are not on the saree's page to be opened on. --}}
                     @if ($extra->isNotEmpty())
                         <div class="mt-7 hidden md:flex gap-3">
                             @foreach ($extra as $thumb)
-                                <a href="{{ route('product', [$product, 'photo' => $thumb->id]) }}"
+                                <a href="{{ route('product', $product) }}"
                                    class="block overflow-hidden rounded-md border border-transparent
                                           hover:border-[color:var(--color-brand)] transition">
                                     <img src="{{ $thumb->url }}"

@@ -9,76 +9,36 @@
 
 document.addEventListener('alpine:init', () => {
     /** The saree page: shade buttons, the gallery, and adding to the bag. */
-    Alpine.data('saree', ({ shades, fallback, start, photo, shadeAsked }) => ({
+    Alpine.data('saree', ({ shades, fallback, start }) => ({
         shades,
         chosen: start || (shades[0] ? shades[0].id : null),
         active: 0,
         qty: 1,
         busy: false,
 
-        /*
-         * Open on the photograph that was linked to, if there was one.
-         *
-         * Matched by id rather than by position: the front page shows the
-         * saree's own photographs, and a shopper arriving with a shade chosen
-         * is looking at that shade's instead. If it is not among them, the
-         * first one is no worse than it ever was.
-         */
-        init() {
-            // Asked for in the address — a link somebody sent — counts as
-            // picked.
-            this.showBase = ! shadeAsked;
-
-            if (! photo) return;
-
-            if (this.gallery.findIndex((image) => image.id === photo) < 0) {
-                // A photograph of one particular shade brings its shade with
-                // it, so the price and the stock on the page are that shade's.
-                const owner = this.shades.find((s) => (s.images || []).some((i) => i.id === photo));
-
-                if (owner) {
-                    this.chosen = owner.id;
-                } else if (fallback.some((i) => i.id === photo)) {
-                    // One of the shop's own, which the front page shows.
-                    this.showBase = true;
-                }
-            }
-
-            const wanted = this.gallery.findIndex((image) => image.id === photo);
-
-            this.active = wanted > 0 ? wanted : 0;
-        },
-
         get shade() {
             return this.shades.find((s) => s.id === this.chosen) || null;
         },
 
         /*
-         * showBase: the shop's own photographs rather than the chosen shade's.
+         * Whatever shade is being looked at, in that shade's own photographs,
+         * with the saree worn at the end of them.
          *
-         * On by default, because the page opens with a shade chosen without
-         * anybody having chosen it — one is needed so the price and the stock
-         * have something to show — and a shade with photographs of its own
-         * then replaced the picture the shop put first under Photographs. The
-         * card in a listing showed one picture and the page it opened showed
-         * another.
-         *
-         * A shade's own photographs are exactly right once a shade has been
-         * picked, or asked for in the address, and that is when they show.
+         * The page opens on a shade whether or not anybody picked one — the
+         * first — so this is the gallery from the first moment, and the
+         * picture, the price and the stock on screen are all about the same
+         * shade. The fallback is for a saree with no photographs of this
+         * shade and no picture of it worn: its own, rather than nothing.
          */
-        showBase: true,
-
         get gallery() {
             const own = this.shade && this.shade.images.length ? this.shade.images : null;
 
-            return (this.showBase ? null : own) || fallback;
+            return own || fallback;
         },
 
         pick(id) {
             this.chosen = id;
             this.active = 0;
-            // Asking for a shade means wanting to see that shade.
-            this.showBase = false;
 
             // The shade in the address bar, so a shopper can send someone the
             // indigo one rather than "the blue one, third row".
