@@ -2,8 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\OrderItem;
+use App\Models\Review;
 use App\Models\Setting;
 use App\Providers\ShopConfigProvider;
+use App\Support\Shop;
 use App\Support\StorageCheck;
 use Illuminate\Support\Facades\Storage;
 use BackedEnum;
@@ -71,6 +74,11 @@ class ShopSettings extends Page implements HasForms
         'cod_max'            => ['shipping', 'money'],
         'order_emails'       => ['general', 'string'],
         'dispatch_days'      => ['shipping', 'int'],
+
+        'sold_count'         => ['numbers', 'int'],
+        'sold_label'         => ['numbers', 'string'],
+        'reviews_count'      => ['numbers', 'int'],
+        'reviews_label'      => ['numbers', 'string'],
 
         'bar_on'             => ['announcement', 'bool'],
         'bar_text'           => ['announcement', 'string'],
@@ -154,6 +162,20 @@ class ShopSettings extends Page implements HasForms
     /** @var array<string, mixed> */
     public array $data = [];
 
+    /** How many pieces this website has actually sold and delivered. */
+    private static function sareesSoldOnline(): int
+    {
+        return (int) OrderItem::query()
+            ->whereHas('order', fn ($q) => $q->whereIn('status', ['shipped', 'delivered']))
+            ->sum('quantity');
+    }
+
+    /** And how many reviews a shopper can read right now. */
+    private static function reviewsShowing(): int
+    {
+        return (int) Review::query()->where('is_approved', true)->count();
+    }
+
     public function mount(): void
     {
         $values = [];
@@ -219,6 +241,44 @@ class ShopSettings extends Page implements HasForms
                                 ->helperText('Leave empty to use the OJASVI logo the site ships with.')
                                 ->columnSpanFull(),
                         ]),
+
+                        Section::make('Numbers worth showing')
+                            ->description('Kept by hand, because the shop sells across a counter as well as on here and the figure a shopper should see is both together. Leave one empty and it is not shown at all. They appear wherever you put "The numbers" row on the front page.')
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('sold_count')
+                                    ->label('Sarees sold')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->placeholder('0')
+                                    /*
+                                     * What the shop's own records say, shown
+                                     * beside the box rather than put in it:
+                                     * the figure is the shop's to decide, and
+                                     * this is the part of it we can count.
+                                     */
+                                    ->helperText(fn () => 'Orders taken on this website account for '
+                                        .Shop::grouped(self::sareesSoldOnline())
+                                        .' so far. Add what you have sold in the shop and put the total here.'),
+
+                                TextInput::make('sold_label')
+                                    ->label('Called')
+                                    ->maxLength(40)
+                                    ->placeholder('Sarees sold'),
+
+                                TextInput::make('reviews_count')
+                                    ->label('Reviews')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->placeholder('0')
+                                    ->helperText(fn () => Shop::grouped(self::reviewsShowing())
+                                        .' are showing on the shop. Count the ones customers send you on WhatsApp too.'),
+
+                                TextInput::make('reviews_label')
+                                    ->label('Called')
+                                    ->maxLength(40)
+                                    ->placeholder('Reviews'),
+                            ]),
                     ]),
 
                     Tab::make('Delivery & payment')->schema([

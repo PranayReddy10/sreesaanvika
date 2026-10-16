@@ -553,6 +553,21 @@ class DemoSeeder extends Seeder
             'subheading' => 'Every piece is photographed in daylight, checked for a pulled thread, and posted within two working days.',
             'position' => 5, 'is_visible' => true,
         ]);
+
+        /*
+         * The figures the shop keeps by hand — what it has sold over the
+         * counter as well as on here. Seeded so a fresh shop can see what the
+         * row looks like; the numbers themselves are set in Settings.
+         */
+        Section::create([
+            'key' => 'numbers',
+            'eyebrow' => 'So far',
+            'heading' => 'Sarees we have sent out',
+            'position' => 6, 'is_visible' => true,
+        ]);
+
+        Setting::put('sold_count', 1240, 'int', 'numbers');
+        Setting::put('reviews_count', 318, 'int', 'numbers');
     }
 
     /** @return array<int, User> */

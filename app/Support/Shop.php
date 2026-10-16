@@ -201,6 +201,31 @@ class Shop
         ];
     }
 
+    /**
+     * The figures the shop is proud of, as it wants them read.
+     *
+     * Kept by hand rather than counted, because the shop sells across a
+     * counter as well as over the web and the number a shopper should see is
+     * both together. Only the ones filled in come back, so a shop that has
+     * set one of them gets one, and a shop that has set neither gets a page
+     * without an empty boast on it.
+     *
+     * @return array<int, array{value: string, label: string}>
+     */
+    public static function numbers(): array
+    {
+        $figures = [
+            [(int) Setting::get('sold_count'), (string) (Setting::get('sold_label') ?: 'Sarees sold')],
+            [(int) Setting::get('reviews_count'), (string) (Setting::get('reviews_label') ?: 'Reviews')],
+        ];
+
+        return collect($figures)
+            ->filter(fn (array $figure) => $figure[0] > 0)
+            ->map(fn (array $figure) => ['value' => self::grouped($figure[0]), 'label' => $figure[1]])
+            ->values()
+            ->all();
+    }
+
     /** ₹1,24,500 — Indian grouping, because that is who the shop sells to. */
     public static function money(float|int|string|null $amount, bool $paise = false): string
     {
@@ -210,14 +235,29 @@ class Shop
         [$whole, $fraction] = array_pad(explode('.', $rounded), 2, null);
 
         $negative = str_starts_with($whole, '-');
-        $whole = ltrim($whole, '-');
 
-        if (strlen($whole) > 3) {
-            $last = substr($whole, -3);
-            $rest = substr($whole, 0, -3);
-            $whole = preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', $rest) . ',' . $last;
+        return ($negative ? '-₹' : '₹')
+            . self::grouped(ltrim($whole, '-'))
+            . ($fraction !== null ? '.' . $fraction : '');
+    }
+
+    /**
+     * 1,24,500 — the same grouping without the rupee sign.
+     *
+     * Lakhs and crores, not thousands: a shop that has sold 1,24,500 sarees
+     * should not have it written the way an American bank would.
+     */
+    public static function grouped(int|string $whole): string
+    {
+        $whole = (string) $whole;
+
+        if (strlen($whole) <= 3) {
+            return $whole;
         }
 
-        return ($negative ? '-₹' : '₹') . $whole . ($fraction !== null ? '.' . $fraction : '');
+        $last = substr($whole, -3);
+        $rest = substr($whole, 0, -3);
+
+        return preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', $rest) . ',' . $last;
     }
 }

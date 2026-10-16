@@ -26,6 +26,7 @@ class SectionForm
         'lookbook'   => 'Lookbook — large photographs, little text',
         'reels'      => 'Films — short videos of sarees being worn',
         'band'       => 'A band of words — why shop here, how it is posted',
+        'numbers'    => 'The numbers — sarees sold, reviews written',
     ];
 
     public static function configure(Schema $schema): Schema
