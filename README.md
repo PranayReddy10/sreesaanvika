@@ -3,10 +3,11 @@
 The shop at [ojasvidrapes.in](https://ojasvidrapes.in): handwoven sarees, sold
 one design at a time.
 
-Laravel 13, MySQL, Filament for the admin, Livewire for the bag, Razorpay and
-cash on delivery for the money. Built to run on Hostinger's shared hosting,
-which has no Redis, no Node and no long-running processes — every choice below
-that looks conservative is because of one of those three.
+Laravel 13, MySQL, Filament for the admin, Livewire for the bag, and Razorpay
+or Cashfree alongside cash on delivery for the money. Built to run on
+Hostinger's shared hosting, which has no Redis, no Node and no long-running
+processes — every choice below that looks conservative is because of one of
+those three.
 
 ```sh
 composer install
@@ -59,9 +60,15 @@ the bank. The price of that is orders started and abandoned, so
 cash order, which is unpaid by design, and never a paid one.
 
 **The webhook is the authority, not the browser.** A shopper whose phone dies
-on the bank's page has still paid. `/webhooks/razorpay` can mark an order paid
-on its own; both paths end in the same `markPaid()`, which does nothing the
-second time.
+on the bank's page has still paid. `/webhooks/razorpay` and `/webhooks/cashfree`
+can mark an order paid on their own; both paths end in the same `markPaid()`,
+which does nothing the second time.
+
+**Which gateway takes the money is a setting, not a deployment.** Razorpay and
+Cashfree are both wired up, and the shop chooses between them — with its keys,
+kept encrypted — in Settings → Delivery & payment. A payment remembers the
+gateway that took it, so orders paid last week are still refunded through
+whoever is holding that money.
 
 **Adding to the bag answers a POST with a redirect, never a page.** The bag
 itself is Livewire, so quantities change over the wire and the page is never
@@ -118,7 +125,9 @@ app/
 │   ├── OfferEngine.php          buy-two-get-one and quantity breaks; pure
 │   ├── OrderService.php         turning a bag into an order
 │   ├── OrderMailer.php          every email about an order
-│   ├── Payments/Razorpay.php    the gateway; the secret never leaves here
+│   ├── Payments/Razorpay.php    a gateway; the secret never leaves here
+│   ├── Payments/Cashfree.php    the other one, same rules
+│   ├── Payments/Gateways.php    which one takes a payment, and which took an old one
 │   └── Shipping/Delhivery.php   booking and tracking; optional throughout
 └── Support/Shop.php             what every page knows about the shop
 ```

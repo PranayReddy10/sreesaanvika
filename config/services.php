@@ -38,6 +38,24 @@ return [
         'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
     ],
 
+    /*
+     * Cashfree. The same rule: the secret key signs every call and checks
+     * every webhook from this server, and only the session id — which is good
+     * for one payment and nothing else — is handed to a browser.
+     */
+    'cashfree' => [
+        'app_id' => env('CASHFREE_APP_ID'),
+        'secret' => env('CASHFREE_SECRET'),
+        // 'sandbox' for the test keys, 'production' for the live ones.
+        'mode'   => env('CASHFREE_MODE', 'production'),
+        /*
+         * Left empty in every real shop: the address is decided by the mode
+         * above. It exists so the payment path can be driven end to end
+         * against a stand-in while nobody's money is involved.
+         */
+        'base'   => env('CASHFREE_BASE'),
+    ],
+
     'delhivery' => [
         'token'   => env('DELHIVERY_TOKEN'),
         'base'    => env('DELHIVERY_BASE', 'https://track.delhivery.com'),

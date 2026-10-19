@@ -15,6 +15,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\Webhooks\CashfreeWebhookController;
 use App\Http\Controllers\Webhooks\RazorpayWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +45,15 @@ Route::post('/checkout', [CheckoutController::class, 'place'])->name('checkout.p
 Route::post('/checkout/verify', [CheckoutController::class, 'verify'])->name('checkout.verify');
 Route::post('/checkout/failed', [CheckoutController::class, 'failed'])->name('checkout.failed');
 
+/*
+ * Where Cashfree sends a shopper back to, with the order id in the address.
+ * Nothing in that address is believed: the page asks Cashfree itself whether
+ * the order was paid, and shows the order only to the browser that opened the
+ * payment.
+ */
+Route::get('/checkout/cashfree/{reference}', [CheckoutController::class, 'cashfreeReturn'])
+    ->name('checkout.cashfree.return');
+
 // Signed, and good for a week: an order number alone must never show a
 // stranger somebody's name, address and telephone number.
 Route::get('/order/{order}', [CheckoutController::class, 'confirmation'])->name('order.confirmed');
@@ -56,6 +66,13 @@ Route::get('/order/{order}', [CheckoutController::class, 'confirmation'])->name(
 Route::post('/webhooks/razorpay', RazorpayWebhookController::class)
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class])
     ->name('webhooks.razorpay');
+
+// And Cashfree's, for a shop that takes its payments there instead. Both are
+// left reachable whichever gateway is chosen: a payment opened on Monday must
+// still be able to report itself on Tuesday.
+Route::post('/webhooks/cashfree', CashfreeWebhookController::class)
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class])
+    ->name('webhooks.cashfree');
 
 Route::get('/track', [AccountController::class, 'track'])->name('track');
 Route::post('/track', [AccountController::class, 'find'])->name('track.find');

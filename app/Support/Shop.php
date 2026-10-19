@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Setting;
+use App\Services\Payments\Gateways;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -134,7 +135,19 @@ class Shop
         $value = Setting::get('online_on');
 
         return ($value === null || (bool) $value)
-            && (bool) (config('services.razorpay.key') && config('services.razorpay.secret'));
+            && app(Gateways::class)->ready();
+    }
+
+    /**
+     * Who takes the money: 'Razorpay' or 'Cashfree'.
+     *
+     * Named on the shop's own terms and privacy pages, which have to say who
+     * the card details actually go to — and would be a false statement the day
+     * the shop switched gateways if this were written out by hand.
+     */
+    public static function gatewayName(): string
+    {
+        return app(Gateways::class)->active()->label();
     }
 
     /** Above this, cash on delivery is not offered. Null means no limit. */

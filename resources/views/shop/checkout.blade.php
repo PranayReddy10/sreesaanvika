@@ -48,7 +48,7 @@
          the page only picks between them, so what is shown is always what
          will be charged. --}}
     <form method="post" action="{{ route('checkout.place') }}"
-          x-data="{ method: '{{ old('method', $online ? 'razorpay' : 'cod') }}' }"
+          x-data="{ method: '{{ old('method', $online ? 'online' : 'cod') }}' }"
           class="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
         @csrf
 
@@ -133,11 +133,11 @@
                 <div class="mt-5 space-y-3">
                     @if ($online)
                         <label class="od-card flex items-start gap-3 p-4 cursor-pointer has-[:checked]:border-[color:var(--color-gold)]">
-                            <input type="radio" name="method" value="razorpay" x-model="method"
+                            <input type="radio" name="method" value="online" x-model="method"
                                    class="mt-1 accent-[color:var(--color-gold)]">
                             <span>
                                 <span class="block font-medium">UPI, card, net banking or wallet</span>
-                                <span class="block text-sm text-ink-muted mt-0.5">Paid securely through Razorpay. We never see your card.</span>
+                                <span class="block text-sm text-ink-muted mt-0.5">Paid securely through {{ Shop::gatewayName() }}. We never see your card.</span>
                             </span>
                         </label>
                     @endif
@@ -230,7 +230,7 @@
                     <span class="font-head text-lg">To pay</span>
                     <span class="font-head text-2xl"
                           x-text="method === 'cod' ? @js(Shop::money($totals->grandTotal + Shop::codFee())) : @js(Shop::money($totals->grandTotal))"
-                    >{{ Shop::money($totals->grandTotal + (old('method', $online ? 'razorpay' : 'cod') === 'cod' ? Shop::codFee() : 0)) }}</span>
+                    >{{ Shop::money($totals->grandTotal + (old('method', $online ? 'online' : 'cod') === 'cod' ? Shop::codFee() : 0)) }}</span>
                 </div>
 
                 <p class="mt-2 text-xs text-ink-faint">

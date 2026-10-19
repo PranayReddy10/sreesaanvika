@@ -37,7 +37,7 @@ class RazorpayWebhookController extends Controller
     {
         $body = $request->getContent();
 
-        if (! $this->razorpay->webhookIsGenuine($body, $request->header('X-Razorpay-Signature'))) {
+        if (! $this->razorpay->webhookIsGenuine($body, ['signature' => $request->header('X-Razorpay-Signature')])) {
             Log::warning('A Razorpay webhook arrived with a signature that did not match.');
 
             return response('', 400);

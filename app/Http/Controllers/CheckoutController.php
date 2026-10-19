@@ -7,6 +7,8 @@ use App\Models\ShippingZone;
 use App\Services\CartService;
 use App\Services\OrderMailer;
 use App\Services\OrderService;
+use App\Services\Payments\Cashfree;
+use App\Services\Payments\Gateways;
 use App\Services\Payments\Razorpay;
 use App\Support\Shop;
 use Illuminate\Http\JsonResponse;
@@ -21,10 +23,13 @@ use Illuminate\View\View;
  * One page, one form, and the order written on the server from the bag — never
  * from what the form says anything costs.
  *
- * Cash on delivery is confirmed on the spot. Razorpay is opened against an
- * order that already exists, so a payment can always be matched to something,
- * and the shopper is sent to a confirmation page whose address they could not
- * have guessed.
+ * Cash on delivery is confirmed on the spot. An online payment is opened
+ * against an order that already exists, so a payment can always be matched to
+ * something, and the shopper is sent to a confirmation page whose address they
+ * could not have guessed.
+ *
+ * Which gateway opens it is the shop's choice in Settings, and this page does
+ * not care which one it is beyond handing the browser the right script.
  */
 class CheckoutController extends Controller
 {
@@ -33,6 +38,7 @@ class CheckoutController extends Controller
         private OrderService $orders,
         private OrderMailer $mailer,
         private Razorpay $razorpay,
+        private Gateways $gateways,
     ) {
     }
 
@@ -76,7 +82,9 @@ class CheckoutController extends Controller
             'city'     => ['required', 'string', 'max:90'],
             'state'    => ['required', 'string', 'max:90'],
             'pincode'  => ['required', 'string', 'regex:/^\d{6}$/'],
-            'method'   => ['required', 'in:razorpay,cod'],
+            // "razorpay" is still taken for a page that was open before the
+            // shop switched gateways; it means the same as "online".
+            'method'   => ['required', 'in:online,razorpay,cashfree,cod'],
             'note'     => ['nullable', 'string', 'max:500'],
         ], [
             'phone.regex'   => 'A ten-digit Indian mobile number, please.',
@@ -90,12 +98,19 @@ class CheckoutController extends Controller
          */
         $totals = $this->bag->totals($cart, $data['pincode']);
 
-        if ($data['method'] === 'razorpay' && ! Shop::onlineOn()) {
+        $gateway = $this->gateways->active();
+
+        // Whatever the form called it, an order is either cash on delivery or
+        // it is this shop's gateway: the order carries the name of whoever is
+        // actually going to hold the money, because that is who must refund it.
+        $method = $data['method'] === 'cod' ? 'cod' : $gateway->name();
+
+        if ($method !== 'cod' && ! Shop::onlineOn()) {
             return back()->withInput()
                 ->withErrors(['method' => 'Card and UPI payments are not available at the moment.']);
         }
 
-        if ($data['method'] === 'cod') {
+        if ($method === 'cod') {
             if ($why = $this->codRefusedBecause($totals->grandTotal)) {
                 return back()->withInput()->withErrors(['method' => $why]);
             }
@@ -107,13 +122,13 @@ class CheckoutController extends Controller
         }
 
         try {
-            $order = $this->orders->place($cart, $data, $data['method'], $data['note'] ?? null);
+            $order = $this->orders->place($cart, $data, $method, $data['note'] ?? null);
         } catch (\RuntimeException $e) {
             // The bag changed under them — a saree sold out while they typed.
             return redirect()->route('bag')->with('bag_error', $e->getMessage());
         }
 
-        if ($data['method'] === 'cod') {
+        if ($method === 'cod') {
             $order->moveTo('confirmed', 'Cash on delivery');
             $this->mailer->placed($order);
             $this->bag->clear($cart);
@@ -122,14 +137,14 @@ class CheckoutController extends Controller
             return redirect()->to($this->confirmationUrl($order));
         }
 
-        if (! $this->razorpay->configured()) {
+        if (! $gateway->configured()) {
             return redirect()->route('bag')->with('bag_error', 'Card and UPI payments are not set up yet.');
         }
 
         try {
-            $payment = $this->razorpay->open($order);
+            $payment = $gateway->open($order);
         } catch (\Throwable $e) {
-            Log::error('Razorpay would not open an order', ['order' => $order->number, 'error' => $e->getMessage()]);
+            Log::error($gateway->label().' would not open an order', ['order' => $order->number, 'error' => $e->getMessage()]);
 
             // The order exists but cannot be paid for; let the stock go rather
             // than hold it for a payment that will never come.
@@ -139,6 +154,25 @@ class CheckoutController extends Controller
             return redirect()->route('bag')->with('bag_error', 'We could not reach the payment page. Please try again.');
         }
 
+        /*
+         * Which payment this browser opened.
+         *
+         * A shopper comes back from the bank with an order number in the
+         * address bar and nothing else, and an order number is a thing that
+         * can be typed. This is what tells the two apart later, so somebody
+         * guessing numbers is never shown another person's name and address.
+         */
+        session(['pay.reference' => $payment->gateway_order_id]);
+
+        if ($gateway->name() === 'cashfree') {
+            return view('shop.pay-cashfree', [
+                'order'   => $order,
+                'payment' => $payment,
+                'mode'    => app(Cashfree::class)->mode(),
+                'back'    => route('checkout'),
+            ]);
+        }
+
         return view('shop.pay', [
             'order'   => $order,
             'payment' => $payment,
@@ -146,6 +180,55 @@ class CheckoutController extends Controller
             'back'    => route('checkout'),
             'then'    => route('checkout.verify'),
         ]);
+    }
+
+    /**
+     * Back from Cashfree's page, which proves nothing on its own.
+     *
+     * The shopper arrives here with an order id in the address and that is
+     * all; whether it was paid is asked of Cashfree, over the wire, with the
+     * secret key. If it was, the order is marked paid here rather than waiting
+     * on the webhook, so the confirmation page is right the moment they see
+     * it — and the webhook doing the same thing again changes nothing.
+     */
+    public function cashfreeReturn(Request $request, string $reference): RedirectResponse
+    {
+        $payment = app(Cashfree::class)->settle($reference);
+
+        if (! $payment || ! $payment->order) {
+            return redirect()->route('checkout')
+                ->with('bag_error', 'That payment did not go through. Your bag is as you left it.');
+        }
+
+        $order = $payment->order;
+        $wasUnpaid = $order->payment_status !== 'paid';
+
+        $this->orders->markPaid($order, 'Paid through Cashfree');
+
+        if ($wasUnpaid) {
+            $this->mailer->placed($order);
+        }
+
+        $cart = $this->bag->current(false);
+
+        if ($cart) {
+            $this->bag->clear($cart);
+            $this->bag->forget();
+        }
+
+        /*
+         * Only the browser that opened this payment is shown the order.
+         *
+         * Anybody else — a guessed order number, a link forwarded to a friend
+         * — is told the payment is recorded and sent to the tracking page,
+         * where an email address has to be given before anything is shown.
+         */
+        if ($request->session()->pull('pay.reference') !== $reference) {
+            return redirect()->route('track')
+                ->with('bag', 'That payment is recorded. Enter the order number and the email it was placed with to see the order.');
+        }
+
+        return redirect()->to($this->confirmationUrl($order));
     }
 
     /** What the browser hands back when the Razorpay window closes. */

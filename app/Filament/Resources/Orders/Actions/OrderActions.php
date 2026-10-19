@@ -6,7 +6,7 @@ use App\Models\Order;
 use App\Models\Shipment;
 use App\Services\OrderMailer;
 use App\Services\OrderService;
-use App\Services\Payments\Razorpay;
+use App\Services\Payments\Gateways;
 use App\Services\Shipping\Delhivery;
 use App\Support\Shop;
 use Filament\Actions\Action;
@@ -197,9 +197,11 @@ class OrderActions
     /**
      * Give the money back.
      *
-     * For a Razorpay order this really refunds through Razorpay; for cash on
-     * delivery there is nothing to call, so it only records what the shop did
-     * by hand. Either way the figure on the order is the truth afterwards.
+     * For an order paid online this really refunds through the gateway that
+     * took the money — which is the one named on the payment, not whichever
+     * the shop is using today; for cash on delivery there is nothing to call,
+     * so it only records what the shop did by hand. Either way the figure on
+     * the order is the truth afterwards.
      */
     public static function refund(): Action
     {
@@ -235,12 +237,14 @@ class OrderActions
                 $amount = (float) $data['amount'];
                 $payment = $record->payments()->where('status', 'captured')->latest('id')->first();
 
+                $gateway = app(Gateways::class)->named($payment?->gateway);
+
                 if ($payment?->gateway_payment_id) {
                     try {
-                        app(Razorpay::class)->refund($payment, $amount);
+                        $gateway->refund($payment, $amount);
                     } catch (\Throwable $e) {
                         Notification::make()
-                            ->title('Razorpay would not take the refund')
+                            ->title($gateway->label().' would not take the refund')
                             ->body($e->getMessage())
                             ->danger()
                             ->persistent()
@@ -272,7 +276,7 @@ class OrderActions
                 Notification::make()
                     ->title(Shop::money($amount) . ' refunded')
                     ->body($payment?->gateway_payment_id
-                        ? 'Razorpay has it; the bank takes a few days.'
+                        ? $gateway->label().' has it; the bank takes a few days.'
                         : 'Recorded. Pay it back by hand — there was nothing to refund through a gateway.')
                     ->success()
                     ->send();

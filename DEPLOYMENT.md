@@ -192,6 +192,11 @@ RAZORPAY_KEY=rzp_test_...
 RAZORPAY_SECRET=...
 RAZORPAY_WEBHOOK_SECRET=...
 
+# Or, for a shop on Cashfree. Either set can be typed into the admin instead.
+CASHFREE_APP_ID=...
+CASHFREE_SECRET=...
+CASHFREE_MODE=production
+
 ADMIN_EMAIL=you@ojasvidrapes.in
 ADMIN_PASSWORD=something-long-and-not-this
 ```
@@ -446,21 +451,50 @@ something seems stuck.
 
 ---
 
-## 6. Razorpay
+## 6. The payment gateway
 
-In the Razorpay dashboard:
+The shop can take its online payments through **Razorpay** or **Cashfree**.
+Which one, and its keys, are set in the admin under **Shop → Settings →
+Delivery & payment → Who takes the payment** — the secrets are encrypted in
+the shop's own database, and nothing has to be edited on the server. The
+`.env` lines below still work and are used for whatever the admin leaves
+empty.
+
+Changing the gateway only affects new payments. Each payment remembers who
+took it, so orders already paid for are still refunded through that gateway.
+
+### Razorpay
 
 1. **Account & Settings → API Keys** — generate keys. Use the `rzp_test_` pair
    until you have put a real order through end to end.
 2. **Account & Settings → Webhooks** — add one pointing at
    `https://ojasvidrapes.in/webhooks/razorpay`, with the events
    `payment.captured`, `payment.failed`, `order.paid` and `refund.processed`.
-   Copy the webhook secret into `RAZORPAY_WEBHOOK_SECRET`.
+   Copy the webhook secret into the admin (or `RAZORPAY_WEBHOOK_SECRET`).
 
-The webhook matters more than it looks. A shopper whose phone dies on the
-bank's page has still paid; the webhook is how the shop finds out. Without it,
-orders will sit unpaid that were in fact paid for, and the release job will
-cancel them.
+### Cashfree
+
+1. **Developers → API Keys** — copy the App ID and the secret key into the
+   admin, and set *Which keys these are* to match: test keys only work against
+   Cashfree's test site, live keys only against the real one. A shop whose
+   payments all fail is usually this.
+2. **Developers → Webhooks** — add an endpoint at
+   `https://ojasvidrapes.in/webhooks/cashfree` with the payment success,
+   payment failed and refund status events. There is no separate secret to
+   copy: Cashfree signs the webhook with the same secret key.
+3. **Developers → Whitelist** — add `https://ojasvidrapes.in`. Cashfree
+   refuses to open its payment page on a domain it has not been told about,
+   and the symptom is a payment page that never appears.
+
+Saving the keys asks the gateway whether it accepts them, and says so on
+screen — so a mistyped key is found there and then rather than by a shopper on
+the last page of a sale.
+
+### The webhook matters more than it looks
+
+A shopper whose phone dies on the bank's page has still paid; the webhook is
+how the shop finds out. Without it, orders will sit unpaid that were in fact
+paid for, and the release job will cancel them.
 
 To check it is working: place a test order, pay it, and look in the admin —
 the order should say **Paid**. If it says unpaid, the webhook is not arriving.
@@ -795,9 +829,10 @@ read as empty and the boxes in Settings come up blank. Type them in again and
 save. (Never regenerate `APP_KEY` on a live shop for any other reason: it also
 ends every session.)
 
-**Orders say unpaid after a successful payment.** The Razorpay webhook is not
-reaching the shop. Check the URL in the dashboard and that
-`RAZORPAY_WEBHOOK_SECRET` matches exactly.
+**Orders say unpaid after a successful payment.** The gateway's webhook is not
+reaching the shop. Check the URL in the gateway's dashboard. On Razorpay, the
+webhook secret has to match exactly; on Cashfree it is the secret key itself,
+so a secret that was changed in one place and not the other does this.
 
 **The admin password does not work.** Almost always `ADMIN_PASSWORD` was
 blank in `.env` when `db:seed` ran, so the account was made with an empty

@@ -21,8 +21,18 @@ use Razorpay\Api\Errors\SignatureVerificationError;
  * the bank's page has still paid, and the shop must know it — so the webhook
  * can mark an order paid on its own, and both paths are safe to run twice.
  */
-class Razorpay
+class Razorpay implements Gateway
 {
+    public function name(): string
+    {
+        return 'razorpay';
+    }
+
+    public function label(): string
+    {
+        return 'Razorpay';
+    }
+
     public function configured(): bool
     {
         return (bool) (config('services.razorpay.key') && config('services.razorpay.secret'));
@@ -123,9 +133,10 @@ class Razorpay
      * hash_equals rather than ===, so the comparison takes the same time
      * whatever the input and tells an attacker nothing.
      */
-    public function webhookIsGenuine(string $body, ?string $signature): bool
+    public function webhookIsGenuine(string $body, array $headers): bool
     {
         $secret = (string) config('services.razorpay.webhook_secret');
+        $signature = $headers['signature'] ?? null;
 
         if ($secret === '' || ! $signature) {
             return false;

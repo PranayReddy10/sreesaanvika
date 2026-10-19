@@ -6,7 +6,10 @@ use App\Models\OrderItem;
 use App\Models\Review;
 use App\Models\Setting;
 use App\Providers\ShopConfigProvider;
+use App\Services\Payments\Cashfree;
+use App\Services\Payments\Gateways;
 use App\Support\Shop;
+use App\Support\PaymentCheck;
 use App\Support\StorageCheck;
 use Illuminate\Support\Facades\Storage;
 use BackedEnum;
@@ -75,6 +78,14 @@ class ShopSettings extends Page implements HasForms
         'order_emails'       => ['general', 'string'],
         'dispatch_days'      => ['shipping', 'int'],
 
+        'pay_gateway'             => ['payments', 'string'],
+        'razorpay_key'            => ['payments', 'string'],
+        'razorpay_secret'         => ['payments', 'secret'],
+        'razorpay_webhook_secret' => ['payments', 'secret'],
+        'cashfree_mode'           => ['payments', 'string'],
+        'cashfree_app_id'         => ['payments', 'string'],
+        'cashfree_secret'         => ['payments', 'secret'],
+
         'sold_count'         => ['numbers', 'int'],
         'sold_label'         => ['numbers', 'string'],
         'reviews_count'      => ['numbers', 'int'],
@@ -141,7 +152,13 @@ class ShopSettings extends Page implements HasForms
      * in the browser's cache and in anything that records a screen. These are
      * saved and never shown again; left empty, the one already saved stays.
      */
-    private const SECRETS = ['spaces_secret', 'mail_password'];
+    private const SECRETS = [
+        'spaces_secret',
+        'mail_password',
+        'razorpay_secret',
+        'razorpay_webhook_secret',
+        'cashfree_secret',
+    ];
 
     /**
      * What a setting means before anybody has saved it.
@@ -154,6 +171,8 @@ class ShopSettings extends Page implements HasForms
     private const UNSET_MEANS = [
         'cod_on'        => true,
         'online_on'     => true,
+        'pay_gateway'   => null,        // null → whichever the shop is using
+        'cashfree_mode' => null,
         'free_shipping_from' => null,   // null → fall back to the shop's own figure
         'flat_rate'     => null,
         'dispatch_days' => null,
@@ -194,6 +213,8 @@ class ShopSettings extends Page implements HasForms
                 $stored = match ($key) {
                     'cod_on'             => true,
                     'online_on'          => true,
+                    'pay_gateway'        => Gateways::chosen(),
+                    'cashfree_mode'      => app(Cashfree::class)->mode(),
                     'free_shipping_from' => \App\Support\Shop::freeShippingFrom(),
                     'flat_rate'          => \App\Support\Shop::flatShipping(),
                     'dispatch_days'      => \App\Support\Shop::dispatchDays(),
@@ -312,7 +333,7 @@ class ShopSettings extends Page implements HasForms
                                 Toggle::make('online_on')
                                     ->label('Card, UPI and net banking')
                                     ->default(true)
-                                    ->helperText('Needs the Razorpay keys in .env. Without them this stays off however it is set here.'),
+                                    ->helperText('Needs the gateway keys below. Without them this stays off however it is set here.'),
 
                                 Toggle::make('cod_on')
                                     ->label('Cash on delivery')
@@ -332,6 +353,98 @@ class ShopSettings extends Page implements HasForms
                                     ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('cod_on'))
                                     ->placeholder('No limit')
                                     ->helperText('A bridal silk sent out on trust is a large loss when it is refused at the door.'),
+                            ]),
+
+                        Section::make('Who takes the payment')
+                            ->description(new HtmlString(
+                                'The gateway that handles card, UPI and net banking, and its keys. They are kept '
+                                . 'in the shop\'s own database and the secrets are <strong>encrypted</strong>, so '
+                                . 'changing gateway means choosing from this list — not editing a file on the server. '
+                                . 'Anything left empty here falls back to what is in <code>.env</code>.'
+                            ))
+                            ->columns(2)
+                            ->schema([
+                                Select::make('pay_gateway')
+                                    ->label('Payment gateway')
+                                    ->options(Gateways::ALL)
+                                    ->default(Gateways::FALLBACK)
+                                    ->native(false)
+                                    // One of them is always in use; there is
+                                    // no such thing as no gateway at all.
+                                    ->selectablePlaceholder(false)
+                                    ->live()
+                                    ->columnSpanFull()
+                                    ->helperText('Changing this only affects new payments. Orders already paid for are refunded through whoever took the money, which the shop remembers for each one.'),
+
+                                /* ------------------------------------------------- Razorpay */
+
+                                TextInput::make('razorpay_key')
+                                    ->label('Key id')
+                                    ->maxLength(190)
+                                    ->placeholder('rzp_live_...')
+                                    ->visible(fn (Get $get) => $get('pay_gateway') === 'razorpay')
+                                    ->helperText('Razorpay dashboard → Account & Settings → API keys. The only part of this that is ever put on a page.'),
+
+                                TextInput::make('razorpay_secret')
+                                    ->label('Key secret')
+                                    ->password()
+                                    ->revealable()
+                                    ->maxLength(190)
+                                    ->visible(fn (Get $get) => $get('pay_gateway') === 'razorpay')
+                                    ->helperText('Shown once, when the key is made. Kept encrypted; leave empty to keep the one already saved.'),
+
+                                TextInput::make('razorpay_webhook_secret')
+                                    ->label('Webhook secret')
+                                    ->password()
+                                    ->revealable()
+                                    ->maxLength(190)
+                                    ->visible(fn (Get $get) => $get('pay_gateway') === 'razorpay')
+                                    ->helperText(new HtmlString(
+                                        'A phrase you choose when adding the webhook. Point it at <code>'
+                                        . e(route('webhooks.razorpay')) . '</code> and tick payment.captured, '
+                                        . 'payment.failed and refund.processed.'
+                                    ))
+                                    ->columnSpanFull(),
+
+                                /* ------------------------------------------------- Cashfree */
+
+                                Select::make('cashfree_mode')
+                                    ->label('Which keys these are')
+                                    ->options([
+                                        'production' => 'Live — real money',
+                                        'sandbox'    => 'Test — nothing is charged',
+                                    ])
+                                    ->default('production')
+                                    ->native(false)
+                                    ->selectablePlaceholder(false)
+                                    ->visible(fn (Get $get) => $get('pay_gateway') === 'cashfree')
+                                    ->helperText('Test keys only work against Cashfree\'s test site, and live keys only against the real one. A shop whose payments all fail is usually this.'),
+
+                                TextInput::make('cashfree_app_id')
+                                    ->label('App ID')
+                                    ->maxLength(190)
+                                    ->visible(fn (Get $get) => $get('pay_gateway') === 'cashfree')
+                                    ->helperText('Cashfree dashboard → Developers → API keys.'),
+
+                                TextInput::make('cashfree_secret')
+                                    ->label('Secret key')
+                                    ->password()
+                                    ->revealable()
+                                    ->maxLength(190)
+                                    ->visible(fn (Get $get) => $get('pay_gateway') === 'cashfree')
+                                    ->helperText('Beside the App ID, behind "Click to reveal". Kept encrypted; leave empty to keep the one already saved. It also signs the webhook, so there is nothing else to copy for that.'),
+
+                                Placeholder::make('cashfree_webhook_url')
+                                    ->label('Tell Cashfree to send events here')
+                                    ->visible(fn (Get $get) => $get('pay_gateway') === 'cashfree')
+                                    ->content(new HtmlString('<code>' . e(route('webhooks.cashfree')) . '</code>'))
+                                    ->helperText(new HtmlString(
+                                        'Developers → Webhooks → Add webhook endpoint, with the payment success, '
+                                        . 'payment failed and refund status events. Also add <code>'
+                                        . e(rtrim((string) config('app.url'), '/')) . '</code> under Developers → '
+                                        . 'Whitelist, or Cashfree will refuse to open its payment page on the shop.'
+                                    ))
+                                    ->columnSpanFull(),
                             ]),
                     ]),
 
@@ -692,6 +805,7 @@ class ShopSettings extends Page implements HasForms
     {
         $state = $this->form->getState();
         $storageBefore = $this->storageFingerprint();
+        $paymentsBefore = $this->paymentsFingerprint();
 
         foreach (self::FIELDS as $key => [$group, $type]) {
             $value = $state[$key] ?? '';
@@ -717,6 +831,46 @@ class ShopSettings extends Page implements HasForms
         if ($this->storageFingerprint() !== $storageBefore) {
             $this->checkTheStorage($state);
         }
+
+        if ($this->paymentsFingerprint() !== $paymentsBefore) {
+            $this->checkThePayments();
+        }
+    }
+
+    /** Everything that decides who takes the money, as one string. */
+    private function paymentsFingerprint(): string
+    {
+        $keys = array_filter(
+            array_keys(self::FIELDS),
+            fn (string $key) => self::FIELDS[$key][0] === 'payments',
+        );
+
+        return collect($keys)
+            ->map(fn (string $key) => $key.'='.(string) Setting::get($key, ''))
+            ->implode('|');
+    }
+
+    /**
+     * Having just been given payment keys, ask the gateway whether they work.
+     *
+     * A mistyped key is otherwise found by a shopper, on the last page of the
+     * sale, with their address already typed in — and the shop hears about it
+     * as an order that never arrived. This costs one request and no money.
+     */
+    private function checkThePayments(): void
+    {
+        // The settings were saved a moment ago, so what is in config() is
+        // still the old set until the provider is run over them again.
+        (new ShopConfigProvider(app()))->boot();
+
+        $check = PaymentCheck::run();
+
+        Notification::make()
+            ->title($check->summary)
+            ->body(trim(($check->advice ? $check->advice.' ' : '').($check->detail ?? '')) ?: null)
+            ->status($check->ok ? 'success' : 'danger')
+            ->persistent()
+            ->send();
     }
 
     /** Everything that decides where a photograph is written, as one string. */

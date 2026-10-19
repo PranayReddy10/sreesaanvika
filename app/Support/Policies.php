@@ -93,6 +93,9 @@ class Policies
     {
         $name = Shop::name();
         $email = Shop::email();
+        // Named rather than written out, so these pages do not go on saying
+        // Razorpay on the day the shop moves to somebody else.
+        $gateway = Shop::gatewayName();
 
         return <<<TEXT
         These terms govern your use of this website and anything you buy from it. By placing an order you accept them.
@@ -117,7 +120,7 @@ class Policies
 
         **Paying**
 
-        Card, UPI, net banking and wallet payments are handled by Razorpay. We never see or store your card details. Cash-on-delivery orders are paid to the courier at the door.
+        Card, UPI, net banking and wallet payments are handled by {$gateway}. We never see or store your card details. Cash-on-delivery orders are paid to the courier at the door.
 
         **Offers and codes**
 
@@ -151,6 +154,7 @@ class Policies
     {
         $name = Shop::name();
         $email = Shop::email();
+        $gateway = Shop::gatewayName();
 
         return <<<TEXT
         The short version: we collect what we need to send you a saree, we do not sell it to anybody, and you can ask us to delete it.
@@ -163,7 +167,7 @@ class Policies
 
         **What we do not collect**
 
-        Your card details. Payments go to Razorpay, who are certified to handle them; the card number never reaches this website and we could not see it if we wanted to.
+        Your card details. Payments go to {$gateway}, who are certified to handle them; the card number never reaches this website and we could not see it if we wanted to.
 
         **Why we have it**
 
@@ -171,7 +175,7 @@ class Policies
 
         **Who else sees it**
 
-        Only those who have to: the courier (your name, address and telephone number, so they can deliver it), Razorpay (to take the payment), and our email provider (to send you your confirmation). None of them may use it for anything else, and we sell your details to nobody, ever.
+        Only those who have to: the courier (your name, address and telephone number, so they can deliver it), {$gateway} (to take the payment), and our email provider (to send you your confirmation). None of them may use it for anything else, and we sell your details to nobody, ever.
 
         **Emails**
 

@@ -9,10 +9,11 @@ use Illuminate\Support\ServiceProvider;
 /**
  * The settings a shopkeeper can change without opening a file.
  *
- * Where the photographs are kept, and how the shop sends email. Both of these
- * lived only in .env, which on shared hosting means a file manager, a text
- * editor and a line typed without a typo — and getting one wrong means a shop
- * that silently stops sending order confirmations.
+ * Where the photographs are kept, how the shop sends email, and who takes its
+ * payments. All three lived only in .env, which on shared hosting means a file
+ * manager, a text editor and a line typed without a typo — and getting one
+ * wrong means a shop that silently stops sending order confirmations, or one
+ * that cannot be paid.
  *
  * What is set here wins over .env, and only when it is filled in: a shop that
  * has configured nothing in the admin behaves exactly as before. Applied at
@@ -36,6 +37,7 @@ class ShopConfigProvider extends ServiceProvider
 
             $this->applyStorage();
             $this->applyMail();
+            $this->applyPayments();
         } catch (\Throwable) {
             // A shop with an unreachable database has larger problems, and
             // they are not this provider's to report.
@@ -104,6 +106,52 @@ class ShopConfigProvider extends ServiceProvider
         config([
             'livewire.temporary_file_upload.disk' => config('livewire.temporary_file_upload.disk') ?: 'local',
         ]);
+    }
+
+    /**
+     * The payment gateway's keys, when the admin has been given them.
+     *
+     * Each gateway is filled in on its own, and only a complete pair is used:
+     * half a set of keys is not a gateway, and letting it through would turn a
+     * mistyped secret into a checkout that opens a payment page which fails on
+     * the shopper. Whatever is not filled in here is left to .env, so a shop
+     * that has always kept its keys there carries on untouched.
+     */
+    private function applyPayments(): void
+    {
+        $razorpayKey = trim((string) Setting::get('razorpay_key'));
+        $razorpaySecret = trim((string) Setting::get('razorpay_secret'));
+
+        if ($razorpayKey !== '' && $razorpaySecret !== '') {
+            config([
+                'services.razorpay.key'    => $razorpayKey,
+                'services.razorpay.secret' => $razorpaySecret,
+            ]);
+        }
+
+        $webhook = trim((string) Setting::get('razorpay_webhook_secret'));
+
+        // On its own: the webhook secret is a different string from the API
+        // secret, and a shop may well set it weeks later.
+        if ($webhook !== '') {
+            config(['services.razorpay.webhook_secret' => $webhook]);
+        }
+
+        $appId = trim((string) Setting::get('cashfree_app_id'));
+        $cashfreeSecret = trim((string) Setting::get('cashfree_secret'));
+
+        if ($appId !== '' && $cashfreeSecret !== '') {
+            config([
+                'services.cashfree.app_id' => $appId,
+                'services.cashfree.secret' => $cashfreeSecret,
+            ]);
+        }
+
+        $mode = trim((string) Setting::get('cashfree_mode'));
+
+        if ($mode !== '') {
+            config(['services.cashfree.mode' => $mode === 'sandbox' ? 'sandbox' : 'production']);
+        }
     }
 
     /** The shop's own mail server, when the admin has been given one. */
